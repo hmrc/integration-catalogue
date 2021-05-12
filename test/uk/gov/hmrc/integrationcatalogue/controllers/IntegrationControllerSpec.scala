@@ -122,7 +122,6 @@ val schema1 = DefaultSchema(
       lastUpdated = dateValue,
       platform = PlatformType.CORE_IF,
       maintainer = coreIfMaintainer,
-      searchText = s"Some Search Text",
       version = "1.1.0",
       specificationType = SpecificationType.OAS_V3,
       hods = List("ETMP"),

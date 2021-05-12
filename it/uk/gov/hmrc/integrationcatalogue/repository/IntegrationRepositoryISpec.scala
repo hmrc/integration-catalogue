@@ -60,7 +60,6 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
     testItem.integrationType shouldBe itemToValidate.integrationType
     testItem.publisherReference shouldBe itemToValidate.publisherReference
     testItem.platform shouldBe itemToValidate.platform
-    testItem.searchText shouldBe itemToValidate.searchText
   }
 
   def validateApi(testItem: IntegrationDetail, itemToValidate: ApiDetail): Assertion ={
@@ -220,7 +219,6 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
             apiDetail.lastUpdated.toString shouldBe exampleApiDetail2.lastUpdated.toString
             apiDetail.platform shouldBe exampleApiDetail2.platform
             apiDetail.maintainer shouldBe exampleApiDetail2.maintainer
-            apiDetail.searchText shouldBe exampleApiDetail2.searchText
             apiDetail.version shouldBe exampleApiDetail2.version
             apiDetail.specificationType shouldBe exampleApiDetail2.specificationType
             apiDetail.hods shouldBe exampleApiDetail2.hods
@@ -378,20 +376,20 @@ trait FilterSetup {
 
         "find 5 results when searching for text that exists in all records with no platform filters" in new FilterSetup {
            setUpTest()
-            validateResults(findWithFilters(IntegrationFilter(List("SEARCH"), List.empty)).results,
-            List("API1001", "API1005", "API1003", "API1004", "API1002"))
+            validateResults(findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List.empty)).results,
+            List("API1001", "API1005", "API1002", "API1003", "API1004"))
         }
 
         "find 1 result when searching for for text that exists in all records & DES platform" in new FilterSetup {
            setUpTest()
-            validateResults(findWithFilters(IntegrationFilter(List("SEARCH"), List(PlatformType.DES))).results,
+            validateResults(findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List(PlatformType.DES))).results,
             List("API1004"))
         }
 
         "find 5 results when searching for text that exists in all records & DES or CORE_IF platforms" in new FilterSetup {
            setUpTest()
-            validateResults(findWithFilters(IntegrationFilter(List("SEARCH"), List(PlatformType.DES, PlatformType.CORE_IF))).results,
-            List("API1001", "API1005", "API1003", "API1004", "API1002"))
+            validateResults(findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List(PlatformType.DES, PlatformType.CORE_IF))).results,
+            List("API1001", "API1005", "API1002", "API1003", "API1004"))
         }
      
     }

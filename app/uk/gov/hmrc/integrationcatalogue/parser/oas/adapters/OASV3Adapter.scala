@@ -67,9 +67,6 @@ class OASV3Adapter @Inject() (uuidService: UuidService, extensionsAdapter: OASEx
             extensionsAdapter.parse(info, publisherRef) match {
               case Right(extensions: IntegrationCatalogueExtensions) =>
                 val hods = extensions.backends
-                val hodsTranslated = hods.map(hod => hod + " " + acronymLookupMap.getOrElse(hod, ""))
-                val searchString = s"${info.getTitle} " +
-                  s"${getStringSafe(info.getDescription)} ${platformType.toString.replace("_", " ")} ${hodsTranslated.mkString(" ")}"
                 val componentSchemas = extractComponentSchemas(openApi)
                 val componentHeaders = extractComponentHeaders(openApi)
                 val componentParameters = extractComponentParameters(openApi)
@@ -85,7 +82,6 @@ class OASV3Adapter @Inject() (uuidService: UuidService, extensionsAdapter: OASEx
                   maintainer = extractMaintainer(info.getContact),
                   specificationType = specType,
                   platform = platformType,
-                  searchText = searchString,
                   hods = hods.toList,
                   components = Components(componentSchemas, componentHeaders, componentParameters)
                 ))

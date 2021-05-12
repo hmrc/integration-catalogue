@@ -65,7 +65,6 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
           parsedObject.title shouldBe oasApiName
           parsedObject.description shouldBe oasApiDescription
           parsedObject.version shouldBe oasVersion
-          parsedObject.searchText shouldBe s"$oasApiName $oasApiDescription API PLATFORM ITMP Individual Tax Management Platform NPS National Insurance and PAYE System"
           parsedObject.platform shouldBe apiDetail0.platform
           parsedObject.specificationType shouldBe apiDetail0.specificationType
 
@@ -90,7 +89,6 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
           parsedObject.title shouldBe oasApiName
           parsedObject.description shouldBe oasApiDescription
           parsedObject.version shouldBe oasVersion
-          parsedObject.searchText shouldBe s"$oasApiName $oasApiDescription API PLATFORM "
           parsedObject.platform shouldBe apiDetail0.platform
           parsedObject.specificationType shouldBe apiDetail0.specificationType
 
