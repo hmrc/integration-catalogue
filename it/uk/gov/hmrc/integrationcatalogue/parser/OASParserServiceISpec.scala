@@ -187,7 +187,6 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
           parsedObject.title shouldBe oasApiName
           parsedObject.description shouldBe oasApiDescription
           parsedObject.version shouldBe oasVersion
-          parsedObject.searchText shouldBe s"$oasApiName $oasApiDescription CORE IF ITMP Individual Tax Management Platform NPS National Insurance and PAYE System"
           parsedObject.platform shouldBe PlatformType.CORE_IF
           parsedObject.specificationType shouldBe SpecificationType.OAS_V3
 
@@ -210,7 +209,6 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
           parsedObject.title shouldBe oasApiName
           parsedObject.description shouldBe oasApiDescription
           parsedObject.version shouldBe oasVersion
-          parsedObject.searchText shouldBe s"$oasApiName $oasApiDescription CORE IF "
           parsedObject.platform shouldBe PlatformType.CORE_IF
           parsedObject.specificationType shouldBe SpecificationType.OAS_V3
 
