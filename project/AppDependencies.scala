@@ -9,7 +9,8 @@ object AppDependencies {
   lazy val enumeratumVersion = "1.6.2"
   lazy val reactivemongoVersion = "7.31.0-play-27"
   lazy val hmrcmongoVersion = "0.49.0"
-  lazy val bootstrapVersion = "3.4.0"
+  lazy val bootstrapVersion = "5.3.0"
+  lazy val jacksonVersion = "2.12.2"
 
   val compile = Seq(
     "uk.gov.hmrc"                       %% "bootstrap-backend-play-27"      % bootstrapVersion,
@@ -18,11 +19,11 @@ object AppDependencies {
     "com.beachape"                      %% "enumeratum-play-json"           % enumeratumVersion,
      "uk.gov.hmrc.mongo"                %% "hmrc-mongo-play-27"             % hmrcmongoVersion,
 
-    "com.fasterxml.jackson.core"        % "jackson-annotations"             % "2.12.2",
-    "com.fasterxml.jackson.core"        % "jackson-databind"                % "2.12.2",
-    "com.fasterxml.jackson.dataformat"  % "jackson-dataformat-yaml"         % "2.12.2",
+    "com.fasterxml.jackson.core"        % "jackson-annotations"             % jacksonVersion,
+    "com.fasterxml.jackson.core"        % "jackson-databind"                % jacksonVersion,
+    "com.fasterxml.jackson.dataformat"  % "jackson-dataformat-yaml"         % jacksonVersion,
     "io.swagger.parser.v3"              % "swagger-parser-v3"               % "2.0.24",
-    "org.typelevel"                     %% "cats-core"                      % "2.4.2",
+    "org.typelevel"                     %% "cats-core"                      % "2.4.2"
   )
 
   val test = Seq(
