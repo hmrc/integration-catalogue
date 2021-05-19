@@ -24,19 +24,22 @@ import io.swagger.v3.oas.models.info.Info
 import java.util
 import scala.collection.JavaConverters._
 
+import uk.gov.hmrc.integrationcatalogue.config.AppConfig
+
 trait OASExtensionsAdapter extends ExtensionKeys {
 
-  def parseExtensions(info: Info, publisherReference: Option[String]): Either[cats.data.NonEmptyList[String], IntegrationCatalogueExtensions] = {
+  def parseExtensions(info: Info, publisherReference: Option[String], appConfig: AppConfig): Either[cats.data.NonEmptyList[String], IntegrationCatalogueExtensions] = {
 
     getIntegrationCatalogueExtensionsMap(getExtensions(info))
       .andThen(integrationCatalogueExtensions => {
         {
           (
             getBackends(integrationCatalogueExtensions),
-            getPublisherReference(integrationCatalogueExtensions, publisherReference)
+            getPublisherReference(integrationCatalogueExtensions, publisherReference),
+            getShortDescription(integrationCatalogueExtensions, appConfig)
           )
-        }.mapN((backends, publisherReference) => {
-          IntegrationCatalogueExtensions(backends, publisherReference)
+        }.mapN((backends, publisherReference, shortDescription) => {
+          IntegrationCatalogueExtensions(backends, publisherReference, shortDescription)
         })
       })
       .toEither
@@ -66,6 +69,17 @@ trait OASExtensionsAdapter extends ExtensionKeys {
       case Some(listOfBackends: util.ArrayList[AnyRef]) =>
         Validated.valid(listOfBackends.asScala.toList.map(_.toString))
       case unknown                                      => s"backends must be a list but was: $unknown".invalidNel[Seq[String]]
+    }
+  }
+
+  def getShortDescription(extensions: Map[String, AnyRef], appConfig: AppConfig) : ValidatedNel[String, Option[String]] = {
+    extensions.get(SHORT_DESC_EXTENSION_KEY) match {
+      case None =>  Validated.valid(None)
+      case Some(x: String) => if(x.length > appConfig.shortDescLength) {
+        s"Short Description cannot be more than ${appConfig.shortDescLength} characters long.".invalidNel[Option[String]]
+      } else Validated.valid(Some(x))
+      case unknown => "Short Description must be a String".invalidNel[Option[String]]
+
     }
   }
 
@@ -110,4 +124,4 @@ trait OASExtensionsAdapter extends ExtensionKeys {
   // }
 }
 
-case class IntegrationCatalogueExtensions(backends: Seq[String], publisherReference: String)
+case class IntegrationCatalogueExtensions(backends: Seq[String], publisherReference: String, shortDescription: Option[String])

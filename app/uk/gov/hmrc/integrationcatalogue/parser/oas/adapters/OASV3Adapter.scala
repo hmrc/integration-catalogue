@@ -39,8 +39,10 @@ import javax.inject.{Inject, Singleton}
 import scala.collection.JavaConverters._
 import scala.collection.immutable.HashSet
 
+import uk.gov.hmrc.integrationcatalogue.config.AppConfig
+
 @Singleton
-class OASV3Adapter @Inject() (uuidService: UuidService)
+class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
   extends Logging with AcronymHelper with OASV3Validation with OASExtensionsAdapter with OASV3SchemaAdapter with OASV3HeaderAdapter with OASV3ParameterAdapter {
 
   def extractOpenApi(publisherRef: Option[String],
@@ -64,7 +66,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService)
             }).sortBy(_.path)
 
             //What to do about errors parsing extensions????
-            parseExtensions(info, publisherRef) match {
+            parseExtensions(info, publisherRef, appConfig) match {
               case Right(extensions: IntegrationCatalogueExtensions) =>
                 val hods = extensions.backends
                 val componentSchemas = extractComponentSchemas(openApi)
@@ -83,6 +85,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService)
                   specificationType = specType,
                   platform = platformType,
                   hods = hods.toList,
+                  shortDescription = extensions.shortDescription,
                   components = Components(componentSchemas, componentHeaders, componentParameters)
                 ))
               case Left(x)                                           => x.toList.invalidNel[ApiDetail]

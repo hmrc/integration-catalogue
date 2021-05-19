@@ -31,6 +31,7 @@ import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 
 
 import java.util.UUID
+import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 
 class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach {
 
@@ -40,7 +41,9 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
     val specType: SpecificationType = SpecificationType.OAS_V3
     val generatedUuid: UUID = UUID.fromString("f26babbb-c9b1-4b79-b99a-9f99cf741f78")
     val mockUuidService: UuidService = mock[UuidService]
-    val objInTest = new OASV3Adapter(mockUuidService)
+    val mockAppConfig = mock[AppConfig]
+
+    val objInTest = new OASV3Adapter(mockUuidService, mockAppConfig)
 
     val parseSuccess: ValidatedNel[List[String], ApiDetail] = valid(apiDetail0.copy(id = IntegrationId(generatedUuid)))
 

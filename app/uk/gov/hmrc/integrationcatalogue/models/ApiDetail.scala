@@ -156,7 +156,8 @@ case class ApiDetail(
     version: String,
     specificationType: SpecificationType,
     endpoints: List[Endpoint],
-    components: Components)
+    components: Components,
+    shortDescription: Option[String])
     extends IntegrationDetail {
   override val integrationType: IntegrationType = IntegrationType.API
 }

@@ -194,6 +194,8 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
           contact.name shouldBe oasContactName
           contact.emailAddress shouldBe oasContactEMail
           parsedObject.hods shouldBe List("ITMP", "NPS")
+          parsedObject.shortDescription.isDefined shouldBe true
+          parsedObject.shortDescription shouldBe Some("I am a short description")
 
         case _: Invalid[NonEmptyList[List[String]]] => fail()
       }
