@@ -40,8 +40,8 @@ import scala.collection.JavaConverters._
 import scala.collection.immutable.HashSet
 
 @Singleton
-class OASV3Adapter @Inject() (uuidService: UuidService, extensionsAdapter: OASExtensionsAdapter)
-  extends Logging with AcronymHelper with OASV3Validation with OASV3SchemaAdapter with OASV3HeaderAdapter with OASV3ParameterAdapter {
+class OASV3Adapter @Inject() (uuidService: UuidService)
+  extends Logging with AcronymHelper with OASV3Validation with OASExtensionsAdapter with OASV3SchemaAdapter with OASV3HeaderAdapter with OASV3ParameterAdapter {
 
   def extractOpenApi(publisherRef: Option[String],
                      platformType: PlatformType,
@@ -64,7 +64,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, extensionsAdapter: OASEx
             }).sortBy(_.path)
 
             //What to do about errors parsing extensions????
-            extensionsAdapter.parse(info, publisherRef) match {
+            parseExtensions(info, publisherRef) match {
               case Right(extensions: IntegrationCatalogueExtensions) =>
                 val hods = extensions.backends
                 val componentSchemas = extractComponentSchemas(openApi)

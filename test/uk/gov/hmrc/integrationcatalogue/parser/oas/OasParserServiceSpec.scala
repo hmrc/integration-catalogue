@@ -43,7 +43,7 @@ class OasParserServiceSpec extends WordSpec with Matchers with  MockitoSugar wit
     when(mockFileLoader.parseOasSpec(*)).thenReturn(mockSwaggerParseResult)
 
     def primeSuccessNoWarnings(){
-      when(mockSwaggerParseResult.getOpenAPI).thenReturn(getOpenAPIObject())
+      when(mockSwaggerParseResult.getOpenAPI).thenReturn(getOpenAPIObject(withExtensions = false))
       when(mockSwaggerParseResult.getMessages).thenReturn(null)
     }
     def primeFailureWithErrors(){
@@ -81,7 +81,7 @@ class OasParserServiceSpec extends WordSpec with Matchers with  MockitoSugar wit
       val publisherReference = "SOMEFILEREFERENCE"
 
       
-      val openApi: OpenAPI = getOpenAPIObject()
+      val openApi: OpenAPI = getOpenAPIObject(withExtensions = false)
       openApi.setOpenapi("2.0")
       when(mockSwaggerParseResult.getOpenAPI).thenReturn(openApi)
       when(mockSwaggerParseResult.getMessages).thenReturn(new java.util.ArrayList())

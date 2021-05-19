@@ -20,16 +20,13 @@ import cats.data.Validated._
 import cats.data._
 import cats.implicits._
 import io.swagger.v3.oas.models.info.Info
-import play.api.Logging
 
 import java.util
-import javax.inject.Singleton
 import scala.collection.JavaConverters._
 
-@Singleton
-class OASExtensionsAdapter extends Logging with ExtensionKeys {
+trait OASExtensionsAdapter extends ExtensionKeys {
 
-  def parse(info: Info, publisherReference: Option[String]): Either[cats.data.NonEmptyList[String], IntegrationCatalogueExtensions] = {
+  def parseExtensions(info: Info, publisherReference: Option[String]): Either[cats.data.NonEmptyList[String], IntegrationCatalogueExtensions] = {
 
     getIntegrationCatalogueExtensionsMap(getExtensions(info))
       .andThen(integrationCatalogueExtensions => {

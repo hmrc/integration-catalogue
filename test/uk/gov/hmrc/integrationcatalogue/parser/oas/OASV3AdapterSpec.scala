@@ -40,8 +40,7 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
     val specType: SpecificationType = SpecificationType.OAS_V3
     val generatedUuid: UUID = UUID.fromString("f26babbb-c9b1-4b79-b99a-9f99cf741f78")
     val mockUuidService: UuidService = mock[UuidService]
-    val mockOasExtensionsAdapter: OASExtensionsAdapter = mock[OASExtensionsAdapter]
-    val objInTest = new OASV3Adapter(mockUuidService, mockOasExtensionsAdapter)
+    val objInTest = new OASV3Adapter(mockUuidService)
 
     val parseSuccess: ValidatedNel[List[String], ApiDetail] = valid(apiDetail0.copy(id = IntegrationId(generatedUuid)))
 
@@ -56,9 +55,8 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
     "do happy path with extensions" in new Setup {
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
       val hods = List("ITMP", "NPS")
-      when(mockOasExtensionsAdapter.parse(*,*)).thenReturn(Right(IntegrationCatalogueExtensions(hods,apiDetail0.publisherReference)))
       val result: ValidatedNel[List[String], ApiDetail] =
-        objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject())
+        objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = true, hods))
       result match {
         case Valid(parsedObject)                    =>
           parsedObject.id shouldBe IntegrationId(generatedUuid)
@@ -73,15 +71,16 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
           contact.emailAddress shouldBe oasContactEMail
           parsedObject.hods shouldBe hods
 
-        case _: Invalid[NonEmptyList[List[String]]] => fail()
+        case errors: Invalid[NonEmptyList[List[String]]] => {
+         errors.e.head.foreach(println)
+          fail()}
       }
 
     }
 
     "do happy path without extensions" in new Setup {
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
-      when(mockOasExtensionsAdapter.parse(*,*)).thenReturn(Right(IntegrationCatalogueExtensions(List.empty, apiDetail0.publisherReference)))
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject())
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = false))
       result match {
         case Valid(parsedObject)                    =>
           parsedObject.id shouldBe IntegrationId(generatedUuid)
@@ -103,8 +102,7 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
     }
 
     "parse extensions returns error(s)" in new Setup {
-      when(mockOasExtensionsAdapter.parse(*, *)).thenReturn(Left(List("backends must be a list but was: error!").toNel.get))
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject())
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(true, null))
       result match {
         case _: Invalid[NonEmptyList[List[String]]] => succeed
         case Valid(parsedObject)                    => fail

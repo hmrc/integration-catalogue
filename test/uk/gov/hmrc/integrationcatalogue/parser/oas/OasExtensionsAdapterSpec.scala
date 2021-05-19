@@ -25,7 +25,7 @@ import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 
 import java.util
 
-class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach with ExtensionKeys {
+class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach with ExtensionKeys with OASExtensionsAdapter {
 
   trait Setup {
     val publisherRefValue = "SOMEREFERENCE"
@@ -57,14 +57,13 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
     }
 
 
-    val objInTest = new OASExtensionsAdapter()
   }
 
   "parse" should {
 
     "return Right when extensions is empty but publisher reference from header is provided" in new Setup {
       val info = new Info()
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = objInTest.parse(info, Some(publisherRefValue))
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(info, Some(publisherRefValue))
       result match {
         case Left(_)      => fail
         case Right(extensions) =>
@@ -75,7 +74,7 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
 
     "return Left with error when extensions is empty and publisher reference is empty" in new Setup {
       val info = new Info()
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = objInTest.parse(info, None)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(info, None)
       result match {
         case Left(errors)   => errors.head shouldBe "Publisher Reference must be provided and must be valid"
         case Right(_) => fail
@@ -83,7 +82,7 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
     }
 
   "return Right when extensions has backends but no publisher reference and publisher reference from header is provided" in new Setup {
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = objInTest.parse(generateInfoObject(extensionsWithOnlyBackends), Some(publisherRefValue))
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithOnlyBackends), Some(publisherRefValue))
       result match {
         case Left(_)      => fail
         case Right(extensions) =>
@@ -93,7 +92,7 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
     }
 
     "return Right when extensions has backends and publisher reference and publisher reference from header matches extensions" in new Setup {
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = objInTest.parse(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), Some(publisherRefValue))
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), Some(publisherRefValue))
       result match {
         case Left(_)      => fail
         case Right(extensions) =>
@@ -103,7 +102,7 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
     }
 
     "return Left with error when extensions has a value but no publisher reference provided" in new Setup {
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = objInTest.parse(generateInfoObject(extensionsWithOnlyBackends), None)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithOnlyBackends), None)
       result match {
         case Left(errors)   => errors.head shouldBe "Publisher Reference must be provided and must be valid"
         case Right(_) => fail
@@ -112,7 +111,7 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
 
 
     "return Left when extensions is set with backends and publisher ref and header publisher reference does not match extensions value" in new Setup {
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = objInTest.parse(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), Some("SOMEOTHERREFERENCE"))
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), Some("SOMEOTHERREFERENCE"))
       result match {
         case Left(errors)   => errors.head shouldBe "Publisher reference provided twice but they do not match"
         case Right(_) => fail
@@ -121,7 +120,7 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
 
 
     "return Right with backend strings and publisher ref when extensions is set with backends and publisher ref as string" in new Setup {
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = objInTest.parse(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), None)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), None)
       result match {
         case Left(_)   => fail
         case Right(extensions) => 
@@ -132,7 +131,7 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
 
     "return Right with backend strings and publisher ref when extensions is set with backends and publisher ref as Integer" in new Setup {
         extensionsWithBothPublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefInt)
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = objInTest.parse(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), None)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), None)
       result match {
         case Left(_)   => fail
         case Right(extensions) => 
@@ -143,7 +142,7 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
 
     "return Right with backend strings and publisher ref when extensions is set with backends and publisher ref as Double" in new Setup {
         extensionsWithBothPublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefDouble)
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = objInTest.parse(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), None)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), None)
       result match {
         case Left(_)   => fail
         case Right(extensions) => 
@@ -154,7 +153,7 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
 
     "return Right with backend strings and publisher ref when extensions is set with backends and publisher ref as List" in new Setup {
         extensionsWithBothPublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefList)
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = objInTest.parse(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), None)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), None)
       result match {
         case Left(errors)   => errors.head shouldBe "Invalid value. Expected a string but found : [] class java.util.ArrayList"
         case Right(_) => fail
@@ -162,7 +161,7 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
     }
     
     "return Right with backend strings when extensions is set and backends are defined" in new Setup {
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = objInTest.parse(generateInfoObject(extensionsWithOnlyBackends), Some(publisherRefValue))
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithOnlyBackends), Some(publisherRefValue))
       result match {
         case Left(_)   => fail
         case Right(extensions) => 
@@ -172,7 +171,7 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
     }
 
     "return Right with empty List when extensions is set and no backends are defined" in new Setup {
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = objInTest.parse(generateInfoObject(new util.HashMap()), Some(""))
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(new util.HashMap()), Some(""))
       result match {
         case Left(_)   => fail
         case Right(extensions) => extensions.backends shouldBe Nil
@@ -185,7 +184,7 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
 
       extensionsWithEmptyBackends.put(EXTENSIONS_KEY, "")
       info.setExtensions(extensionsWithEmptyBackends)
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = objInTest.parse(info, Some(""))
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(info, Some(""))
       result match {
         case Left(errors) => errors.head shouldBe "attribute x-integration-catalogue is not of type `object`"
         case Right(_) => fail
@@ -199,7 +198,7 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
       invalidBackends.put(BACKEND_EXTENSION_KEY, null)
       extensionsWithNullBackends.put(EXTENSIONS_KEY, invalidBackends)
       info.setExtensions(extensionsWithNullBackends)
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = objInTest.parse(info,Some(""))
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(info,Some(""))
       result match {
         case Left(errors) => errors.head shouldBe "backends must be a list but was: Some(null)"
         case Right(_) => fail
