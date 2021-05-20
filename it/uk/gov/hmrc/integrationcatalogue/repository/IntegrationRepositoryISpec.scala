@@ -216,6 +216,7 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
             apiDetail.publisherReference shouldBe exampleApiDetail.publisherReference
             apiDetail.title shouldBe exampleApiDetail2.title
             apiDetail.description shouldBe exampleApiDetail2.description
+            apiDetail.shortDescription shouldBe exampleApiDetail2.shortDescription
             apiDetail.lastUpdated.toString shouldBe exampleApiDetail2.lastUpdated.toString
             apiDetail.platform shouldBe exampleApiDetail2.platform
             apiDetail.maintainer shouldBe exampleApiDetail2.maintainer

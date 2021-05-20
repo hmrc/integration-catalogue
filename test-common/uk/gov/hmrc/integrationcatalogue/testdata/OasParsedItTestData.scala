@@ -109,7 +109,7 @@ trait OasParsedItTestData {
     hods = List("POOP"),
     endpoints = endpoints,
     components = Components(List.empty, List.empty),
-    shortDescription = None
+    shortDescription = Some("exampleApiDetail's short description")
   )
 
   val exampleFileTransfer: FileTransferDetail =
@@ -170,7 +170,7 @@ trait OasParsedItTestData {
     hods = List("ETMP"),
     endpoints = endpointsNoDeepSearch,
     components = Components(List.empty, List.empty),
-    shortDescription = None
+    shortDescription = Some("A short description")
   )
 
   val exampleApiDetail3: ApiDetail = ApiDetail(
