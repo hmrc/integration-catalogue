@@ -58,7 +58,6 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(publisherReference, PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case errors: Invalid[NonEmptyList[List[String]]] =>
-        errors.e.head.foreach(println)
           errors.e.head.contains(expectedErrorMessage) shouldBe true
         case _ => fail()
       }
@@ -278,7 +277,6 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case errors: Invalid[NonEmptyList[List[String]]] =>
-        errors.e.head.foreach(println)
           errors.e.head.contains("Publisher reference provided twice but they do not match") shouldBe true
         case _ => fail()      }
 
