@@ -29,7 +29,9 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 @Singleton
-class IntegrationController @Inject()(controllerComponents: ControllerComponents, integrationService: IntegrationService, validateQueryParamKeyAction: ValidateQueryParamKeyAction)
+class IntegrationController @Inject()(controllerComponents: ControllerComponents,
+                                      integrationService: IntegrationService,
+                                      validateQueryParamKeyAction: ValidateQueryParamKeyAction)
                                      (implicit val ec: ExecutionContext)
     extends BackendController(controllerComponents)
     with Logging {
@@ -43,7 +45,10 @@ class IntegrationController @Inject()(controllerComponents: ControllerComponents
      }
   }
 
- def findWithFilters(searchTerm: List[String], platformFilter: List[PlatformType], itemsPerPage: Option[Int], currentPage: Option[Int]) : Action[AnyContent] = 
+ def findWithFilters(searchTerm: List[String],
+                     platformFilter: List[PlatformType],
+                     itemsPerPage: Option[Int],
+                     currentPage: Option[Int]) : Action[AnyContent] =
     (Action andThen validateQueryParamKeyAction).async {
       integrationService.findWithFilters(IntegrationFilter(searchTerm, platformFilter, itemsPerPage, currentPage))
       .map(result => {
@@ -73,7 +78,7 @@ class IntegrationController @Inject()(controllerComponents: ControllerComponents
      } else {
        platformFilter.headOption match {
         case Some(platform) => integrationService.deleteByPlatform(platform).map(numberDeleted => {
-              logger.warn(s"DeleteWithFilters numberDeleted is ${numberDeleted} PlatformFilters: ${valuesOrNone(platformFilter.map(_.toString))}")
+              logger.warn(s"DeleteWithFilters numberDeleted is $numberDeleted PlatformFilters: ${valuesOrNone(platformFilter.map(_.toString))}")
                 Ok(Json.toJson(DeleteIntegrationsResponse(numberDeleted)))})
         case None => Future.successful(BadRequest(Json.toJson(ErrorResponse(List(ErrorResponseMessage("DeleteWithFilters no platformtype passed as filter"))))))
         

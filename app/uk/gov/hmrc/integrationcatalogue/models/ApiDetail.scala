@@ -129,7 +129,7 @@ case class ArraySchema(
                       description: Option[String] = None,
                       required: Option[Boolean] = None,
                       deprecated: Option[Boolean] = None,
-                      allowEmptyValue: Option[Boolean] = None, 
+                      allowEmptyValue: Option[Boolean] = None,
                       schema: Option[Schema] = None
     )
 

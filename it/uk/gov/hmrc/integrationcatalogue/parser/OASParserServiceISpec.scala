@@ -7,16 +7,16 @@ package uk.gov.hmrc.integrationcatalogue.parser
 
 import cats.data.Validated._
 import cats.data._
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{Assertion, Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.{ContactInformation, PlatformType, SpecificationType}
-import uk.gov.hmrc.integrationcatalogue.models.{ApiDetail, ComposedSchema, DefaultSchema, EndpointMethod, Header, Response}
+import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.OASV3Adapter
 import uk.gov.hmrc.integrationcatalogue.parser.oas.{OASFileLoader, OASParserService}
 import uk.gov.hmrc.integrationcatalogue.testdata._
 
 import scala.io.BufferedSource
 import scala.io.Source.fromURL
-import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.OASV3Adapter
 
 class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestData with OasTestData with GuiceOneAppPerSuite {
 
@@ -34,7 +34,7 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
       fileContents
     }
 
-    def validateRefHeader(header: Header, expectedName: String, expectedRef: String) = {
+    def validateRefHeader(header: Header, expectedName: String, expectedRef: String): Assertion = {
       header.name shouldBe expectedName
       header.ref shouldBe Some(expectedRef)
       header.deprecated shouldBe None
@@ -42,7 +42,7 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
       header.description shouldBe None
     }
 
-    def validateHeader(header: Header, expectedName: String, expectedDescription  : String) = {
+    def validateHeader(header: Header, expectedName: String, expectedDescription  : String): Assertion = {
       header.name shouldBe expectedName
       header.ref shouldBe None
       header.deprecated shouldBe None
@@ -67,7 +67,7 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
 
           componentHeaders.size shouldBe 1
           validateHeader(componentHeaders.head, "CorrelationId","A UUID format string for the transaction used for traceability purposes")
-          componentHeaders.head.schema should not be(None)
+          componentHeaders.head.schema should not be None
 
            val headerSchemas = componentHeaders.head.schema.head
           headerSchemas.ref shouldBe None
@@ -82,7 +82,7 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
           idTypeParam.description shouldBe Some("Required - Possible values for idType")
           idTypeParam.required shouldBe Some(true)
           idTypeParam.allowEmptyValue shouldBe None
-          idTypeParam.schema should not be(None)
+          idTypeParam.schema should not be None
           idTypeParam.schema.flatMap(_.pattern) shouldBe Some("^[A-Z0-9]{3,6}$")
           idTypeParam.schema.flatMap(_.`type`) shouldBe Some("string")
 
@@ -93,7 +93,7 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
           idValueParam.required shouldBe Some(true)
           idValueParam.deprecated shouldBe Some(false)
           idValueParam.allowEmptyValue shouldBe Some(false)
-          idValueParam.schema should not be(None)
+          idValueParam.schema should not be None
           idValueParam.schema.flatMap(_.pattern) shouldBe Some("^([A-Z0-9]{1,15})$")
           idValueParam.schema.flatMap(_.`type`) shouldBe Some("string")
 
@@ -104,7 +104,7 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
           environment.required shouldBe Some(true)
           environment.deprecated shouldBe None
           environment.allowEmptyValue shouldBe None
-          environment.schema should not be(None)
+          environment.schema should not be None
           environment.schema.flatMap(_.`type`) shouldBe Some("string")
           environment.schema.map(_.`enum`) shouldBe Some(List("stuff", "stuf1", "stuff3"))
 
@@ -116,15 +116,16 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
           getMethod.httpMethod shouldBe "GET"
           getMethod.request shouldBe None
           getMethod.parameters.size shouldBe 5
-          getMethod.parameters.foreach(println)
-          getMethod.parameters(0).ref shouldBe Some("#/components/parameters/environment")
-          getMethod.parameters(0).name shouldBe None
+
+          getMethod.parameters.head.ref shouldBe Some("#/components/parameters/environment")
+          getMethod.parameters.head.name shouldBe None
           getMethod.parameters(1).ref shouldBe Some("#/components/parameters/correlationId")
           getMethod.parameters(1).name shouldBe None
           getMethod.parameters(2).ref shouldBe Some("#/components/parameters/idTypeParam")
           getMethod.parameters(2).name shouldBe None
           getMethod.parameters(3).ref shouldBe Some("#/components/parameters/idValueParam")
           getMethod.parameters(3).name shouldBe None
+
           val inlineParameter = getMethod.parameters(4)
           inlineParameter.name shouldBe Some("InlineId")
           inlineParameter.ref shouldBe None
@@ -140,7 +141,7 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
           response200.mediaType shouldBe Some("application/json")
 
           response200.headers.size shouldBe 1
-          response200.headers.headOption.isDefined shouldBe true
+          response200.headers.nonEmpty shouldBe true
           validateRefHeader(response200.headers.head, expectedName = "CorrelationId", expectedRef = "#/components/headers/CorrelationId")
 
           val response401: Response = getMethod.responses.filter(_.statusCode == 401).head
@@ -151,7 +152,7 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
           anyOf401Schemas.map(_.ref.getOrElse("")) should contain only ("#/components/schemas/orgName56String", "#/components/schemas/utrType")
 
           response401.headers.size shouldBe 1
-          response401.headers.headOption.isDefined shouldBe true
+          response401.headers.nonEmpty shouldBe true
           validateRefHeader(response401.headers.head, expectedName = "CorrelationId", expectedRef = "#/components/headers/CorrelationId")
 
           val response204: Response = getMethod.responses.filter(_.statusCode == 204).head
@@ -159,7 +160,7 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
           response204.schema shouldBe None
 
           response204.headers.size shouldBe 1
-          response204.headers.headOption.isDefined shouldBe true
+          response204.headers.nonEmpty shouldBe true
           val header204 = response204.headers.head
           header204.name shouldBe "Location"
           header204.ref shouldBe None
@@ -201,7 +202,33 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
       }
     }
 
-    "parse OpenApi object correctly without extensions" in new Setup {
+    "parse oas file correctly with valid short description" in new Setup {
+      val publisherReference = "SOMEFILEREFERENCE"
+      val oasFileContents: String = parseFileToString("/API1000_withValidShortDesc.yaml")
+
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
+      result match {
+        case Valid(parsedObject) =>
+          parsedObject.shortDescription.getOrElse("") shouldBe "Hello Im a sensible short description, you wont find me getting too long and breaking any tests. No sireee!!"
+        case _ => fail()
+      }
+
+    }
+
+    "catch error in oas file with invalid short description" in new Setup {
+      val publisherReference = "SOMEFILEREFERENCE"
+      val oasFileContents: String = parseFileToString("/API1000_withInValidShortDesc.yaml")
+
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
+      result match {
+        case errors: Invalid[NonEmptyList[List[String]]] =>
+          errors.e.head.contains("Short Description cannot be more than 180 characters long.") shouldBe true
+        case _ => fail()
+      }
+
+    }
+
+      "parse OpenApi object correctly without extensions" in new Setup {
       val publisherReference = "SOMEFILEREFERENCE"
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData)
@@ -213,6 +240,7 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
           parsedObject.version shouldBe oasVersion
           parsedObject.platform shouldBe PlatformType.CORE_IF
           parsedObject.specificationType shouldBe SpecificationType.OAS_V3
+          parsedObject.shortDescription shouldBe None
 
           parsedObject.endpoints.head.methods.head.responses.head.description shouldBe Some("Successful Response")
           parsedObject.endpoints.head.methods.head.responses.head.schema.get.ref shouldBe Some("#/components/schemas/successResponse")
