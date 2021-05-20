@@ -50,6 +50,21 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
       header.description shouldBe Some(expectedDescription)
     }
 
+    def testValidationFailureMessage(filePath: String, expectedErrorMessage: String, setHeaderPublisherRef: Boolean = true) = {
+
+      val publisherReference = if(setHeaderPublisherRef) Some("SOMEFILEREFERENCE") else None
+      val oasFileContents: String = parseFileToString(filePath)
+
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(publisherReference, PlatformType.CORE_IF, OASSpecType, oasFileContents)
+      result match {
+        case errors: Invalid[NonEmptyList[List[String]]] =>
+        errors.e.head.foreach(println)
+          errors.e.head.contains(expectedErrorMessage) shouldBe true
+        case _ => fail()
+      }
+
+    }
+
   }
 
   "OASParserService" should {
@@ -215,14 +230,91 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
 
     }
 
-    "catch error in oas file with invalid short description" in new Setup {
+    "catch error in oas file with short description over maximum length set in config" in new Setup {
+      testValidationFailureMessage("/API1000_withInvalidShortDesc-tooLong.yaml", "Short Description cannot be more than 180 characters long.")
+
+    }
+
+    "catch error in oas file with short description type is not a string" in new Setup {
+      testValidationFailureMessage("/API1000_withInvalidShortDesc-isWrongType.yaml", "Short Description must be a String")
+    }
+
+    "catch error in oas file when attribute x-integration-catalogue is not of type object" in new Setup {
+      testValidationFailureMessage("/API1000_withInvalid-x-integration-catalogue.yaml", "attribute x-integration-catalogue is not of type `object`")
+    }
+
+    "catch error in oas file with extension backends type is not a list" in new Setup {
+      testValidationFailureMessage("/API1000_withInvalidBackends-tooWrongType.yaml", "backends must be a list but was: Some(Invalid backend)")
+    }
+
+    "catch error in oas file with extension publisher-reference type is not a string, double or integer" in new Setup {
+      testValidationFailureMessage("/API1000_withInvalidPublisherRef-isWrongType.yaml", "Invalid value. Expected a string, integer or double but found value: true of type class java.lang.Boolean", setHeaderPublisherRef = false)
+    }
+
+    "catch error in oas file with missing extension publisher-reference" in new Setup {
+      testValidationFailureMessage("/API1000_withMissingPublisherRef.yaml", "Publisher Reference must be provided and must be valid", setHeaderPublisherRef = false)
+    }
+
+    "catch error in oas file with missing title" in new Setup {
+      testValidationFailureMessage("/API1000_InvalidwithMissingTitle.yaml", "Invalid OAS, title missing from OAS specification")
+    }
+
+    "catch error in oas file with missing version" in new Setup {
+      testValidationFailureMessage("/API1000_InvalidwithMissingVersion.yaml", "Invalid OAS, version missing from OAS specification")
+    }
+
+    "catch error in oas file with missing info object" in new Setup {
+      testValidationFailureMessage("/API1000_InvalidwithMissingInfo.yaml", "Invalid OAS, info item missing from OAS specification")
+    }
+
+    "catch error in invalid oas file" in new Setup {
+      testValidationFailureMessage("/API1000_InvalidOpenApiSpec.yaml", "attribute openapi is missing")
+    }
+
+    "catch error when publisher ref in oas file does not match the one in the request" in new Setup {
       val publisherReference = "SOMEFILEREFERENCE"
-      val oasFileContents: String = parseFileToString("/API1000_withInValidShortDesc.yaml")
+      val oasFileContents: String = parseFileToString("/API1000_withValidPublisherRef-String.yaml")
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case errors: Invalid[NonEmptyList[List[String]]] =>
-          errors.e.head.contains("Short Description cannot be more than 180 characters long.") shouldBe true
+        errors.e.head.foreach(println)
+          errors.e.head.contains("Publisher reference provided twice but they do not match") shouldBe true
+        case _ => fail()      }
+
+    }
+
+    "parse oas file correctly with valid publisher ref of type string" in new Setup {
+      val oasFileContents: String = parseFileToString("/API1000_withValidPublisherRef-String.yaml")
+
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(None, PlatformType.CORE_IF, OASSpecType, oasFileContents)
+      result match {
+        case Valid(parsedObject) =>
+          parsedObject.publisherReference shouldBe "API 1001"
+        case _ => fail()
+      }
+
+    }
+
+    "parse oas file correctly with valid publisher ref of type double" in new Setup {
+      val oasFileContents: String = parseFileToString("/API1000_withValidPublisherRef-Double.yaml")
+
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(None, PlatformType.CORE_IF, OASSpecType, oasFileContents)
+      result match {
+        case Valid(parsedObject) =>
+          parsedObject.publisherReference shouldBe "1.5"
+        case _ => fail()
+      }
+
+    }
+
+    "parse oas file correctly with valid publisher ref of type integer" in new Setup {
+      val oasFileContents: String = parseFileToString("/API1000_withValidPublisherRef-Integer.yaml")
+
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(None, PlatformType.CORE_IF, OASSpecType, oasFileContents)
+      result match {
+        case Valid(parsedObject) =>
+          parsedObject.publisherReference shouldBe "1001"
         case _ => fail()
       }
 

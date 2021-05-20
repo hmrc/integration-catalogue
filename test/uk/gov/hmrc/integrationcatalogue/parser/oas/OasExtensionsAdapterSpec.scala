@@ -167,7 +167,7 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
       extensionsWithBothPublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefList)
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), None, mockAppConfig)
       result match {
-        case Left(errors)   => errors.head shouldBe "Invalid value. Expected a string but found : [] class java.util.ArrayList"
+        case Left(errors)   => errors.head shouldBe "Invalid value. Expected a string, integer or double but found value: [] of type class java.util.ArrayList"
         case Right(_) => fail
       }
     }

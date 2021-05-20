@@ -109,7 +109,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
       case Some(obj) if (obj.isInstanceOf[Double])  =>
         val extensionPublisherReference = obj.asInstanceOf[Double].toString
         handleMultiplePublisherReferences(publisherReference, extensionPublisherReference)
-      case Some(o)  => s"Invalid value. Expected a string but found : $o ${o.getClass.toString}".invalidNel[String]
+      case Some(o)  => s"Invalid value. Expected a string, integer or double but found value: $o of type ${o.getClass.toString}".invalidNel[String]
     }
   }
 
