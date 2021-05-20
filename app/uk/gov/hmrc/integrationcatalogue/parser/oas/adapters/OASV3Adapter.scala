@@ -21,7 +21,6 @@ import cats.data._
 import cats.implicits._
 import com.fasterxml.jackson.databind.JsonNode
 import io.swagger.v3.oas.models.PathItem.HttpMethod
-import io.swagger.v3.oas.models.headers.{Header => OasHeader}
 import io.swagger.v3.oas.models.info.Contact
 import io.swagger.v3.oas.models.media.MediaType
 import io.swagger.v3.oas.models.parameters.RequestBody
@@ -29,17 +28,15 @@ import io.swagger.v3.oas.models.responses.{ApiResponse, ApiResponses}
 import io.swagger.v3.oas.models.{OpenAPI, Operation, PathItem}
 import org.joda.time.DateTime
 import play.api.Logging
+import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common._
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASV3Validation
 import uk.gov.hmrc.integrationcatalogue.service.{AcronymHelper, UuidService}
 
-import java.util
 import javax.inject.{Inject, Singleton}
 import scala.collection.JavaConverters._
 import scala.collection.immutable.HashSet
-
-import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 
 @Singleton
 class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
