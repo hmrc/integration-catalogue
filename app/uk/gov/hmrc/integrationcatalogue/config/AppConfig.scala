@@ -20,9 +20,8 @@ import play.api.Configuration
 
 import javax.inject.{Inject, Singleton} 
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
-import uk.gov.hmrc.integrationcatalogue.models.common.ContactInformation
 import uk.gov.hmrc.integrationcatalogue.models.PlatformContactResponse
-
+import uk.gov.hmrc.integrationcatalogue.config.ContactInformationForPlatform._
 @Singleton
 class AppConfig @Inject()(config: Configuration) {
 
@@ -33,18 +32,12 @@ class AppConfig @Inject()(config: Configuration) {
 def platformContacts = {
   //TODO handle empty config values
   PlatformType.values.toList
-  .map(platform => PlatformContactResponse(platform,  getContactInformationForPlatform(platform)))
+  .map(platform => PlatformContactResponse(platform,  
+  getContactInformationForPlatform(platform, config.getOptional[String](s"platforms.$platform.name"), config.getOptional[String](s"platforms.$platform.email"))))
 
-   
 }
-private def getContactInformationForPlatform(platform: PlatformType)={
-     val platformContactName = config.getOptional[String](s"platforms.$platform.name")
-     val platformContactEmail = config.getOptional[String](s"platforms.$platform.email")
-    (platformContactName, platformContactEmail) match {
-      case (Some(name), Some(email)) => Some(ContactInformation(name, email))
-      case _ => None
-    }
-}
+
+
 
 
 

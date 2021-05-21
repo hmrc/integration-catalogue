@@ -23,9 +23,6 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import play.api.mvc.{Action, AnyContent}
 import scala.concurrent.Future
-import uk.gov.hmrc.integrationcatalogue.models.common.ContactInformation
-import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
-import uk.gov.hmrc.integrationcatalogue.models.PlatformContactResponse
 import play.api.libs.json.Json
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 
