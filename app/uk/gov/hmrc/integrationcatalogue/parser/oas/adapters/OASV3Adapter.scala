@@ -21,7 +21,6 @@ import cats.data._
 import cats.implicits._
 import com.fasterxml.jackson.databind.JsonNode
 import io.swagger.v3.oas.models.PathItem.HttpMethod
-import io.swagger.v3.oas.models.headers.{Header => OasHeader}
 import io.swagger.v3.oas.models.info.Contact
 import io.swagger.v3.oas.models.media.MediaType
 import io.swagger.v3.oas.models.parameters.RequestBody
@@ -29,19 +28,19 @@ import io.swagger.v3.oas.models.responses.{ApiResponse, ApiResponses}
 import io.swagger.v3.oas.models.{OpenAPI, Operation, PathItem}
 import org.joda.time.DateTime
 import play.api.Logging
+import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common._
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASV3Validation
 import uk.gov.hmrc.integrationcatalogue.service.{AcronymHelper, UuidService}
 
-import java.util
 import javax.inject.{Inject, Singleton}
 import scala.collection.JavaConverters._
 import scala.collection.immutable.HashSet
 
 @Singleton
-class OASV3Adapter @Inject() (uuidService: UuidService, extensionsAdapter: OASExtensionsAdapter)
-  extends Logging with AcronymHelper with OASV3Validation with OASV3SchemaAdapter with OASV3HeaderAdapter with OASV3ParameterAdapter {
+class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
+  extends Logging with AcronymHelper with OASV3Validation with OASExtensionsAdapter with OASV3SchemaAdapter with OASV3HeaderAdapter with OASV3ParameterAdapter {
 
   def extractOpenApi(publisherRef: Option[String],
                      platformType: PlatformType,
@@ -64,7 +63,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, extensionsAdapter: OASEx
             }).sortBy(_.path)
 
             //What to do about errors parsing extensions????
-            extensionsAdapter.parse(info, publisherRef) match {
+            parseExtensions(info, publisherRef, appConfig) match {
               case Right(extensions: IntegrationCatalogueExtensions) =>
                 val hods = extensions.backends
                 val componentSchemas = extractComponentSchemas(openApi)
@@ -83,6 +82,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, extensionsAdapter: OASEx
                   specificationType = specType,
                   platform = platformType,
                   hods = hods.toList,
+                  shortDescription = extensions.shortDescription,
                   components = Components(componentSchemas, componentHeaders, componentParameters)
                 ))
               case Left(x)                                           => x.toList.invalidNel[ApiDetail]

@@ -129,7 +129,7 @@ case class ArraySchema(
                       description: Option[String] = None,
                       required: Option[Boolean] = None,
                       deprecated: Option[Boolean] = None,
-                      allowEmptyValue: Option[Boolean] = None, 
+                      allowEmptyValue: Option[Boolean] = None,
                       schema: Option[Schema] = None
     )
 
@@ -156,7 +156,8 @@ case class ApiDetail(
     version: String,
     specificationType: SpecificationType,
     endpoints: List[Endpoint],
-    components: Components)
+    components: Components,
+    shortDescription: Option[String])
     extends IntegrationDetail {
   override val integrationType: IntegrationType = IntegrationType.API
 }

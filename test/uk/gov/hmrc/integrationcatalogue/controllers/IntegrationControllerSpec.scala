@@ -126,7 +126,8 @@ val schema1 = DefaultSchema(
       specificationType = SpecificationType.OAS_V3,
       hods = List("ETMP"),
       endpoints = endpoints,
-      components = Components(List.empty, List.empty)
+      components = Components(List.empty, List.empty),
+      shortDescription = None
     )
 
 

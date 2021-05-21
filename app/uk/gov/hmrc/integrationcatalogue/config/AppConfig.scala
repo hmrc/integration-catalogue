@@ -25,6 +25,7 @@ class AppConfig @Inject()(config: Configuration) {
 
 
   val oldIndexesToDrop: Seq[String] = config.getOptional[Seq[String]]("mongodb.oldIndexesToDrop").getOrElse(Seq.empty)
+  val shortDescLength: Int = config.getOptional[Int]("publish.shortDesc.maxLength").getOrElse(180)
 
 
 

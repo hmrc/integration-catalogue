@@ -86,6 +86,7 @@ class IntegrationRepository @Inject()(config: AppConfig,
       case IntegrationType.API => val apiDetail = integrationDetail.asInstanceOf[ApiDetail]
         List(set("title", apiDetail.title),
           set("description", apiDetail.description),
+          set("shortDescription", Codecs.toBson(apiDetail.shortDescription)),
           set("platform", Codecs.toBson(apiDetail.platform)),
           set("lastUpdated", Codecs.toBson(apiDetail.lastUpdated)),
           set("maintainer", Codecs.toBson(apiDetail.maintainer)),

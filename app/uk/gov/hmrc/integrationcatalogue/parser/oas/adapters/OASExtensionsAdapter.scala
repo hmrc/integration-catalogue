@@ -20,26 +20,26 @@ import cats.data.Validated._
 import cats.data._
 import cats.implicits._
 import io.swagger.v3.oas.models.info.Info
-import play.api.Logging
 
 import java.util
-import javax.inject.Singleton
 import scala.collection.JavaConverters._
 
-@Singleton
-class OASExtensionsAdapter extends Logging with ExtensionKeys {
+import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 
-  def parse(info: Info, publisherReference: Option[String]): Either[cats.data.NonEmptyList[String], IntegrationCatalogueExtensions] = {
+trait OASExtensionsAdapter extends ExtensionKeys {
+
+  def parseExtensions(info: Info, publisherReference: Option[String], appConfig: AppConfig): Either[cats.data.NonEmptyList[String], IntegrationCatalogueExtensions] = {
 
     getIntegrationCatalogueExtensionsMap(getExtensions(info))
       .andThen(integrationCatalogueExtensions => {
         {
           (
             getBackends(integrationCatalogueExtensions),
-            getPublisherReference(integrationCatalogueExtensions, publisherReference)
+            getPublisherReference(integrationCatalogueExtensions, publisherReference),
+            getShortDescription(integrationCatalogueExtensions, appConfig)
           )
-        }.mapN((backends, publisherReference) => {
-          IntegrationCatalogueExtensions(backends, publisherReference)
+        }.mapN((backends, publisherReference, shortDescription) => {
+          IntegrationCatalogueExtensions(backends, publisherReference, shortDescription)
         })
       })
       .toEither
@@ -72,6 +72,17 @@ class OASExtensionsAdapter extends Logging with ExtensionKeys {
     }
   }
 
+  def getShortDescription(extensions: Map[String, AnyRef], appConfig: AppConfig) : ValidatedNel[String, Option[String]] = {
+    extensions.get(SHORT_DESC_EXTENSION_KEY) match {
+      case None =>  Validated.valid(None)
+      case Some(x: String) => if(x.length > appConfig.shortDescLength) {
+        s"Short Description cannot be more than ${appConfig.shortDescLength} characters long.".invalidNel[Option[String]]
+      } else Validated.valid(Some(x))
+      case unknown => "Short Description must be a String".invalidNel[Option[String]]
+
+    }
+  }
+
   def getPublisherReference(extensions: Map[String, AnyRef], publisherReference: Option[String]): ValidatedNel[String, String] = {
 
     def handlePublisherReference(publisherReference: Option[String]) = publisherReference match {
@@ -98,7 +109,7 @@ class OASExtensionsAdapter extends Logging with ExtensionKeys {
       case Some(obj) if (obj.isInstanceOf[Double])  =>
         val extensionPublisherReference = obj.asInstanceOf[Double].toString
         handleMultiplePublisherReferences(publisherReference, extensionPublisherReference)
-      case Some(o)  => s"Invalid value. Expected a string but found : $o ${o.getClass.toString}".invalidNel[String]
+      case Some(o)  => s"Invalid value. Expected a string, integer or double but found value: $o of type ${o.getClass.toString}".invalidNel[String]
     }
   }
 
@@ -113,4 +124,4 @@ class OASExtensionsAdapter extends Logging with ExtensionKeys {
   // }
 }
 
-case class IntegrationCatalogueExtensions(backends: Seq[String], publisherReference: String)
+case class IntegrationCatalogueExtensions(backends: Seq[String], publisherReference: String, shortDescription: Option[String])
