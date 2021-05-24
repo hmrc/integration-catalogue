@@ -37,13 +37,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
-class AdminControllerSpec extends WordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with BeforeAndAfterEach with ApiTestData {
+class PublishControllerSpec extends WordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with BeforeAndAfterEach with ApiTestData {
 
   implicit def mat: akka.stream.Materializer = app.injector.instanceOf[akka.stream.Materializer]
 
   private val mockPublishService = mock[PublishService]
 
-  private val controller = new AdminController(Helpers.stubControllerComponents(), mockPublishService)
+  private val controller = new PublishController(Helpers.stubControllerComponents(), mockPublishService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()

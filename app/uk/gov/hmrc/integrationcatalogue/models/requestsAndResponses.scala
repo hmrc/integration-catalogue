@@ -55,3 +55,6 @@ case class ErrorResponseMessage(message: String)
 case class ErrorResponse(errors: List[ErrorResponseMessage])
 
 case class DeleteIntegrationsResponse(numberOfIntegrationsDeleted: Int)
+
+
+case class PlatformContactResponse(platformType: PlatformType, contactInfo: Option[ContactInformation])

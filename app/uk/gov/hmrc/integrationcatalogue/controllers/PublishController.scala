@@ -30,7 +30,7 @@ import scala.util.{Failure, Success, Try}
 
 
 @Singleton
-class AdminController @Inject() (
+class PublishController @Inject()(
     cc: ControllerComponents,
     publishService: PublishService
   )(implicit ec: ExecutionContext)

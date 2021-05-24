@@ -19,13 +19,24 @@ package uk.gov.hmrc.integrationcatalogue.config
 import play.api.Configuration
 
 import javax.inject.{Inject, Singleton} 
-
+import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
+import uk.gov.hmrc.integrationcatalogue.models.PlatformContactResponse
+import uk.gov.hmrc.integrationcatalogue.config.ContactInformationForPlatform._
 @Singleton
 class AppConfig @Inject()(config: Configuration) {
 
 
   val oldIndexesToDrop: Seq[String] = config.getOptional[Seq[String]]("mongodb.oldIndexesToDrop").getOrElse(Seq.empty)
   val shortDescLength: Int = config.getOptional[Int]("publish.shortDesc.maxLength").getOrElse(180)
+
+def platformContacts = {
+  //TODO handle empty config values
+  PlatformType.values.toList
+  .map(platform => PlatformContactResponse(platform,  
+  getContactInformationForPlatform(platform, config.getOptional[String](s"platforms.$platform.name"), config.getOptional[String](s"platforms.$platform.email"))))
+
+}
+
 
 
 

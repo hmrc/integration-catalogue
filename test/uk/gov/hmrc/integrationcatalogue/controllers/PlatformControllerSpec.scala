@@ -1,0 +1,67 @@
+/*
+ * Copyright 2021 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.integrationcatalogue.controllers
+
+import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import uk.gov.hmrc.integrationcatalogue.config.AppConfig
+import org.mockito.scalatest.MockitoSugar
+import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.test.Helpers
+import play.api.test.Helpers._
+import uk.gov.hmrc.integrationcatalogue.models.PlatformContactResponse
+import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
+import uk.gov.hmrc.integrationcatalogue.models.common.ContactInformation
+import play.api.test.FakeRequest
+import play.api.libs.json.Json
+import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
+
+class PlatformControllerSpec extends WordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with BeforeAndAfterEach {
+
+  implicit def mat: akka.stream.Materializer = app.injector.instanceOf[akka.stream.Materializer]
+  private val mockAppConfig = mock[AppConfig]
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockAppConfig)
+  }
+
+  trait Setup {
+    val apiPlatformContact = PlatformContactResponse(PlatformType.API_PLATFORM, Some(ContactInformation("ApiPlatform", "api.platform@email")))
+    val coreIfWithoutContact = PlatformContactResponse(PlatformType.CORE_IF, None)
+    val controller = new PlatformController(Helpers.stubControllerComponents(), mockAppConfig)
+    val fakeRequest = FakeRequest("GET", s"/platform/contacts")
+  }
+
+  "PlatformController" should {
+    "return platform with contacts" in new Setup {
+      val expectedResponse = List(apiPlatformContact)
+      when(mockAppConfig.platformContacts).thenReturn(expectedResponse)
+      val result = controller.getPlatformContacts()(fakeRequest)
+      contentAsString(result) shouldBe Json.toJson(expectedResponse).toString
+      status(result) shouldBe OK
+    }
+
+    "return platform without contacts" in new Setup {
+      val expectedResponse = List(coreIfWithoutContact)
+      when(mockAppConfig.platformContacts).thenReturn(expectedResponse)
+      val result = controller.getPlatformContacts()(fakeRequest)
+      contentAsString(result) shouldBe Json.toJson(expectedResponse).toString
+      status(result) shouldBe OK
+    }
+  }
+}

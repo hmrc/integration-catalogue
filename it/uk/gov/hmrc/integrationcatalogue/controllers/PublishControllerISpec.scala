@@ -19,7 +19,7 @@ import scala.collection.immutable
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class AdminControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with MongoApp with OasTestData with OasParsedItTestData with AwaitTestSupport {
+class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with MongoApp with OasTestData with OasParsedItTestData with AwaitTestSupport {
 
   override protected def repository: PlayMongoRepository[IntegrationDetail] =   app.injector.instanceOf[IntegrationRepository]
 
@@ -99,7 +99,7 @@ class AdminControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with 
     }
   }
 
-  "AdminController" when {
+  "PublishController" when {
 
     "PUT /" should {
       "respond with 200 when content field is parseable by the OAS parser" in new Setup {

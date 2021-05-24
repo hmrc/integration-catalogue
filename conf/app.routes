@@ -7,8 +7,9 @@ DELETE        /integrations/:integrationId            uk.gov.hmrc.integrationcat
 DELETE        /integrations                           uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.deleteWithFilters(platformFilter: List[uk.gov.hmrc.integrationcatalogue.models.common.PlatformType])
 
 
-PUT           /apis/publish                             uk.gov.hmrc.integrationcatalogue.controllers.AdminController.publishApi
-PUT           /filetransfer/publish                     uk.gov.hmrc.integrationcatalogue.controllers.AdminController.publishFileTransfer
+PUT           /apis/publish                             uk.gov.hmrc.integrationcatalogue.controllers.PublishController.publishApi
+PUT           /filetransfer/publish                     uk.gov.hmrc.integrationcatalogue.controllers.PublishController.publishFileTransfer
 
+GET           /platform/contacts                        uk.gov.hmrc.integrationcatalogue.controllers.PlatformController.getPlatformContacts
 
 
