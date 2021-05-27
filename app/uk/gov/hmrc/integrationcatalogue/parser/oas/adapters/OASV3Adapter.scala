@@ -55,7 +55,6 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
           case Valid(_)        =>
             val mayBePaths = Option(openApi.getPaths)
             val pathNames = mayBePaths.map(_.keySet().asScala.to[LinkedHashSet].toList).getOrElse(List.empty)
-            
             val allEndpoints = pathNames.flatMap(pathName => {
               mayBePaths.map(path => {
                 val pathItem = path.get(pathName)
@@ -103,9 +102,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
   }
 
   private def extractMaintainer(contact: Contact) = {
-    val m = Maintainer(name = "", slackChannel = "", contactInfo = extractContact(contact).map(List(_)).getOrElse(List.empty))
-    println(s"****** $m")
-    m
+    Maintainer(name = "", slackChannel = "", contactInfo = extractContact(contact).map(List(_)).getOrElse(List.empty))
 }
 
   private def extractContact(contact: Contact): Option[ContactInformation] = {
