@@ -37,6 +37,7 @@ import uk.gov.hmrc.integrationcatalogue.service.{AcronymHelper, UuidService}
 import javax.inject.{Inject, Singleton}
 import scala.collection.JavaConverters._
 import scala.collection.immutable.HashSet
+import scala.collection.mutable.LinkedHashSet
 
 @Singleton
 class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
@@ -53,14 +54,13 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
           case Invalid(errors) => errors.toList.invalidNel[ApiDetail]
           case Valid(_)        =>
             val mayBePaths = Option(openApi.getPaths)
-            val pathNames = mayBePaths.map(_.keySet().asScala.to[HashSet].toList).getOrElse(List.empty)
-
+            val pathNames = mayBePaths.map(_.keySet().asScala.to[LinkedHashSet].toList).getOrElse(List.empty)
             val allEndpoints = pathNames.flatMap(pathName => {
               mayBePaths.map(path => {
                 val pathItem = path.get(pathName)
                 extractEndpoints(pathName, pathItem)
               }).getOrElse(List.empty)
-            }).sortBy(_.path)
+            })
 
             //What to do about errors parsing extensions????
             parseExtensions(info, publisherRef, appConfig) match {
@@ -101,8 +101,9 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
     Option(value).getOrElse("")
   }
 
-  private def extractMaintainer(contact: Contact) =
+  private def extractMaintainer(contact: Contact) = 
     Maintainer(name = "", slackChannel = "", contactInfo = extractContact(contact).map(List(_)).getOrElse(List.empty))
+
 
   private def extractContact(contact: Contact): Option[ContactInformation] = {
     Option(contact).map(x => ContactInformation(x.getName, x.getEmail))
