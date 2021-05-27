@@ -101,9 +101,9 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
     Option(value).getOrElse("")
   }
 
-  private def extractMaintainer(contact: Contact) = {
+  private def extractMaintainer(contact: Contact) = 
     Maintainer(name = "", slackChannel = "", contactInfo = extractContact(contact).map(List(_)).getOrElse(List.empty))
-}
+
 
   private def extractContact(contact: Contact): Option[ContactInformation] = {
     Option(contact).map(x => ContactInformation(x.getName, x.getEmail))
