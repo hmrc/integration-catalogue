@@ -17,6 +17,7 @@ import uk.gov.hmrc.integrationcatalogue.testdata._
 
 import scala.io.BufferedSource
 import scala.io.Source.fromURL
+import scala.collection.mutable.LinkedList
 
 class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestData with OasTestData with GuiceOneAppPerSuite {
 
@@ -191,6 +192,26 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
         case _: Invalid[NonEmptyList[List[String]]] => fail()
       }
     }
+
+    "parse oas file and return endpoints in the order specified in the oas spec" in new Setup {
+      val publisherReference = "SOMEFILEREFERENCE"
+      val oasFileContents: String = parseFileToString("/API1000_multipleEndpoints.yaml")
+
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
+      result match {
+        case Valid(parsedObject)                    =>
+          parsedObject.title shouldBe "Swagger Petstore - OpenAPI 3.0"
+
+          val endpoints = parsedObject.endpoints
+          endpoints.size shouldBe 5
+          endpoints.head.methods.size shouldBe 2
+
+          val expectedEndpointsInOrder = List("/pet", "/pet/findByStatus", "/pet/findByTags", "/pet/{petId}", "/pet/{petId}/uploadImage")
+          endpoints.map(_.path) shouldBe expectedEndpointsInOrder
+        case _: Invalid[NonEmptyList[List[String]]] => fail()
+      }
+    }
+
 
     "parse OpenApi object correctly with extensions" in new Setup {
       val publisherReference = "SOMEFILEREFERENCE"
