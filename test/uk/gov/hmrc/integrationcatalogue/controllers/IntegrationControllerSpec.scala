@@ -108,7 +108,7 @@ val schema1 = DefaultSchema(
 
 
   val request = Request(description = Some("request"), schema = Some(schema1), mediaType = Some(jsonMediaType), examples = List(exampleRequest1))
-  val response = Response(statusCode = 200, description = Some("response"), schema = Some(schema2), mediaType = Some("application/json"),  examples = List(exampleResponse1))
+  val response = Response(statusCode = "200", description = Some("response"), schema = Some(schema2), mediaType = Some("application/json"),  examples = List(exampleResponse1))
   val endpointGetMethod = EndpointMethod("GET", Some("operationId"), Some("some summary"), Some("some description"), None, List(response))
   val endpointPutMethod = EndpointMethod("PUT", Some("operationId2"), Some("some summary"), Some("some description"), Some(request), List.empty)
   val endpoint1 = Endpoint("/some/url", List(endpointGetMethod, endpointPutMethod))

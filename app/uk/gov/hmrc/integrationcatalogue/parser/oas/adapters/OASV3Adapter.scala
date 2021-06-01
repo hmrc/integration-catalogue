@@ -130,13 +130,15 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
     List(Endpoint(path, endpointMethods))
   }
 
-  private def parseResponseBody(apiResponses: ApiResponses): List[uk.gov.hmrc.integrationcatalogue.models.Response] =
+  private def parseResponseBody(apiResponses: ApiResponses): List[uk.gov.hmrc.integrationcatalogue.models.Response] = {
+  apiResponses.getDefault
     apiResponses.asScala.seq
       .map {
         case (statusCode, apiResponse: ApiResponse) =>
-          extractResponse(statusCode.toInt, Option(apiResponse.getDescription), apiResponse)
+          extractResponse(statusCode, Option(apiResponse.getDescription), apiResponse)
 
       }.toList
+  }
 
   def getExampleText(maybeObject: Option[Object]): String = {
     maybeObject.map { (o: Object) =>
@@ -162,7 +164,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
     )
   }
 
-  private def extractResponse(statusCode: Int, description: Option[String], response: ApiResponse, descriptionPrefix: Option[String] = None) = {
+  private def extractResponse(statusCode: String, description: Option[String], response: ApiResponse, descriptionPrefix: Option[String] = None) = {
     val headers = extractResponseHeaders(response)
 
     Option(response.getContent).map(contentMap => {
@@ -175,7 +177,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
         headers = headers
       )
     })
-      .getOrElse(uk.gov.hmrc.integrationcatalogue.models.Response(statusCode.toInt, description, schema = None, mediaType = None, headers = headers))
+      .getOrElse(uk.gov.hmrc.integrationcatalogue.models.Response(statusCode, description, schema = None, mediaType = None, headers = headers))
 
   }
 

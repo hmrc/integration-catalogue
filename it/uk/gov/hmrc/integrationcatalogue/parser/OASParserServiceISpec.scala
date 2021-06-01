@@ -152,14 +152,14 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
 
           
           getMethod.responses.size shouldBe 8
-          val response200: Response = getMethod.responses.filter(_.statusCode == 200).head
+          val response200: Response = getMethod.responses.filter(_.statusCode.toInt == 200).head
           response200.mediaType shouldBe Some("application/json")
 
           response200.headers.size shouldBe 1
           response200.headers.nonEmpty shouldBe true
           validateRefHeader(response200.headers.head, expectedName = "CorrelationId", expectedRef = "#/components/headers/CorrelationId")
 
-          val response401: Response = getMethod.responses.filter(_.statusCode == 401).head
+          val response401: Response = getMethod.responses.filter(_.statusCode.toInt == 401).head
           response401.schema.isDefined shouldBe true
           response401.schema.head.not.isDefined shouldBe true
           response401.schema.head.not.head.isInstanceOf[ComposedSchema] shouldBe true
@@ -170,7 +170,7 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
           response401.headers.nonEmpty shouldBe true
           validateRefHeader(response401.headers.head, expectedName = "CorrelationId", expectedRef = "#/components/headers/CorrelationId")
 
-          val response204: Response = getMethod.responses.filter(_.statusCode == 204).head
+          val response204: Response = getMethod.responses.filter(_.statusCode.toInt == 204).head
           response204.mediaType shouldBe None
           response204.schema shouldBe None
 
@@ -192,7 +192,25 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
         case _: Invalid[NonEmptyList[List[String]]] => fail()
       }
     }
+    "parse oas file correctly with default response" in new Setup {
+      val publisherReference = "SOMEFILEREFERENCE"
+      val oasFileContents: String = parseFileToString("/API1000_withDefaultResponse.yaml")
 
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
+      result match {
+        case Valid(parsedObject) =>
+          parsedObject.title shouldBe "API1000 Get Data"
+
+          parsedObject.endpoints.size shouldBe 1
+          parsedObject.endpoints.head.methods.size shouldBe 1
+          val getMethod: EndpointMethod = parsedObject.endpoints.head.methods.head
+          getMethod.httpMethod shouldBe "GET"
+          getMethod.responses.size shouldBe 9
+          val responseDefault: Response = getMethod.responses.filter(_.statusCode == "default").head
+          responseDefault.description shouldBe Some("Test default response")
+
+      }
+    }
     "parse oas file and return endpoints in the order specified in the oas spec" in new Setup {
       val publisherReference = "SOMEFILEREFERENCE"
       val oasFileContents: String = parseFileToString("/API1000_multipleEndpoints.yaml")
