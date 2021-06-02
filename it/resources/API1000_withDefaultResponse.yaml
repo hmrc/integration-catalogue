@@ -1,0 +1,728 @@
+﻿openapi: 3.0.3
+info:
+  title: 'API1000 Get Data'
+  description: This API provides the capability for retrieving data.
+  version: 1.0.0
+  contact:
+    name: Developer
+    email: contact@example.com
+  x-integration-catalogue:
+    short-description: 'Hello Im a sensible short description, you wont find me getting too long and breaking any tests. No sireee!!'
+    backends:
+      - ETMP    
+servers:
+  - url: 'https://hostname'
+    description: server description
+tags:
+  - name: 'API10000'
+    description: This API is for getting data.
+paths:
+  '/path1/path2/{idType}/{idValue}':
+    get:
+      summary: 'API10000 Get Data'
+      description: |
+       some stuff                           
+      operationId: getSomesData
+      tags:
+        - 'API0000'
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/environment'
+        - $ref: '#/components/parameters/correlationId'
+        - $ref: '#/components/parameters/idTypeParam'
+        - $ref: '#/components/parameters/idValueParam'
+        - name: InlineId
+          in: header
+          description: A UUID format string for the transaction.
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{8}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{12}$'
+      responses:
+        '200':
+          description: Successful Response
+          headers:
+            CorrelationId:
+              $ref: '#/components/headers/CorrelationId'
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/successResponse'
+              examples:
+                Sample_Response:
+                  $ref: '#/components/examples/Sample_Response'
+        '204':
+          description: 'The request has been accepted, with no content returned.'
+          headers:
+            Location:
+              description: Location of the  request.
+              required: true
+              deprecated: false
+              schema:
+                description: Location of the authorisation request.
+                example: /request/CS5AK7O8FPC43
+                type: string
+        '401':
+          description: Unauthroised
+          headers:
+            CorrelationId:
+              $ref: '#/components/headers/CorrelationId'
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                not:
+                  anyOf:
+                    - $ref: '#/components/schemas/orgName56String'
+                    - $ref: '#/components/schemas/utrType'
+              examples:
+                Sample_Response:
+                  $ref: '#/components/examples/Sample_Response'
+        '400':
+          description: |-
+            Bad request
+            ```
+            A bad request has been made; this could be due to one or more issues with the request
+            "code"                 "reason"
+            INVALID_IDTYPE          Submission has not passed validation. Invalid parameter idType.
+            INVALID_IDVALUE         Submission has not passed validation. Invalid parameter idValue.
+            INVALID_CORRELATIONID   Submission has not passed validation. Invalid header CorrelationId.
+          headers:
+            CorrelationId:
+              $ref: '#/components/headers/CorrelationId'
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/failureResponse'
+              examples:
+                Error_InvalidIDType:
+                  $ref: '#/components/examples/Error_InvalidIDType'
+                Error_InvalidIDValue:
+                  $ref: '#/components/examples/Error_InvalidIDValue'
+                Error_InvalidCorrelationId:
+                  $ref: '#/components/examples/Error_InvalidCorrelationId'
+        '404':
+          description: |-
+            Not Found
+             ```
+             Error at backend ; this could be due to one or more issues with the request
+             "code"                 "reason"
+             NO_DATA_FOUND    	The remote endpoint has indicated that no data can be found for the given identifier.
+          headers:
+            CorrelationId:
+              $ref: '#/components/headers/CorrelationId'
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/failureResponse'
+              examples:
+                Error_Not_Found:
+                  $ref: '#/components/examples/Error_NotFound'
+        '422':
+          description: |-
+            Unprocessable Entity
+            ```
+            A bad request has been made; this could be due to one or more issues with the request
+            "code"                 "reason"
+            BUSINESS_VALIDATION     The remote end point has indicated the request could not be processed.
+          headers:
+            CorrelationId:
+              $ref: '#/components/headers/CorrelationId'
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/failureResponse'
+              examples:
+                Error_BusinessValidation:
+                  $ref: '#/components/examples/Error_BusinessValidation'
+        '500':
+          description: |-
+            Server Error
+            ```
+            "code"         "reason"
+            SERVER_ERROR   IF is currently experiencing problems that require live service intervention.
+          headers:
+            CorrelationId:
+              $ref: '#/components/headers/CorrelationId'
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/failureResponse'
+              examples:
+                ServerError:
+                  $ref: '#/components/examples/ServerError'
+        '503':
+          description: |-
+            Service unavailable
+            ```
+            "code"         "reason"
+            SERVICE_UNAVAILABLE   Dependent systems are currently not responding.
+          headers:
+            CorrelationId:
+              $ref: '#/components/headers/CorrelationId'
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/failureResponse'
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailable'
+        default:
+          description: Test default response
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  headers:
+    CorrelationId:
+      description: A UUID format string for the transaction used for traceability purposes
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{8}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{12}$'
+
+  parameters:
+    idTypeParam:
+      in: path
+      name: idType
+      description: 'Required - Possible values for idType'
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        pattern: '^[A-Z0-9]{3,6}$'
+    idValueParam:
+      in: query
+      name: idValue
+      description: 'Required - Value of'
+      required: true
+      deprecated: false
+      allowEmptyValue: false
+      schema:
+        type: string
+        pattern: '^([A-Z0-9]{1,15})$'
+    environment:
+      in: header
+      name: Environment
+      description: Mandatory. The environment in use.
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        enum:
+          - stuff
+          - stuf1
+          - stuff3
+    correlationId:
+      in: header
+      name: CorrelationId
+      description: A UUID format string for the transaction.
+      required: true
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{8}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{12}$'
+  schemas:
+    dateType:
+      description: Format YYYY-MM-DD e.g. 2020-08-18
+      type: string
+      pattern: '^(((19|20)([2468][048]|[13579][26]|0[48])|2000)[-]02[-]29|((19|20)[0-9]{2}[-](0[469]|11)[-](0[1-9]|1[0-9]|2[0-9]|30)|(19|20)[0-9]{2}[-](0[13578]|1[02])[-](0[1-9]|[12][0-9]|3[01])|(19|20)[0-9]{2}[-]02[-](0[1-9]|1[0-9]|2[0-8])))$'
+    failureResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - failures
+      properties:
+        failures:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: object
+            additionalProperties: false
+            required:
+              - code
+              - reason
+            properties:
+              code:
+                description: Keys for all the errors returned
+                type: string
+                pattern: '^[A-Z0-9_-]{1,160}$'
+              reason:
+                description: A simple description for the failure
+                type: string
+                minLength: 1
+                maxLength: 160
+    successResponse:
+      type: object
+      properties:
+        submissionDate:
+          $ref: '#/components/schemas/dateString'
+        itemName:
+          $ref: '#/components/schemas/orgName56String'
+        startDate:
+          anyOf:
+            - description: Tax credits period start date
+            - $ref: '#/components/schemas/dateType'
+        endDate:
+          allOf:
+            - description: Tax credits period end date
+            - $ref: '#/components/schemas/dateType'
+        identifiers:
+          description: 'Possible options '
+          type: object
+          oneOf:
+            - description: UTR only
+              properties:
+                utr:
+                  $ref: '#/components/schemas/utrType'
+              required:
+                - utr
+              additionalProperties: false
+            - description: URN only
+              properties:
+                urn:
+                  $ref: '#/components/schemas/urnType'
+              required:
+                - urn
+              additionalProperties: false
+            - description: UTR and URN
+              properties:
+                utr:
+                  $ref: '#/components/schemas/utrType'
+                urn:
+                  $ref: '#/components/schemas/urnType'
+              required:
+                - utr
+                - urn
+              additionalProperties: false
+        itemStartDate:
+          $ref: '#/components/schemas/dateString'
+        correspondence:
+          type: object
+          properties:
+            address:
+              $ref: '#/components/schemas/addressType'
+            welsh:
+              description: Welsh Language Preference
+              type: boolean
+            braille:
+              description: Braille Preference
+              type: boolean
+          required:
+            - address
+          additionalProperties: false
+        entities:
+          type: object
+          properties:
+            leadItem:
+              type: object
+              oneOf:
+                - description: Lead Individual
+                  properties:
+                    leadItemIndividual:
+                      type: object
+                      properties:
+                        firstName:
+                          $ref: '#/components/schemas/nameString'
+                        middleName:
+                          $ref: '#/components/schemas/nameString'
+                        lastName:
+                          $ref: '#/components/schemas/nameString'
+                        dateOfBirth:
+                          $ref: '#/components/schemas/monthYearString'
+                        nationality:
+                          $ref: '#/components/schemas/countryType'
+                        countryOfResidence:
+                          $ref: '#/components/schemas/countryType'
+                      required:
+                        - firstName
+                        - lastName
+                        - dateOfBirth
+                      additionalProperties: false
+                  required:
+                    - leadItemIndividual
+                  additionalProperties: false
+                - description: Lead Item Company
+                  properties:
+                    leadItemCompany:
+                      $ref: '#/components/schemas/companyType'
+                  required:
+                    - leadItemCompany
+                  additionalProperties: false
+            items:
+              type: array
+              minItems: 1
+              maxItems: 25
+              items:
+                $ref: '#/components/schemas/itemType'
+            naturalPerson:
+              type: array
+              minItems: 1
+              maxItems: 25
+              items:
+                $ref: '#/components/schemas/individualType'
+            settlors:
+              description: Atleast one Settlor will be present
+              type: object
+              minProperties: 1
+              properties:
+                settlorIndividual:
+                  type: array
+                  minItems: 1
+                  maxItems: 25
+                  items:
+                    $ref: '#/components/schemas/individualType'
+                settlorCompany:
+                  type: array
+                  minItems: 1
+                  maxItems: 25
+                  items:
+                    $ref: '#/components/schemas/companyType'
+                deceased:
+                  $ref: '#/components/schemas/individualType'
+              additionalProperties: false
+            protectors:
+              type: object
+              properties:
+                protectorIndividual:
+                  type: array
+                  minItems: 1
+                  maxItems: 25
+                  items:
+                    $ref: '#/components/schemas/individualType'
+                protectorCompany:
+                  type: array
+                  minItems: 1
+                  maxItems: 25
+                  items:
+                    $ref: '#/components/schemas/companyType'
+              additionalProperties: false
+            beneficiary:
+              type: object
+              minProperties: 1
+              properties:
+                individual:
+                  type: array
+                  minItems: 1
+                  maxItems: 25
+                  items:
+                    $ref: '#/components/schemas/individualType'
+                company:
+                  type: array
+                  minItems: 1
+                  maxItems: 25
+                  items:
+                    $ref: '#/components/schemas/companyType'
+                item:
+                  type: array
+                  minItems: 1
+                  maxItems: 25
+                  items:
+                    $ref: '#/components/schemas/companyType'
+                charity:
+                  type: array
+                  minItems: 1
+                  maxItems: 25
+                  items:
+                    $ref: '#/components/schemas/companyType'
+                unidentified:
+                  type: array
+                  minItems: 1
+                  maxItems: 25
+                  items:
+                    type: object
+                    properties:
+                      beneficiaryDescription:
+                        $ref: '#/components/schemas/descriptionType'
+                    additionalProperties: false
+                large:
+                  type: array
+                  minItems: 1
+                  maxItems: 25
+                  items:
+                    type: object
+                    properties:
+                      beneficiaryDescription:
+                        $ref: '#/components/schemas/descriptionType'
+                      beneficiaryDescription1:
+                        $ref: '#/components/schemas/descriptionType'
+                      beneficiaryDescription2:
+                        $ref: '#/components/schemas/descriptionType'
+                      beneficiaryDescription3:
+                        $ref: '#/components/schemas/descriptionType'
+                      beneficiaryDescription4:
+                        $ref: '#/components/schemas/descriptionType'
+                      companyDetails:
+                        $ref: '#/components/schemas/companyType'
+                    additionalProperties: false
+                other:
+                  type: array
+                  minItems: 1
+                  maxItems: 25
+                  items:
+                    type: object
+                    properties:
+                      otherBeneficiaryDescription:
+                        $ref: '#/components/schemas/descriptionType'
+                      countryOfResidence:
+                        $ref: '#/components/schemas/countryType'
+                    additionalProperties: false
+              additionalProperties: false
+          required:
+            - leadItem
+          additionalProperties: false
+      required:
+        - itemName
+        - identifiers
+        - itemStartDate
+        - correspondence
+        - entities
+      additionalProperties: false
+    dateString:
+      description: DD-MM-YYYY
+      type: string
+      pattern: '^(29[/]02[/]((15|16|17|18|19|20)([2468][048]|[13579][26]|0[48])|2000|1600)|((0[1-9]|1[0-9]|2[0-9]|30)[/](0[469]|11)[/](15|16|17|18|19|20)[0-9]{2}|(0[1-9]|[12][0-9]|3[01])[/](0[13578]|1[02])[/](15|16|17|18|19|20)[0-9]{2}|(0[1-9]|1[0-9]|2[0-8])[/]02[/](15|16|17|18|19|20)[0-9]{2}))$'
+    monthYearString:
+      description: MM-YYYY
+      type: string
+      pattern: '^(0[1-9]|1[0-2])/(15|16|17|18|19|20)[0-9]{2}$'
+    countryType:
+      description: Country name
+      type: string
+      pattern: "^[A-Z ,-.Ç&'/]{1,44}$"
+    nonUKCountryType:
+      description: Non-UK Country name
+      type: string
+      pattern: "^(?!(United Kingdom$))[a-zA-Z ,-.ç&'/]{1,44}$"
+    addressLineType:
+      type: string
+      pattern: "^[a-zA-Z0-9 ,.()/&'-]{1,35}$"
+    nameString:
+      type: string
+      pattern: "^[A-Z0-9 ,.()/&'-]{1,35}$"
+    orgNameString:
+      type: string
+      pattern: "^[A-Z0-9 ,.()/&'-]{1,105}$"
+    orgName56String:
+      type: string
+      pattern: "^[a-zA-Z0-9 ,.()/&'-]{1,56}$"
+    addressType:
+      type: object
+      oneOf:
+        - description: UK Address
+          type: object
+          properties:
+            line1:
+              $ref: '#/components/schemas/addressLineType'
+            line2:
+              $ref: '#/components/schemas/addressLineType'
+            line3:
+              $ref: '#/components/schemas/addressLineType'
+            line4:
+              $ref: '#/components/schemas/addressLineType'
+            postCode:
+              type: string
+              pattern: '^[A-Z0-9 ]{1,10}$'
+            country:
+              type: string
+              enum:
+                - United Kingdom
+          required:
+            - line1
+            - line2
+            - postCode
+            - country
+          additionalProperties: false
+        - description: Non- UK Address
+          type: object
+          properties:
+            line1:
+              $ref: '#/components/schemas/addressLineType'
+            line2:
+              $ref: '#/components/schemas/addressLineType'
+            line3:
+              $ref: '#/components/schemas/addressLineType'
+            line4:
+              $ref: '#/components/schemas/addressLineType'
+            country:
+              $ref: '#/components/schemas/nonUKCountryType'
+          required:
+            - line1
+            - line2
+            - country
+          additionalProperties: false
+    individualType:
+      type: object
+      properties:
+        firstName:
+          $ref: '#/components/schemas/nameString'
+        middleName:
+          $ref: '#/components/schemas/nameString'
+        lastName:
+          $ref: '#/components/schemas/nameString'
+        dateOfBirth:
+          $ref: '#/components/schemas/monthYearString'
+        nationality:
+          $ref: '#/components/schemas/countryType'
+        countryOfResidence:
+          $ref: '#/components/schemas/countryType'
+      required:
+        - firstName
+        - lastName
+      additionalProperties: false
+    companyType:
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/orgNameString'
+        countryOfResidence:
+          $ref: '#/components/schemas/countryType'
+      required:
+        - name
+      additionalProperties: false
+    descriptionType:
+      type: string
+      pattern: "^[0-9A-Z{À-˿’}\\- \u005C&`'^]{1,70}$"
+    itemType:
+      description: ItemType max 25
+      type: object
+      properties:
+        itemIndividual:
+          $ref: '#/components/schemas/individualType'
+        itemCompany:
+          $ref: '#/components/schemas/companyType'
+      additionalProperties: false
+    utrType:
+      description: Unique Tax Reference Number
+      type: string
+      pattern: '^[0-9]{10}$'
+    urnType:
+      description: Unique Reference Number
+      type: string
+      pattern: '^[0-9A-Z]{15}$'
+  examples:
+    ServiceUnavailable:
+      value:
+        failures:
+          - code: SERVICE_UNAVAILABLE
+            reason: Dependent systems are currently not responding.
+    ServerError:
+      value:
+        failures:
+          - code: SERVER_ERROR
+            reason: IF is currently experiencing problems that require live service intervention.
+    Error_InvalidIDType:
+      value:
+        failures:
+          - code: INVALID_IDTYPE
+            reason: Submission has not passed validation. Invalid parameter idType.
+    Error_InvalidIDValue:
+      value:
+        failures:
+          - code: INVALID_IDVALUE
+            reason: Submission has not passed validation. Invalid parameter idValue.
+    Error_BusinessValidation:
+      value:
+        failures:
+          - code: BUSINESS_VALIDATION
+            reason: The remote end point has indicated the request could not be processed.
+    Error_InvalidCorrelationId:
+      value:
+        failures:
+          - code: INVALID_CORRELATIONID
+            reason: Submission has not passed validation. Invalid header CorrelationId.
+    Error_NotFound:
+      value:
+        failures:
+          - code: NO_DATA_FOUND
+            reason: The remote endpoint has indicated that no data can be found for the given identifier.
+    Sample_Response:
+      value:
+        submissionDate: 12/12/2020
+        itemName: Hmrc Item
+        identifiers:
+          utr: '2134514321'
+          urn: XAITEM00000001
+        itemStartDate: 12/12/2020
+        correspondence:
+          address:
+            line1: 1010 Easy St
+            line2: Ottawa
+            line3: Ontario
+            line4: Telford
+            postCode: TF2 9EU
+            country: United Kingdom
+          welsh: true
+          braille: true
+        entities:
+          leadItem:
+            leadItemIndividual:
+              firstName: JOHN
+              middleName: DOE
+              lastName: DOE
+              dateOfBirth: 12/1500
+              countryOfResidence: CURAÇAO
+          beneficiary:
+            individual:
+            - firstName: JOHN
+              middleName: DOE
+              lastName: DOE
+              dateOfBirth: 12/1500
+              nationality: UNITED KINGDOM
+              countryOfResidence: IRELAND
+            - firstName: JOHN
+              middleName: DOE
+              lastName: DOE
+              dateOfBirth: 12/1500
+              nationality: IRELAND
+              countryOfResidence: UNITED KINGDOM
+            company:
+            - name: ABC COMPANY LTD
+              countryOfResidence: UNITED KINGDOM
+            - name: XYZ COMPANY LTD
+              countryOfResidence: IRELAND
+            item:
+            - name: ABC ITEM LTD
+              countryOfResidence: UNITED KINGDOM
+            - name: XYZ ITEM LTD
+              countryOfResidence: IRELAND
+            charity:
+            - name: ABC CHARITY LTD
+              countryOfResidence: IRELAND
+            - name: XYZ CHARITY LTD
+              countryOfResidence: UNITED KINGDOM
+            unidentified:
+            - beneficiaryDescription: BENEFICIARY DESCRIPTION 1
+            - beneficiaryDescription: BENEFICIARY DESCRIPTION 2
+            large:
+            - beneficiaryDescription: DESCRIPTION OF YOUR BENEFICIARIES AS WRITTEN IN THE
+                ITEM DEED
+              beneficiaryDescription1: DESCRIPTION OF YOUR BENEFICIARIES AS WRITTEN IN THE
+                ITEM DEED 1
+              beneficiaryDescription2: DESCRIPTION OF YOUR BENEFICIARIES AS WRITTEN IN THE
+                ITEM DEED 2
+              beneficiaryDescription3: DESCRIPTION OF YOUR BENEFICIARIES AS WRITTEN IN THE
+                ITEM DEED 3
+              beneficiaryDescription4: DESCRIPTION OF YOUR BENEFICIARIES AS WRITTEN IN THE
+                ITEM DEED 4
+              companyDetails:
+                name: ABC LARGE LTD
+                countryOfResidence: UNITED KINGDOM
+            - beneficiaryDescription: DESCRIPTION OF YOUR BENEFICIARIES AS WRITTEN IN THE
+                ITEM DEED
+              beneficiaryDescription1: DESCRIPTION OF YOUR BENEFICIARIES AS WRITTEN IN THE
+                ITEM DEED 1
+              beneficiaryDescription2: DESCRIPTION OF YOUR BENEFICIARIES AS WRITTEN IN THE
+                ITEM DEED 2
+              beneficiaryDescription3: DESCRIPTION OF YOUR BENEFICIARIES AS WRITTEN IN THE
+                ITEM DEED 3
+              beneficiaryDescription4: DESCRIPTION OF YOUR BENEFICIARIES AS WRITTEN IN THE
+                ITEM DEED 4
+              companyDetails:
+                name: XYZ LARGE LTD
+                countryOfResidence: UNITED KINGDOM
+            other:
+            - otherBeneficiaryDescription: OTHER BENEFICIARY DESCRIPTION 1
+              countryOfResidence: UNITED KINGDOM
+            - otherBeneficiaryDescription: OTHER BENEFICIARY DESCRIPTION 2
+              countryOfResidence: IRELAND

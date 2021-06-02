@@ -80,7 +80,7 @@ trait OasParsedItTestData {
   val exampleResponse1 = new Example("example response name", "example response body")
 
   val request = Request(description = Some("request"), schema = Some(schema1), mediaType = Some(jsonMediaType), examples = List(exampleRequest1))
-  val response = Response(statusCode = 200, description = Some("response"), schema = Some(schema2), mediaType = Some("application/json"), examples = List(exampleResponse1))
+  val response = Response(statusCode = "200", description = Some("response"), schema = Some(schema2), mediaType = Some("application/json"), examples = List(exampleResponse1))
 
   val putEndpoint1: EndpointMethod = EndpointMethod("PUT", Some("operationId"), Some("some summary"), Some("some description"), Some(request), List(response))
   val getEndpoint1: EndpointMethod = EndpointMethod("GET", Some("operationId"), Some("some summary"), Some("some description"), None, List(response))

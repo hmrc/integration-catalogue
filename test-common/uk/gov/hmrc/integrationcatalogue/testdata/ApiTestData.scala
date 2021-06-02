@@ -75,7 +75,7 @@ trait ApiTestData {
   )
 
   val request = Request(description = Some("request"), schema = Some(schema1), mediaType = Some(jsonMediaType), examples = List(exampleRequest1))
-  val response = Response(statusCode = 200, description = Some("response"), schema = Some(schema2), mediaType = Some("application/json"), examples = List(exampleResponse1))
+  val response = Response(statusCode = "200", description = Some("response"), schema = Some(schema2), mediaType = Some("application/json"), examples = List(exampleResponse1))
 
   val apiPlatformMaintainer = Maintainer("Api Platform Team", "#team-api-platform-sup")
   val coreIfMaintainer = Maintainer("Core IF Team", "**core-if-slack-channel**")
