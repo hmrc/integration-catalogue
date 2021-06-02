@@ -137,7 +137,6 @@ case class Components(schemas: List[Schema] = List.empty, headers: List[Header] 
 
 case class Request(description: Option[String], schema: Option[Schema], mediaType: Option[String], examples: List[Example] = List.empty)
 
-//TODO response object needs fleshing out with headers, example errors, schema etc
 case class Response(statusCode: String, description: Option[String], schema: Option[Schema], mediaType: Option[String], examples: List[Example] = List.empty, headers: List[Header] = List.empty)
 case class Endpoint(path: String, methods: List[EndpointMethod])
 
