@@ -94,7 +94,8 @@ class IntegrationRepository @Inject()(config: AppConfig,
           set("specificationType", Codecs.toBson(apiDetail.specificationType)),
           set("hods", apiDetail.hods),
           set("endpoints", apiDetail.endpoints.map(Codecs.toBson(_))),
-          set("components", Codecs.toBson(apiDetail.components))
+          set("components", Codecs.toBson(apiDetail.components)),
+          set("openApiSpecification", Codecs.toBson(apiDetail.openApiSpecification))
         )
       case IntegrationType.FILE_TRANSFER => val fileTransferDetail: FileTransferDetail = integrationDetail.asInstanceOf[FileTransferDetail]
        List(

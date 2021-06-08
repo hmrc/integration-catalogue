@@ -68,7 +68,7 @@ class OASParserService @Inject()(oasParser: OASFileLoader, oasV3Service: OASV3Ad
       }).getOrElse(List(s"Oas Parser returned null").invalidNel[OpenAPI])
 
       oasSpecification match {
-        case Valid(openApi) => handleOpenApi(publisherReference, platformType,  specificationType, openApi)
+        case Valid(openApi) => handleOpenApi(publisherReference, platformType,  specificationType, openApi, fileContents)
         case e : Invalid[NonEmptyList[List[String]]] => e
       }
       
@@ -77,14 +77,12 @@ class OASParserService @Inject()(oasParser: OASFileLoader, oasV3Service: OASV3Ad
   private def handleOpenApi( publisherReference: Option[String],
       platformType: PlatformType,
       specificationType: SpecificationType,
-      openApi: OpenAPI) : ValidatedNel[List[String], ApiDetail] ={
+      openApi: OpenAPI, 
+      fileContent: String) : ValidatedNel[List[String], ApiDetail] ={
 
      openApi.getOpenapi.headOption match {
-       case Some('3') => oasV3Service.extractOpenApi(publisherReference, platformType,  specificationType, openApi)
+       case Some('3') => oasV3Service.extractOpenApi(publisherReference, platformType,  specificationType, openApi, fileContent)
        case _ => List(s"Unhandled OAS specification version for platform $platformType OAS").invalidNel[ApiDetail]
     }
-    
-
   }
-
 }
