@@ -64,14 +64,14 @@ class OasParserServiceSpec extends WordSpec with Matchers with  MockitoSugar wit
 
       primeSuccessNoWarnings()
       
-      when(mockAdapterService.extractOpenApi(*, *, *, *)).thenReturn(Valid(apiDetail0))
+      when(mockAdapterService.extractOpenApi(*, *, *, *, *)).thenReturn(Valid(apiDetail0))
 
       val result:  ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData)
       
       result match {
         case Valid(parsedObject) =>
           parsedObject shouldBe apiDetail0
-          verify(mockAdapterService).extractOpenApi(eqTo(Some(publisherReference)), eqTo(PlatformType.CORE_IF), eqTo(OASSpecType), *)
+          verify(mockAdapterService).extractOpenApi(eqTo(Some(publisherReference)), eqTo(PlatformType.CORE_IF), eqTo(OASSpecType), *, *)
           
         case _: Invalid[NonEmptyList[List[String]]] => fail()
       }
@@ -86,7 +86,7 @@ class OasParserServiceSpec extends WordSpec with Matchers with  MockitoSugar wit
       when(mockSwaggerParseResult.getOpenAPI).thenReturn(openApi)
       when(mockSwaggerParseResult.getMessages).thenReturn(new java.util.ArrayList())
 
-      when(mockAdapterService.extractOpenApi(*, *, *, *)).thenReturn(Valid(apiDetail0))
+      when(mockAdapterService.extractOpenApi(*, *, *, *, *)).thenReturn(Valid(apiDetail0))
 
       val result:  ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData)
       

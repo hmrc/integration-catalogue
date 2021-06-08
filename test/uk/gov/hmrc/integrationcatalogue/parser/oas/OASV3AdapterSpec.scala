@@ -59,7 +59,7 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
       val hods = List("ITMP", "NPS")
       val result: ValidatedNel[List[String], ApiDetail] =
-        objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = true, hods))
+        objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = true, hods), openApiSpecificationContent = "")
       result match {
         case Valid(parsedObject)                    =>
           parsedObject.id shouldBe IntegrationId(generatedUuid)
@@ -83,7 +83,7 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
 
     "do happy path without extensions" in new Setup {
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = false))
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = false), openApiSpecificationContent = "")
       result match {
         case Valid(parsedObject)                    =>
           parsedObject.id shouldBe IntegrationId(generatedUuid)
@@ -105,7 +105,7 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
     }
 
     "parse extensions returns error(s)" in new Setup {
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(true, null))
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(true, null), openApiSpecificationContent = "")
       result match {
         case _: Invalid[NonEmptyList[List[String]]] => succeed
         case Valid(parsedObject)                    => fail
@@ -116,7 +116,7 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
 
     "return failure with correct message when empty openApi object is passed in" in new Setup {
       val parseResult: ValidatedNel[List[String], ApiDetail] =
-        objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, new OpenAPI())
+        objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, new OpenAPI(), openApiSpecificationContent = "")
       parseResult shouldBe createInvalidMessage(List("Invalid OAS, info item missing from OAS specification"))
     }
 
@@ -124,7 +124,7 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
       val openApi = new OpenAPI()
       openApi.setInfo(new Info())
       val parseResult: ValidatedNel[List[String], ApiDetail] =
-        objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, openApi)
+        objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, openApi, openApiSpecificationContent = "")
       parseResult shouldBe createInvalidMessage(List("Invalid OAS, title missing from OAS specification", "Invalid OAS, version missing from OAS specification"))
     }
 

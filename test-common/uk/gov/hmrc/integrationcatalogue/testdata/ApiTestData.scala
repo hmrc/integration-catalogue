@@ -100,7 +100,8 @@ trait ApiTestData {
     specificationType = SpecificationType.OAS_V3,
     endpoints = endpoints,
     components = Components(List.empty, List.empty),
-    shortDescription = None
+    shortDescription = None,
+    openApiSpecification = ""
   )
 
   val apiDetail1 = ApiDetail(
@@ -115,7 +116,8 @@ trait ApiTestData {
     specificationType = SpecificationType.OAS_V3,
     endpoints = endpoints,
     components = Components(List.empty, List.empty),
-    shortDescription = None
+    shortDescription = None,
+    openApiSpecification = ""
   )
 
   val apiDetail2 = ApiDetail(
@@ -131,7 +133,8 @@ trait ApiTestData {
     hods = List.empty,
     endpoints = endpoints,
     components = Components(List.empty, List.empty),
-    shortDescription = None
+    shortDescription = None,
+    openApiSpecification = ""
   )
 
   val apiDetail3 = ApiDetail(
@@ -147,7 +150,8 @@ trait ApiTestData {
     hods = List("ETMP"),
     endpoints = endpoints,
     components = Components(List.empty, List.empty),
-    shortDescription = None
+    shortDescription = None,
+    openApiSpecification = ""
   )
 
   val apiList = List(apiDetail0, apiDetail1, apiDetail2, apiDetail3)

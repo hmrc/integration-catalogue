@@ -127,7 +127,8 @@ val schema1 = DefaultSchema(
       hods = List("ETMP"),
       endpoints = endpoints,
       components = Components(List.empty, List.empty),
-      shortDescription = None
+      shortDescription = None,
+      openApiSpecification = ""
     )
 
 
