@@ -101,7 +101,7 @@ trait ApiTestData {
     endpoints = endpoints,
     components = Components(List.empty, List.empty),
     shortDescription = None,
-    openApiSpecification = ""
+    openApiSpecification = "OAS content for Self Assessment"
   )
 
   val apiDetail1 = ApiDetail(
@@ -117,7 +117,7 @@ trait ApiTestData {
     endpoints = endpoints,
     components = Components(List.empty, List.empty),
     shortDescription = None,
-    openApiSpecification = ""
+    openApiSpecification = "OAS content for Marriage Allowance"
   )
 
   val apiDetail2 = ApiDetail(
@@ -134,7 +134,7 @@ trait ApiTestData {
     endpoints = endpoints,
     components = Components(List.empty, List.empty),
     shortDescription = None,
-    openApiSpecification = ""
+    openApiSpecification = "OAS content for API#1001"
   )
 
   val apiDetail3 = ApiDetail(
@@ -151,7 +151,7 @@ trait ApiTestData {
     endpoints = endpoints,
     components = Components(List.empty, List.empty),
     shortDescription = None,
-    openApiSpecification = ""
+    openApiSpecification = "OAS content for API#1002"
   )
 
   val apiList = List(apiDetail0, apiDetail1, apiDetail2, apiDetail3)
