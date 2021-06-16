@@ -109,7 +109,8 @@ trait OasParsedItTestData {
     hods = List("POOP"),
     endpoints = endpoints,
     components = Components(List.empty, List.empty),
-    shortDescription = Some("exampleApiDetail's short description")
+    shortDescription = Some("exampleApiDetail's short description"),
+    openApiSpecification = "OAS file contents 1"
   )
 
   val exampleFileTransfer: FileTransferDetail =
@@ -138,7 +139,8 @@ trait OasParsedItTestData {
     hods = List("CUSTOMS"),
     endpoints = endpoints2,
     components = Components(List.empty, List.empty),
-    shortDescription = None
+    shortDescription = None,
+    openApiSpecification = "OAS file contents 2"
   )
 
   val exampleApiDetailForSearch2: ApiDetail = ApiDetail(
@@ -154,7 +156,8 @@ trait OasParsedItTestData {
     hods = List("CUSTOMS"),
     endpoints = endpoints2,
     components = Components(List.empty, List.empty),
-    shortDescription = None
+    shortDescription = None,
+    openApiSpecification = "OAS file contents 3"
   )
 
   val exampleApiDetail2: ApiDetail = ApiDetail(
@@ -170,7 +173,8 @@ trait OasParsedItTestData {
     hods = List("ETMP"),
     endpoints = endpointsNoDeepSearch,
     components = Components(List.empty, List.empty),
-    shortDescription = Some("A short description")
+    shortDescription = Some("A short description"),
+    openApiSpecification = "OAS file contents 4"
   )
 
   val exampleApiDetail3: ApiDetail = ApiDetail(
@@ -186,6 +190,7 @@ trait OasParsedItTestData {
     hods = List("ETMP"),
     endpoints = endpointsNoDeepSearch,
     components = Components(List.empty, List.empty),
-    shortDescription = None
+    shortDescription = None,
+    openApiSpecification = "OAS file contents 5"
   )
 }

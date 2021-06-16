@@ -68,6 +68,7 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
     item.version shouldBe itemToValidate.version
     item.hods shouldBe itemToValidate.hods
     item.endpoints shouldBe itemToValidate.endpoints
+    item.openApiSpecification shouldBe itemToValidate.openApiSpecification
   }
 
   def validateFileTransfer(testItem: IntegrationDetail, itemToValidate: FileTransferDetail): Assertion ={
@@ -223,6 +224,7 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
             apiDetail.version shouldBe exampleApiDetail2.version
             apiDetail.specificationType shouldBe exampleApiDetail2.specificationType
             apiDetail.hods shouldBe exampleApiDetail2.hods
+            apiDetail.openApiSpecification shouldBe exampleApiDetail2.openApiSpecification
           case Right(_) => fail()
           case Left(_) => fail()
         }

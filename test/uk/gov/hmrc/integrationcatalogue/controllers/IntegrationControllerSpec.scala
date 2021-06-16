@@ -52,43 +52,43 @@ class IntegrationControllerSpec extends WordSpec with Matchers with MockitoSugar
   }
 
   trait Setup {
-val schema1 = DefaultSchema(
-    name = Some("agentReferenceNumber"),
-    not = None,
-    `type` = Some("string"),
-    pattern = Some("^[A-Z](ARN)[0-9]{7}$"),
-    description = None,
-    ref = None,
-    properties = List.empty,
-    `enum` = List.empty,
-    required = List.empty,
-    stringAttributes = None,
-    numberAttributes = None,
-    minProperties = None,
-    maxProperties = None,
-    format = None,
-    default = None,
-    example = None
-  )
+    val schema1 = DefaultSchema(
+      name = Some("agentReferenceNumber"),
+      not = None,
+      `type` = Some("string"),
+      pattern = Some("^[A-Z](ARN)[0-9]{7}$"),
+      description = None,
+      ref = None,
+      properties = List.empty,
+      `enum` = List.empty,
+      required = List.empty,
+      stringAttributes = None,
+      numberAttributes = None,
+      minProperties = None,
+      maxProperties = None,
+      format = None,
+      default = None,
+      example = None
+    )
 
-  val schema2 = DefaultSchema(
-    name = Some("agentReferenceNumber"),
-    not = None,
-    `type` = Some("object"),
-    pattern = None,
-    description = None,
-    ref = None,
-    properties = List(schema1),
-    `enum` = List.empty,
-    required = List.empty,
-    stringAttributes = None,
-    numberAttributes = None,
-    minProperties = None,
-    maxProperties = None,
-    format = None,
-    default = None,
-    example = None
-  )
+    val schema2 = DefaultSchema(
+      name = Some("agentReferenceNumber"),
+      not = None,
+      `type` = Some("object"),
+      pattern = None,
+      description = None,
+      ref = None,
+      properties = List(schema1),
+      `enum` = List.empty,
+      required = List.empty,
+      stringAttributes = None,
+      numberAttributes = None,
+      minProperties = None,
+      maxProperties = None,
+      format = None,
+      default = None,
+      example = None
+    )
 
     val filename = "API1689_Get_Known_Facts_1.1.0.yaml"
     val fileContents = "{}"
@@ -107,13 +107,14 @@ val schema1 = DefaultSchema(
     val exampleResponse1 = new Example("example response name", "example response body")
 
 
-  val request = Request(description = Some("request"), schema = Some(schema1), mediaType = Some(jsonMediaType), examples = List(exampleRequest1))
-  val response = Response(statusCode = "200", description = Some("response"), schema = Some(schema2), mediaType = Some("application/json"),  examples = List(exampleResponse1))
-  val endpointGetMethod = EndpointMethod("GET", Some("operationId"), Some("some summary"), Some("some description"), None, List(response))
-  val endpointPutMethod = EndpointMethod("PUT", Some("operationId2"), Some("some summary"), Some("some description"), Some(request), List.empty)
-  val endpoint1 = Endpoint("/some/url", List(endpointGetMethod, endpointPutMethod))
+    val request = Request(description = Some("request"), schema = Some(schema1), mediaType = Some(jsonMediaType), examples = List(exampleRequest1))
+    val response = Response(statusCode = "200", description = Some("response"), schema = Some(schema2), mediaType = Some("application/json"),  examples = List(exampleResponse1))
+    val endpointGetMethod = EndpointMethod("GET", Some("operationId"), Some("some summary"), Some("some description"), None, List(response))
+    val endpointPutMethod = EndpointMethod("PUT", Some("operationId2"), Some("some summary"), Some("some description"), Some(request), List.empty)
+    val endpoint1 = Endpoint("/some/url", List(endpointGetMethod, endpointPutMethod))
 
-  val endpoints = List(endpoint1, Endpoint("/some/url", List.empty))
+    val endpoints = List(endpoint1, Endpoint("/some/url", List.empty))
+
     val exampleApiDetail: ApiDetail = ApiDetail(
       IntegrationId(UUID.fromString("e2e4ce48-29b0-11eb-adc1-0242ac120002")),
       publisherReference = "API1689",
@@ -127,7 +128,8 @@ val schema1 = DefaultSchema(
       hods = List("ETMP"),
       endpoints = endpoints,
       components = Components(List.empty, List.empty),
-      shortDescription = None
+      shortDescription = None,
+      openApiSpecification = "OAS content"
     )
 
 

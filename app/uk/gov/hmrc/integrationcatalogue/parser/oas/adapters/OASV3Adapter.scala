@@ -46,7 +46,8 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
   def extractOpenApi(publisherRef: Option[String],
                      platformType: PlatformType,
                      specType: SpecificationType,
-                     openApi: OpenAPI): ValidatedNel[List[String], ApiDetail] = {
+                     openApi: OpenAPI,
+                     openApiSpecificationContent: String): ValidatedNel[List[String], ApiDetail] = {
 
     Option(openApi.getInfo) match {
       case Some(info) =>
@@ -83,7 +84,8 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
                   platform = platformType,
                   hods = hods.toList,
                   shortDescription = extensions.shortDescription,
-                  components = Components(componentSchemas, componentHeaders, componentParameters)
+                  components = Components(componentSchemas, componentHeaders, componentParameters),
+                  openApiSpecification = openApiSpecificationContent
                 ))
               case Left(x)                                           => x.toList.invalidNel[ApiDetail]
             }
