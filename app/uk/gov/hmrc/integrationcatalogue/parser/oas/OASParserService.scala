@@ -78,10 +78,10 @@ class OASParserService @Inject()(oasParser: OASFileLoader, oasV3Service: OASV3Ad
       platformType: PlatformType,
       specificationType: SpecificationType,
       openApi: OpenAPI, 
-      fileContent: String) : ValidatedNel[List[String], ApiDetail] ={
+      fileContents: String) : ValidatedNel[List[String], ApiDetail] ={
 
      openApi.getOpenapi.headOption match {
-       case Some('3') => oasV3Service.extractOpenApi(publisherReference, platformType,  specificationType, openApi, fileContent)
+       case Some('3') => oasV3Service.extractOpenApi(publisherReference, platformType,  specificationType, openApi, fileContents)
        case _ => List(s"Unhandled OAS specification version for platform $platformType OAS").invalidNel[ApiDetail]
     }
   }
