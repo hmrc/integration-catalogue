@@ -39,7 +39,7 @@ class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
            val result =  callGetEndpoint(s"$url/platform/contacts")
 
             result.status mustBe OK
-            result.body mustBe """[{"platformType":"DES","contactInfo":{"name":"DES support hot line","emailAddress":"des@mail.com"}},{"platformType":"CORE_IF","contactInfo":{"name":"CoreIf support hot line","emailAddress":"coreIf@mail.com"}},{"platformType":"API_PLATFORM","contactInfo":{"name":"Api Platform support hot line","emailAddress":"api_platform@mail.com"}},{"platformType":"CMA","contactInfo":{"name":"CMA support hot line","emailAddress":"cma@mail.com"}},{"platformType":"CDS_CLASSIC","contactInfo":{"name":"CDS Platform support hot line","emailAddress":"cds@mail.com"}}]"""
+            result.body mustBe """[{"platformType":"DES","contactInfo":{"name":"DES support hot line","emailAddress":"des@mail.com"}},{"platformType":"CORE_IF","contactInfo":{"name":"CoreIf support hot line","emailAddress":"coreIf@mail.com"}},{"platformType":"API_PLATFORM","contactInfo":{"name":"Api Platform support hot line","emailAddress":"api_platform@mail.com"}},{"platformType":"CMA","contactInfo":{"name":"CMA support hot line","emailAddress":"cma@mail.com"}},{"platformType":"CDS_CLASSIC","contactInfo":{"name":"CDS Platform support hot line","emailAddress":"cds@mail.com"}},{"platformType":"XML_API","contactInfo":{"name":"XML_API support hot line","emailAddress":"xml_api@mail.com"}}]"""
       }
 
     }

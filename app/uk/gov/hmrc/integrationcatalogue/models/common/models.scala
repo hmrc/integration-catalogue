@@ -38,7 +38,7 @@ object PlatformType extends Enum[PlatformType] with PlayJsonEnum[PlatformType] {
   case object API_PLATFORM extends PlatformType
   case object CMA extends PlatformType
   case object CDS_CLASSIC extends PlatformType
-
+  case object XML_API extends PlatformType
 }
 
 sealed trait SpecificationType extends EnumEntry
