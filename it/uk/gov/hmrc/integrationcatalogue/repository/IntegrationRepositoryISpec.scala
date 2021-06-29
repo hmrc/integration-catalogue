@@ -1,4 +1,4 @@
-package uk.gov.hmrc.integrationcatalogue.repository
+ package uk.gov.hmrc.integrationcatalogue.repository
 
 import org.mongodb.scala.Document
 import org.mongodb.scala.bson.BsonString
