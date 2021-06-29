@@ -394,6 +394,12 @@ trait FilterSetup {
             validateResults(findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List(PlatformType.DES, PlatformType.CORE_IF))).results,
             List("API1001", "API1005", "API1002", "API1003", "API1004"))
         }
+
+        "find x results when searching for backend ETMP" in new FilterSetup {
+           setUpTest()
+            validateResults(findWithFilters(IntegrationFilter(backends = List("ETMP"))).results,
+            List("API1001", "API1005", "API1002", "API1003", "API1004"))
+        }
      
     }
   }

@@ -157,7 +157,9 @@ class IntegrationRepository @Inject()(config: AppConfig,
     }
     val textFilter: Option[Bson] = filter.searchText.headOption.map(searchText => Filters.text(searchText))
     val platformFilter = if (filter.platforms.nonEmpty) Some(Filters.in("platform", filter.platforms.map(Codecs.toBson(_)): _*)) else None
-    val filters: Seq[Bson] = Seq(textFilter, platformFilter).flatten
+    val backendsFilter = if(filter.backends.nonEmpty) Some(Filters.all("hods", filter.backends : _*)) else None
+
+    val filters: Seq[Bson] = Seq(textFilter, platformFilter, backendsFilter).flatten
     val sortByScore = Sorts.metaTextScore("score")
     val scoreProjection = Projections.metaTextScore("score")
      val sortOp = if (textFilter.isEmpty) ascending("title") else sortByScore

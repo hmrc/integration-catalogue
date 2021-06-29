@@ -1,6 +1,6 @@
 # microservice specific routes
 
-GET           /integrations                           uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.findWithFilters(searchTerm: List[String], platformFilter: List[uk.gov.hmrc.integrationcatalogue.models.common.PlatformType], itemsPerPage: Option[Int], currentPage: Option[Int])
+GET           /integrations                           uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.findWithFilters(searchTerm: List[String], platformFilter: List[uk.gov.hmrc.integrationcatalogue.models.common.PlatformType], backendsFilter: List[String], itemsPerPage: Option[Int], currentPage: Option[Int])
 GET           /integrations/:integrationId            uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.findById(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId)
 DELETE        /integrations/:integrationId            uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.deleteByIntegrationId(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId)
 
