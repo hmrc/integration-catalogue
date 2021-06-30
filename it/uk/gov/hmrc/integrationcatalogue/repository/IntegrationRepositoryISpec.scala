@@ -332,8 +332,9 @@ class IntegrationRepositoryISpec
         await(repo.findAndModify(exampleApiDetailForSearch2))
         //Match on File Transfer platform
         await(repo.findAndModify(exampleFileTransfer))
+        await(repo.findAndModify(exampleFileTransfer2))
 
-        findWithFilters(IntegrationFilter(List.empty, List.empty)).results.size shouldBe 5
+        findWithFilters(IntegrationFilter(List.empty, List.empty)).results.size shouldBe 6
       }
 
       def validateResults(results: Seq[IntegrationDetail], expectedReferences: List[String]) {
@@ -354,9 +355,9 @@ class IntegrationRepositoryISpec
 
       "find 2 results when no search term or platform filters and currentPage = 1, perPage = 2" in new FilterSetup {
         setUpTest()
-        validatePagedResults(findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(1), itemsPerPage = Some(2))), List("API1003", "API1004"), 5)
-        validatePagedResults(findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(2), itemsPerPage = Some(2))), List("API1001", "API1002"), 5)
-        validatePagedResults(findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(3), itemsPerPage = Some(2))), List("API1005"), 5)
+        validatePagedResults(findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(1), itemsPerPage = Some(2))), List("API1007", "API1003"), 6)
+        validatePagedResults(findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(2), itemsPerPage = Some(2))), List("API1004", "API1001"), 6)
+        validatePagedResults(findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(3), itemsPerPage = Some(2))), List("API1002", "API1005"), 6)
       }
 
       "find 3 results when searching for text that exists in title, endpoint summary with no platform filters" in new FilterSetup {
@@ -397,11 +398,31 @@ class IntegrationRepositoryISpec
         setUpTest()
         validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS"))).results, List("API1003", "API1004"))
       }
-//
-//      "find 3 result when searching for backend CUSTOMS and ETMP" in new FilterSetup {
-//        setUpTest()
-//        validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP"))).results, List("API1003", "API1004", "API1005"))
-//      }
+
+     "find 3 result when searching for backend CUSTOMS and ETMP" in new FilterSetup {
+       setUpTest()
+       validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP"))).results, List("API1003", "API1004", "API1005"))
+     }
+
+      "find 1 result when searching for backend source " in new FilterSetup {
+       setUpTest()
+       validateResults(findWithFilters(IntegrationFilter(backends = List("source"))).results, List("API1002"))
+     }
+
+      "find 1 result when searching for backend target " in new FilterSetup {
+       setUpTest()
+       validateResults(findWithFilters(IntegrationFilter(backends = List("target"))).results, List("API1007", "API1002"))
+     }
+
+      "find 2 result when searching for backend source and target " in new FilterSetup {
+       setUpTest()
+       validateResults(findWithFilters(IntegrationFilter(backends = List("source", "target"))).results, List("API1007", "API1002"))
+     }
+
+      "find 4 result when searching for backend CUSTOMS, ETMP and source" in new FilterSetup {
+       setUpTest()
+       validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP", "source"))).results, List("API1003", "API1004", "API1002", "API1005"))
+     }
 
     }
   }
