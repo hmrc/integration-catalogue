@@ -117,11 +117,11 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
       }
 
-      "respond with 200 and return DES api when searching by searchTerm and DES platform" in {
-        setupFilterTestDataAndRunTest("searchTerm=getKnownFactsName&platformFilter=DES", OK, List(exampleApiDetailForSearch2.publisherReference))
+      "respond with 200 and return DES api when searching by searchTerm=getKnownFactsName, platformFilter=DES and backendsFilter=CUSTOMS" in {
+        setupFilterTestDataAndRunTest("searchTerm=getKnownFactsName&platformFilter=DES&backendsFilter=CUSTOMS", OK, List(exampleApiDetailForSearch2.publisherReference))
       }
 
-      "respond with 200 and return CORE_IF 2 apis and 1 file transfer when filtering by CORE_IF platform" in {
+      "respond with 200 and return 2 CORE_IF apis and 1 file transfer when filtering by CORE_IF platform" in {
         setupFilterTestDataAndRunTest(
           "platformFilter=CORE_IF",
           OK,
@@ -151,6 +151,22 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
             exampleFileTransfer.publisherReference,
             exampleApiDetail2.publisherReference
           )
+        )
+      }
+
+      "respond with 200 and return 1 api when filtering by CUSTOMS hod" in {
+        setupFilterTestDataAndRunTest(
+          "backendsFilter=CUSTOMS",
+          OK,
+          List(exampleApiDetailForSearch2.publisherReference)
+        )
+      }
+
+      "respond with 200 and return 1 api and 1 file transfer when filtering by 'CUSTOMS' hod and 'source' sourceSystem" in {
+        setupFilterTestDataAndRunTest(
+          "backendsFilter=CUSTOMS&backendsFilter=source",
+          OK,
+          List(exampleApiDetailForSearch2.publisherReference, exampleFileTransfer.publisherReference)
         )
       }
 
