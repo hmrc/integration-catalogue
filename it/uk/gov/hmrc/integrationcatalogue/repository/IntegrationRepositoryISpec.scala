@@ -1,4 +1,4 @@
- package uk.gov.hmrc.integrationcatalogue.repository
+package uk.gov.hmrc.integrationcatalogue.repository
 
 import org.mongodb.scala.Document
 import org.mongodb.scala.bson.BsonString
@@ -17,11 +17,19 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import java.util.UUID
 import cats.instances.int
-class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoApp
-  with GuiceOneAppPerSuite with ScalaFutures with BeforeAndAfterEach with OasParsedItTestData with AwaitTestSupport {
 
-  override protected def repository: PlayMongoRepository[IntegrationDetail] =   app.injector.instanceOf[IntegrationRepository]
-    val indexNameToDrop = "please_delete_me__let_me_go"
+class IntegrationRepositoryISpec
+    extends WordSpecLike
+    with Matchers
+    with MongoApp
+    with GuiceOneAppPerSuite
+    with ScalaFutures
+    with BeforeAndAfterEach
+    with OasParsedItTestData
+    with AwaitTestSupport {
+
+  override protected def repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
+  val indexNameToDrop = "please_delete_me__let_me_go"
 
   protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
@@ -53,7 +61,7 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
     await(repo.deleteById(id))
   }
 
-  private def validateCommonFields(testItem: IntegrationDetail, itemToValidate: IntegrationDetail): Assertion ={
+  private def validateCommonFields(testItem: IntegrationDetail, itemToValidate: IntegrationDetail): Assertion = {
 //    testItem.id shouldBe itemToValidate.id
     testItem.title shouldBe itemToValidate.title
     testItem.description shouldBe itemToValidate.description
@@ -62,7 +70,7 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
     testItem.platform shouldBe itemToValidate.platform
   }
 
-  def validateApi(testItem: IntegrationDetail, itemToValidate: ApiDetail): Assertion ={
+  def validateApi(testItem: IntegrationDetail, itemToValidate: ApiDetail): Assertion = {
     validateCommonFields(testItem, itemToValidate)
     val item = testItem.asInstanceOf[ApiDetail]
     item.version shouldBe itemToValidate.version
@@ -71,9 +79,9 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
     item.openApiSpecification shouldBe itemToValidate.openApiSpecification
   }
 
-  def validateFileTransfer(testItem: IntegrationDetail, itemToValidate: FileTransferDetail): Assertion ={
-      validateCommonFields(testItem, itemToValidate)
-     val item = testItem.asInstanceOf[FileTransferDetail]
+  def validateFileTransfer(testItem: IntegrationDetail, itemToValidate: FileTransferDetail): Assertion = {
+    validateCommonFields(testItem, itemToValidate)
+    val item = testItem.asInstanceOf[FileTransferDetail]
     item.fileTransferPattern shouldBe itemToValidate.fileTransferPattern
     item.sourceSystem shouldBe itemToValidate.sourceSystem
     item.targetSystem shouldBe itemToValidate.targetSystem
@@ -81,31 +89,31 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
 
   "IntegrationRepository" when {
 
-"dropIndexes on Startup" should {
+    "dropIndexes on Startup" should {
 
-  def checkIndexExists(indexName: String)= {
-    val indexes = await(repo.collection.listIndexes().toFuture()).toList
-    val indexNames = indexes.flatMap((idx: Document) =>  {
-        idx
-        .toList
-        .filter(_._1=="name")
-        .map(_._2.asInstanceOf[BsonString])
-        .map(_.getValue)
-    })
-    indexNames.contains(indexName)
-  }
+      def checkIndexExists(indexName: String) = {
+        val indexes = await(repo.collection.listIndexes().toFuture()).toList
+        val indexNames = indexes.flatMap((idx: Document) => {
+          idx
+            .toList
+            .filter(_._1 == "name")
+            .map(_._2.asInstanceOf[BsonString])
+            .map(_.getValue)
+        })
+        indexNames.contains(indexName)
+      }
 
-  "create index that repo should delete when ensuring indexes " in{
-   val createIndexResult =  await(repo.collection.createIndex(ascending("version" ), IndexOptions().name(indexNameToDrop).background(true).unique(true)).toFuture())
-    createIndexResult shouldBe indexNameToDrop
-    checkIndexExists(indexNameToDrop) shouldBe true
+      "create index that repo should delete when ensuring indexes " in {
+        val createIndexResult = await(repo.collection.createIndex(ascending("version"), IndexOptions().name(indexNameToDrop).background(true).unique(true)).toFuture())
+        createIndexResult shouldBe indexNameToDrop
+        checkIndexExists(indexNameToDrop) shouldBe true
 
-    await(repo.ensureIndexes)
+        await(repo.ensureIndexes)
 
-    checkIndexExists(indexNameToDrop) shouldBe false
-  }
-}
-  
+        checkIndexExists(indexNameToDrop) shouldBe false
+      }
+    }
+
     "findByPublisherReference" should {
 
       "return an api when it has been created" in {
@@ -116,17 +124,15 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
 
         modifyResult match {
           case Right((integration, _)) => {
-                   val result2 = await(repo.findById(integration.id))
-                    validateApi(result2.get, exampleApiDetail)
+            val result2 = await(repo.findById(integration.id))
+            validateApi(result2.get, exampleApiDetail)
           }
-          case Left(_) => fail()
+          case Left(_)                 => fail()
         }
 
- 
       }
 
     }
-
 
     "findById" should {
 
@@ -135,19 +141,19 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
         result shouldBe List.empty
 
         val modifyResult = await(repo.findAndModify(exampleApiDetail))
-                           await(repo.findAndModify(exampleApiDetail2))
+        await(repo.findAndModify(exampleApiDetail2))
         modifyResult match {
           case Right((integration, _)) => {
-                 
-                   val result2 = await(repo.findById(integration.id))
-                    validateApi(result2.get, exampleApiDetail)
+
+            val result2 = await(repo.findById(integration.id))
+            validateApi(result2.get, exampleApiDetail)
           }
           case Left(_) => fail()
         }
-       
+
       }
 
-       "return None when integrations exist but unknown id" in {
+      "return None when integrations exist but unknown id" in {
         val result = getAll
         result shouldBe List.empty
 
@@ -171,8 +177,8 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
           case Right((apiDetail: IntegrationDetail, isUpdate)) =>
             isUpdate shouldBe false
             validateApi(apiDetail, exampleApiDetail)
-          case Right(_) =>  fail()
-          case Left(_) => fail()
+          case Right(_)                                        => fail()
+          case Left(_)                                         => fail()
         }
 
         getAll.size shouldBe 1
@@ -188,8 +194,8 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
           case Right((details: FileTransferDetail, isUpdate)) =>
             isUpdate shouldBe false
             validateFileTransfer(details, exampleFileTransfer)
-          case Right(_) => fail()
-          case Left(_) => fail()
+          case Right(_)                                       => fail()
+          case Left(_)                                        => fail()
         }
 
         getAll.size shouldBe 1
@@ -225,8 +231,8 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
             apiDetail.specificationType shouldBe exampleApiDetail2.specificationType
             apiDetail.hods shouldBe exampleApiDetail2.hods
             apiDetail.openApiSpecification shouldBe exampleApiDetail2.openApiSpecification
-          case Right(_) => fail()
-          case Left(_) => fail()
+          case Right(_)                                => fail()
+          case Left(_)                                 => fail()
         }
 
         getAll.size shouldBe 1
@@ -245,16 +251,16 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
         val result2 = getAll
         result2.size shouldBe 4
 
-       val result =  await(repo.deleteByPlatform(PlatformType.CORE_IF))
-       result shouldBe 3
+        val result = await(repo.deleteByPlatform(PlatformType.CORE_IF))
+        result shouldBe 3
 
         val result3 = getAll
         result3.size shouldBe 1
         result3.head.platform shouldBe PlatformType.DES
-        
+
       }
 
-       "return 0 when delete by platformType called against collection with zero matching apis" in {
+      "return 0 when delete by platformType called against collection with zero matching apis" in {
         await(repo.findAndModify(exampleApiDetail))
         await(repo.findAndModify(exampleApiDetailForSearch1))
         await(repo.findAndModify(exampleApiDetailForSearch2))
@@ -262,8 +268,8 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
         val result2 = getAll
         result2.size shouldBe 3
 
-       val result =  await(repo.deleteByPlatform(PlatformType.CMA))
-       result shouldBe 0
+        val result = await(repo.deleteByPlatform(PlatformType.CMA))
+        result shouldBe 0
 
         val result3 = getAll
         result3.size shouldBe 3
@@ -278,20 +284,18 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
         await(repo.findAndModify(exampleApiDetail2))
         val result = await(repo.findAndModify(exampleApiDetail))
         result match {
-          case Left(_) => fail()
-          case Right((integration : IntegrationDetail, _)) => {
-               val result2 = getAll
-              result2.size shouldBe 2
+          case Left(_)                                    => fail()
+          case Right((integration: IntegrationDetail, _)) => {
+            val result2 = getAll
+            result2.size shouldBe 2
 
-              deleteById(integration.id)
+            deleteById(integration.id)
 
-              val result3 = getAll
-              result3.size shouldBe 1
-              validateApi(result3.head, exampleApiDetail2)
+            val result3 = getAll
+            result3.size shouldBe 1
+            validateApi(result3.head, exampleApiDetail2)
           }
         }
-
-     
 
       }
 
@@ -311,16 +315,16 @@ class IntegrationRepositoryISpec extends WordSpecLike with Matchers with MongoAp
         result3.size shouldBe 2
       }
     }
-    
-trait FilterSetup {
 
-  def setUpTest(){
+    trait FilterSetup {
+
+      def setUpTest() {
         val result = findWithFilters(IntegrationFilter(List.empty, List.empty)).results
         result shouldBe List.empty
 
         //Match in title
         await(repo.findAndModify(exampleApiDetail))
-        //Match in description 
+        //Match in description
         await(repo.findAndModify(exampleApiDetail2))
         //Match in Hods
         await(repo.findAndModify(exampleApiDetailForSearch1))
@@ -333,10 +337,10 @@ trait FilterSetup {
       }
 
       def validateResults(results: Seq[IntegrationDetail], expectedReferences: List[String]) {
-         results.size shouldBe expectedReferences.size
-         results.map(_.publisherReference) shouldBe expectedReferences
+        results.size shouldBe expectedReferences.size
+        results.map(_.publisherReference) shouldBe expectedReferences
 
-      }      
+      }
       def validatePagedResults(integrationResponse: IntegrationResponse, expectedReferences: List[String], expectedCount: Int) {
         validateResults(integrationResponse.results, expectedReferences)
 
@@ -344,67 +348,62 @@ trait FilterSetup {
         integrationResponse.count shouldBe expectedCount
 
       }
-}
+    }
 
     "findWithFilters" should {
 
       "find 2 results when no search term or platform filters and currentPage = 1, perPage = 2" in new FilterSetup {
-           setUpTest()
-            validatePagedResults(findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(1), itemsPerPage = Some(2))),
-            List("API1003", "API1004"), 5)
-              validatePagedResults(findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(2), itemsPerPage = Some(2))),
-            List("API1001", "API1002"), 5)
-              validatePagedResults(findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(3), itemsPerPage = Some(2))),
-            List("API1005"), 5)
-        }
+        setUpTest()
+        validatePagedResults(findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(1), itemsPerPage = Some(2))), List("API1003", "API1004"), 5)
+        validatePagedResults(findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(2), itemsPerPage = Some(2))), List("API1001", "API1002"), 5)
+        validatePagedResults(findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(3), itemsPerPage = Some(2))), List("API1005"), 5)
+      }
 
-        "find 3 results when searching for text that exists in title, endpoint summary with no platform filters" in new FilterSetup {
-           setUpTest()
-            validateResults(findWithFilters(IntegrationFilter(List("BOOP"), List.empty)).results,
-            List("API1005", "API1003", "API1004"))
-        }
+      "find 3 results when searching for text that exists in title, endpoint summary with no platform filters" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(List("BOOP"), List.empty)).results, List("API1005", "API1003", "API1004"))
+      }
 
-        "find 2 results when searching for text that existing in endpoint description with no platform filters" in new FilterSetup{
-          setUpTest()
-          validateResults(findWithFilters(IntegrationFilter(List("DEEPSEARCH"), List.empty)).results,
-            List("API1003", "API1004"))
-    
-        }
+      "find 2 results when searching for text that existing in endpoint description with no platform filters" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(List("DEEPSEARCH"), List.empty)).results, List("API1003", "API1004"))
 
-        "find 2 results when searching for text that existing in endpoint description but uses stemming with no platform filters" in new FilterSetup {
-           setUpTest()
-            validateResults(findWithFilters(IntegrationFilter(List("DEEPSEARCHES"), List.empty)).results,
-            List("API1003", "API1004"))
-        }
+      }
 
-        "find 5 results when searching for text that exists in all records with no platform filters" in new FilterSetup {
-           setUpTest()
-            validateResults(findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List.empty)).results,
-            List("API1001", "API1005", "API1002", "API1003", "API1004"))
-        }
+      "find 2 results when searching for text that existing in endpoint description but uses stemming with no platform filters" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(List("DEEPSEARCHES"), List.empty)).results, List("API1003", "API1004"))
+      }
 
-        "find 1 result when searching for for text that exists in all records & DES platform" in new FilterSetup {
-           setUpTest()
-            validateResults(findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List(PlatformType.DES))).results,
-            List("API1004"))
-        }
+      "find 5 results when searching for text that exists in all records with no platform filters" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List.empty)).results, List("API1001", "API1005", "API1002", "API1003", "API1004"))
+      }
 
-        "find 5 results when searching for text that exists in all records & DES or CORE_IF platforms" in new FilterSetup {
-           setUpTest()
-            validateResults(findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List(PlatformType.DES, PlatformType.CORE_IF))).results,
-            List("API1001", "API1005", "API1002", "API1003", "API1004"))
-        }
+      "find 1 result when searching for for text that exists in all records & DES platform" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List(PlatformType.DES))).results, List("API1004"))
+      }
 
-        "find x results when searching for backend ETMP" in new FilterSetup {
-           setUpTest()
-            validateResults(findWithFilters(IntegrationFilter(backends = List("ETMP"))).results,
-            List("API1001", "API1005", "API1002", "API1003", "API1004"))
-        }
-     
+      "find 5 results when searching for text that exists in all records & DES or CORE_IF platforms" in new FilterSetup {
+        setUpTest()
+        validateResults(
+          findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List(PlatformType.DES, PlatformType.CORE_IF))).results,
+          List("API1001", "API1005", "API1002", "API1003", "API1004")
+        )
+      }
+
+      "find 2 results when searching for backend CUSTOMS" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS"))).results, List("API1003", "API1004"))
+      }
+//
+//      "find 3 result when searching for backend CUSTOMS and ETMP" in new FilterSetup {
+//        setUpTest()
+//        validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP"))).results, List("API1003", "API1004", "API1005"))
+//      }
+
     }
   }
 
-
 }
-
-

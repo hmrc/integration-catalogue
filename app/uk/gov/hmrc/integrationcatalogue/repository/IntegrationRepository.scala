@@ -48,6 +48,7 @@ class IntegrationRepository @Inject()(config: AppConfig,
     domainFormat = integrationDetailFormats,
     indexes = Seq(
       IndexModel(ascending("id"), IndexOptions().name("id_index").background(true).unique(true)),
+      IndexModel(ascending("hods"), IndexOptions().name("hods_index").background(true).unique(false)),
       IndexModel(ascending(List("platform", "publisherReference"): _*), IndexOptions().name("platform_pub_ref_idx").background(true).unique(true)),
       IndexModel(Indexes.text("$**"),
                  IndexOptions().weights(new BasicDBObject().append("title", 50).append("description", 25))
