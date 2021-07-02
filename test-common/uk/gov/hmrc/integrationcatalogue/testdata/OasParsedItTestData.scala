@@ -126,6 +126,19 @@ trait OasParsedItTestData {
       targetSystem = List("target"),
       fileTransferPattern = "pattern1")
 
+  val exampleFileTransfer2: FileTransferDetail =
+    FileTransferDetail(IntegrationId(UUID.fromString("8f8190dc-d992-11eb-b8bc-0242ac130003")),
+      fileTransferSpecificationVersion = "0.1",
+      publisherReference = "API1007",
+      title = "filetransfer 2",
+      description = "file transfer 2 desc",
+      lastUpdated = dateValue,
+      platform = PlatformType.API_PLATFORM,
+      maintainer = apiPlatformMaintainer,
+      sourceSystem = List("someSource"),
+      targetSystem = List("target"),
+      fileTransferPattern = "pattern3")
+
   val exampleApiDetailForSearch1: ApiDetail = ApiDetail(
     IntegrationId(UUID.fromString("fab1868e-9b88-11eb-a8b3-0242ac130003")),
     publisherReference = "API1003",

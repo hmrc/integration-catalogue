@@ -48,6 +48,9 @@ class IntegrationRepository @Inject()(config: AppConfig,
     domainFormat = integrationDetailFormats,
     indexes = Seq(
       IndexModel(ascending("id"), IndexOptions().name("id_index").background(true).unique(true)),
+      IndexModel(ascending("hods"), IndexOptions().name("hods_index").background(true).unique(false)),
+      IndexModel(ascending("sourceSystem"), IndexOptions().name("sourceSystem_index").background(true).unique(false)),
+      IndexModel(ascending("targetSystem"), IndexOptions().name("targetSystem_index").background(true).unique(false)),
       IndexModel(ascending(List("platform", "publisherReference"): _*), IndexOptions().name("platform_pub_ref_idx").background(true).unique(true)),
       IndexModel(Indexes.text("$**"),
                  IndexOptions().weights(new BasicDBObject().append("title", 50).append("description", 25))
@@ -157,7 +160,13 @@ class IntegrationRepository @Inject()(config: AppConfig,
     }
     val textFilter: Option[Bson] = filter.searchText.headOption.map(searchText => Filters.text(searchText))
     val platformFilter = if (filter.platforms.nonEmpty) Some(Filters.in("platform", filter.platforms.map(Codecs.toBson(_)): _*)) else None
-    val filters: Seq[Bson] = Seq(textFilter, platformFilter).flatten
+    val backendsFilter = if(filter.backends.nonEmpty) Some(Filters.in("hods", filter.backends : _*)) else None
+    val sourceFilter = if(filter.backends.nonEmpty) Some(Filters.in("sourceSystem", filter.backends : _*)) else None
+    val targetFilter = if(filter.backends.nonEmpty) Some(Filters.in("targetSystem", filter.backends : _*)) else None
+   val combinedHodsFilters = Seq(backendsFilter,  sourceFilter, targetFilter).flatten
+    val hodsFilter = if(combinedHodsFilters.isEmpty) None else Some(Filters.or(combinedHodsFilters: _*))
+
+    val filters: Seq[Bson] = Seq(textFilter, platformFilter, hodsFilter).flatten
     val sortByScore = Sorts.metaTextScore("score")
     val scoreProjection = Projections.metaTextScore("score")
      val sortOp = if (textFilter.isEmpty) ascending("title") else sortByScore

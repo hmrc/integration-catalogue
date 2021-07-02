@@ -36,7 +36,7 @@ case class FileTransferPublishRequest(
                               fileTransferPattern: String)
 
 // TODO : Move me
-case class IntegrationFilter(searchText: List[String] = List.empty, platforms: List[PlatformType] = List.empty, itemsPerPage: Option[Int] = None, currentPage: Option[Int] = None)
+case class IntegrationFilter(searchText: List[String] = List.empty, platforms: List[PlatformType] = List.empty, backends: List[String] = List.empty, itemsPerPage: Option[Int] = None, currentPage: Option[Int] = None)
 
 //TODO remove code from PublishError
 case class PublishError(code: Int, message: String)

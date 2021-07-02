@@ -141,13 +141,13 @@ class IntegrationControllerSpec extends WordSpec with Matchers with MockitoSugar
   "GET /integrations/search-with-filter" should {
     "return 200" in {
       when(mockApiService.findWithFilters(*)).thenReturn(Future.successful(IntegrationResponse(count = 1, results = apiList)))
-      val result: Future[Result] = controller.findWithFilters(List(""), List(PlatformType.CORE_IF), None, None)(fakeRequest)
+      val result: Future[Result] = controller.findWithFilters(List(""), List(PlatformType.CORE_IF), List.empty, None, None)(fakeRequest)
       status(result) shouldBe Status.OK
     }
 
     "return 200 when no results returned" in {
       when(mockApiService.findWithFilters(*)).thenReturn(Future.successful(IntegrationResponse(count = 0, results = List.empty)))
-      val result = controller.findWithFilters(List(""), List(PlatformType.CORE_IF), None, None)(fakeRequest)
+      val result = controller.findWithFilters(List(""), List(PlatformType.CORE_IF), List.empty, None, None)(fakeRequest)
       status(result) shouldBe Status.OK
     }
   }
