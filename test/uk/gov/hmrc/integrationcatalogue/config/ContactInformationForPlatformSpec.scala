@@ -25,7 +25,7 @@ class ContactInformationForPlatformSpec extends WordSpec with Matchers {
   "getContactInformationForPlatform" should {
     "return Some ContactInformation when both name and email are passed in" in {
       val result = ContactInformationForPlatform.getContactInformationForPlatform(PlatformType.API_PLATFORM, Some("name"), Some("support@example.com"))
-      result shouldBe Some(ContactInformation("name", "support@example.com"))
+      result shouldBe Some(ContactInformation(Some("name"), Some("support@example.com")))
     }
 
     "return None when contact name not passed in" in {

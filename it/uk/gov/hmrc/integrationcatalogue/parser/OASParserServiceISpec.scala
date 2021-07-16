@@ -245,8 +245,8 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
           parsedObject.specificationType shouldBe SpecificationType.OAS_V3
 
           val contact: ContactInformation = parsedObject.maintainer.contactInfo.head
-          contact.name shouldBe oasContactName
-          contact.emailAddress shouldBe oasContactEMail
+          contact.name.getOrElse("") shouldBe oasContactName
+          contact.emailAddress.getOrElse("") shouldBe oasContactEMail
           parsedObject.hods shouldBe List("ITMP", "NPS")
           parsedObject.shortDescription.isDefined shouldBe true
           parsedObject.shortDescription shouldBe Some("I am a short description")
@@ -375,8 +375,8 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
           parsedObject.endpoints.head.methods.head.responses.head.schema.get.ref shouldBe Some("#/components/schemas/successResponse")
 
           val contact: ContactInformation = parsedObject.maintainer.contactInfo.head
-          contact.name shouldBe oasContactName
-          contact.emailAddress shouldBe oasContactEMail
+          contact.name.getOrElse("") shouldBe oasContactName
+          contact.emailAddress.getOrElse("") shouldBe oasContactEMail
           parsedObject.hods shouldBe Nil
 
         case _: Invalid[NonEmptyList[List[String]]] => fail()
