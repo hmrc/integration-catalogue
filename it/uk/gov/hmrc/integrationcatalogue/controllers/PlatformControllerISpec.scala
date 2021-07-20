@@ -8,7 +8,7 @@ import uk.gov.hmrc.integrationcatalogue.support.AwaitTestSupport
 import play.api.test.Helpers._
 
 class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
-  
+
   protected override def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
@@ -17,7 +17,9 @@ class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
         "auditing.enabled" -> false,
         "mongodb.uri" -> s"mongodb://127.0.0.1:27017/test-${this.getClass.getSimpleName}",
         "auditing.consumer.baseUri.host" -> wireMockHost,
-        "auditing.consumer.baseUri.port" -> wireMockPort
+        "auditing.consumer.baseUri.port" -> wireMockPort,
+        "platforms.DES.email" -> "des@mail.com",
+        "platforms.DES.name" -> "DES Platform support hot line"
       )
 
   val url = s"http://localhost:$port/integration-catalogue"
@@ -31,15 +33,16 @@ class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
       .get()
       .futureValue
 
-
   "PlatformController" when {
 
     "GET /platform/contacts" should {
       "return platform with contacts when both email and name are in config" in {
-           val result =  callGetEndpoint(s"$url/platform/contacts")
+        val result = callGetEndpoint(s"$url/platform/contacts")
 
-            result.status mustBe OK
-            result.body mustBe """[{"platformType":"DES","contactInfo":{"name":"DES support hot line","emailAddress":"des@mail.com"}},{"platformType":"CORE_IF","contactInfo":{"name":"CoreIf support hot line","emailAddress":"coreIf@mail.com"}},{"platformType":"API_PLATFORM","contactInfo":{"name":"Api Platform support hot line","emailAddress":"api_platform@mail.com"}},{"platformType":"CMA","contactInfo":{"name":"CMA support hot line","emailAddress":"cma@mail.com"}},{"platformType":"CDS_CLASSIC","contactInfo":{"name":"CDS Platform support hot line","emailAddress":"cds@mail.com"}},{"platformType":"TRANSACTION_ENGINE","contactInfo":{"name":"Transaction Engine support hot line","emailAddress":"transaction_engine@mail.com"}}]"""
+        println(s"****** ${result.body}")
+
+        result.status mustBe OK
+        result.body mustBe """[{"platformType":"DES","contactInfo":{"name":"DES Platform support hot line","emailAddress":"des@mail.com"}},{"platformType":"CORE_IF"},{"platformType":"API_PLATFORM"},{"platformType":"CMA"},{"platformType":"CDS_CLASSIC"},{"platformType":"TRANSACTION_ENGINE"}]"""
       }
 
     }
