@@ -71,8 +71,8 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
           parsedObject.openApiSpecification shouldBe apiDetail0.openApiSpecification
 
           val contact: ContactInformation = parsedObject.maintainer.contactInfo.head
-          contact.name shouldBe oasContactName
-          contact.emailAddress shouldBe oasContactEMail
+          contact.name.getOrElse("") shouldBe oasContactName
+          contact.emailAddress.getOrElse("") shouldBe oasContactEMail
           parsedObject.hods shouldBe hods
 
         case errors: Invalid[NonEmptyList[List[String]]] => {
@@ -97,8 +97,8 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
           parsedObject.openApiSpecification shouldBe apiDetail0.openApiSpecification
 
           val contact: ContactInformation = parsedObject.maintainer.contactInfo.head
-          contact.name shouldBe oasContactName
-          contact.emailAddress shouldBe oasContactEMail
+          contact.name.getOrElse("") shouldBe oasContactName
+          contact.emailAddress.getOrElse("") shouldBe oasContactEMail
           parsedObject.hods shouldBe Nil
 
         case _: Invalid[NonEmptyList[List[String]]] => fail()

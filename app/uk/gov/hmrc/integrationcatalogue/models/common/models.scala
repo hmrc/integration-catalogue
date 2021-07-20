@@ -51,7 +51,7 @@ object SpecificationType extends Enum[SpecificationType] with PlayJsonEnum[Speci
 
 }
 
-case class ContactInformation(name: String, emailAddress: String)
+case class ContactInformation(name: Option[String], emailAddress: Option[String])
 
 case class Maintainer(name: String, slackChannel: String, contactInfo: List[ContactInformation] = List.empty)
 

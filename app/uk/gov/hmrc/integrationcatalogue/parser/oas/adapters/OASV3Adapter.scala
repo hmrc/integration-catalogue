@@ -108,7 +108,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
 
 
   private def extractContact(contact: Contact): Option[ContactInformation] = {
-    Option(contact).map(x => ContactInformation(x.getName, x.getEmail))
+    Option(contact).map(x => ContactInformation(Option(x.getName), Option(x.getEmail)))
   }
 
   private def extractEndpoints(path: String, item: PathItem): List[Endpoint] = {

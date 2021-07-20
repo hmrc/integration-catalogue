@@ -79,7 +79,7 @@ class PublishControllerSpec extends WordSpec with Matchers with GuiceOneAppPerSu
       description = "A file transfer from Birth Verification Data (BVD) to Data Provisioning Systems (DPS)",
       platformType = PlatformType.CORE_IF,
       lastUpdated = dateValue,
-      contact = ContactInformation("Core IF Team", "example@gmail.com"),
+      contact = ContactInformation(Some("Core IF Team"), Some("example@gmail.com")),
       sourceSystem = List("BVD"),
       targetSystem = List("DPS"),
       fileTransferPattern = "Corporate to corporate"
