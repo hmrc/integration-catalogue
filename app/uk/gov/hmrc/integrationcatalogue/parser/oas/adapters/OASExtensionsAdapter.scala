@@ -25,6 +25,8 @@ import java.util
 import scala.collection.JavaConverters._
 
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
+import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
+import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
 
 trait OASExtensionsAdapter extends ExtensionKeys {
 
@@ -36,10 +38,11 @@ trait OASExtensionsAdapter extends ExtensionKeys {
           (
             getBackends(integrationCatalogueExtensions),
             getPublisherReference(integrationCatalogueExtensions, publisherReference),
-            getShortDescription(integrationCatalogueExtensions, appConfig)
+            getShortDescription(integrationCatalogueExtensions, appConfig),
+            getStatus(integrationCatalogueExtensions)
           )
-        }.mapN((backends, publisherReference, shortDescription) => {
-          IntegrationCatalogueExtensions(backends, publisherReference, shortDescription)
+        }.mapN((backends, publisherReference, shortDescription, status) => {
+          IntegrationCatalogueExtensions(backends, publisherReference, shortDescription, status)
         })
       })
       .toEither
@@ -80,6 +83,18 @@ trait OASExtensionsAdapter extends ExtensionKeys {
       } else Validated.valid(Some(x))
       case unknown => "Short Description must be a String".invalidNel[Option[String]]
 
+    }
+  }
+
+  def getStatus(extensions: Map[String, AnyRef]): ValidatedNel[String, ApiStatus] = {
+    extensions.get(STATUS_EXTENSION_KEY) match {
+      case None => Validated.valid(LIVE)
+      case Some(x: String) => {
+          if(ApiStatus.values.toList.contains(x.toUpperCase)){
+            Validated.valid(ApiStatus.withName(x))
+          } else "Status must be one of ALPHA, BETA, LIVE or DEPRECATED".invalidNel[ApiStatus]
+      }
+      case unknown => "Status must be a string".invalidNel[ApiStatus]
     }
   }
 
@@ -124,4 +139,4 @@ trait OASExtensionsAdapter extends ExtensionKeys {
   // }
 }
 
-case class IntegrationCatalogueExtensions(backends: Seq[String], publisherReference: String, shortDescription: Option[String])
+case class IntegrationCatalogueExtensions(backends: Seq[String], publisherReference: String, shortDescription: Option[String], status: ApiStatus)

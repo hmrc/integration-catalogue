@@ -67,6 +67,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
             parseExtensions(info, publisherRef, appConfig) match {
               case Right(extensions: IntegrationCatalogueExtensions) =>
                 val hods = extensions.backends
+                val status = extensions.status
                 val componentSchemas = extractComponentSchemas(openApi)
                 val componentHeaders = extractComponentHeaders(openApi)
                 val componentParameters = extractComponentParameters(openApi)
@@ -85,7 +86,8 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
                   hods = hods.toList,
                   shortDescription = extensions.shortDescription,
                   components = Components(componentSchemas, componentHeaders, componentParameters),
-                  openApiSpecification = openApiSpecificationContent
+                  openApiSpecification = openApiSpecificationContent,
+                  apiStatus = status
                 ))
               case Left(x)                                           => x.toList.invalidNel[ApiDetail]
             }
