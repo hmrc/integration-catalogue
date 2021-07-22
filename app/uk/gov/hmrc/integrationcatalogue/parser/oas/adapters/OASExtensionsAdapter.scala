@@ -90,11 +90,11 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     extensions.get(STATUS_EXTENSION_KEY) match {
       case None => Validated.valid(LIVE)
       case Some(x: String) => {
-          if(ApiStatus.values.toList.contains(x.toUpperCase)){
+          if(ApiStatus.values.toList.map(_.entryName).contains(x.toUpperCase)){
             Validated.valid(ApiStatus.withName(x))
           } else "Status must be one of ALPHA, BETA, LIVE or DEPRECATED".invalidNel[ApiStatus]
       }
-      case unknown => "Status must be a string".invalidNel[ApiStatus]
+      case unknown => "Status must be a String".invalidNel[ApiStatus]
     }
   }
 
@@ -114,29 +114,13 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     }
 
     extensions.get(PUBLISHER_REF_EXTENSION_KEY) match {
-      case None                                     => handlePublisherReference(publisherReference)
-      case Some(obj) if (obj.isInstanceOf[String])  =>
-        handleMultiplePublisherReferences(publisherReference, obj.asInstanceOf[String])
-
-      case Some(obj) if (obj.isInstanceOf[Integer]) =>
-        val extensionPublisherReference = obj.asInstanceOf[Integer].toString
-        handleMultiplePublisherReferences(publisherReference, extensionPublisherReference)
-      case Some(obj) if (obj.isInstanceOf[Double])  =>
-        val extensionPublisherReference = obj.asInstanceOf[Double].toString
-        handleMultiplePublisherReferences(publisherReference, extensionPublisherReference)
+      case None             => handlePublisherReference(publisherReference)
+      case Some(x: String)  => handleMultiplePublisherReferences(publisherReference, x)
+      case Some(x: Integer) => handleMultiplePublisherReferences(publisherReference, x.toString)
+      case Some(x: java.lang.Double)  => handleMultiplePublisherReferences(publisherReference, x.toString)
       case Some(o)  => s"Invalid value. Expected a string, integer or double but found value: $o of type ${o.getClass.toString}".invalidNel[String]
     }
   }
-
-  // private def getStringValue(o: AnyRef): ValidatedNel[String, String] = {
-  //   o match {
-  //     case s: String           => Validated.valid(s)
-  //     case n: Integer          => Validated.valid(n.toString)
-  //     case n: java.lang.Double => Validated.valid(n.toString)
-  //     // TODO : We should pass what field this is parsing so we can add it to the error
-  //     case _                   => s"Invalid value. Expected a string but found : $o ${o.getClass.toString}".invalidNel[String]
-  //   }
-  // }
 }
 
 case class IntegrationCatalogueExtensions(backends: Seq[String], publisherReference: String, shortDescription: Option[String], status: ApiStatus)
