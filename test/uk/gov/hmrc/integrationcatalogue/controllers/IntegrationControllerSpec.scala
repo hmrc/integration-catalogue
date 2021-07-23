@@ -27,10 +27,10 @@ import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.integrationcatalogue.models.common._
 import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
 import uk.gov.hmrc.integrationcatalogue.service.IntegrationService
 import uk.gov.hmrc.integrationcatalogue.testdata.ApiTestData
 import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.ValidateQueryParamKeyAction
-
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -40,18 +40,18 @@ class IntegrationControllerSpec extends WordSpec with Matchers with MockitoSugar
 
   private val fakeRequest = FakeRequest("GET", "/apis")
 
-
-  private val mockApiService =  mock[IntegrationService]
+  private val mockApiService = mock[IntegrationService]
   private val validateQueryParamKeyAction = app.injector.instanceOf[ValidateQueryParamKeyAction]
 
   private val controller = new IntegrationController(Helpers.stubControllerComponents(), mockApiService, validateQueryParamKeyAction)
 
-  override def beforeEach(): Unit ={
+  override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockApiService)
   }
 
   trait Setup {
+
     val schema1 = DefaultSchema(
       name = Some("agentReferenceNumber"),
       not = None,
@@ -101,14 +101,13 @@ class IntegrationControllerSpec extends WordSpec with Matchers with MockitoSugar
     val jsonMediaType = "application/json"
 
     val exampleRequest1name = "example request 1"
-    val exampleRequest1Body= "{\"someValue\": \"abcdefg\"}"
+    val exampleRequest1Body = "{\"someValue\": \"abcdefg\"}"
     val exampleRequest1: Example = Example(exampleRequest1name, exampleRequest1Body)
 
     val exampleResponse1 = new Example("example response name", "example response body")
 
-
     val request = Request(description = Some("request"), schema = Some(schema1), mediaType = Some(jsonMediaType), examples = List(exampleRequest1))
-    val response = Response(statusCode = "200", description = Some("response"), schema = Some(schema2), mediaType = Some("application/json"),  examples = List(exampleResponse1))
+    val response = Response(statusCode = "200", description = Some("response"), schema = Some(schema2), mediaType = Some("application/json"), examples = List(exampleResponse1))
     val endpointGetMethod = EndpointMethod("GET", Some("operationId"), Some("some summary"), Some("some description"), None, List(response))
     val endpointPutMethod = EndpointMethod("PUT", Some("operationId2"), Some("some summary"), Some("some description"), Some(request), List.empty)
     val endpoint1 = Endpoint("/some/url", List(endpointGetMethod, endpointPutMethod))
@@ -129,14 +128,13 @@ class IntegrationControllerSpec extends WordSpec with Matchers with MockitoSugar
       endpoints = endpoints,
       components = Components(List.empty, List.empty),
       shortDescription = None,
-      openApiSpecification = "OAS content"
+      openApiSpecification = "OAS content",
+      apiStatus = LIVE
     )
-
 
     val fakeDeleteRequest = FakeRequest("DELETE", s"/apis/${exampleApiDetail.publisherReference}")
 
   }
-
 
   "GET /integrations/search-with-filter" should {
     "return 200" in {

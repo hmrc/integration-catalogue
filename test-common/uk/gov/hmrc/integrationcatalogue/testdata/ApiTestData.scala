@@ -20,6 +20,7 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, Maintainer, PlatformType, SpecificationType}
 import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
 
 import java.util.UUID
 
@@ -101,7 +102,8 @@ trait ApiTestData {
     endpoints = endpoints,
     components = Components(List.empty, List.empty),
     shortDescription = None,
-    openApiSpecification = "OAS content for Self Assessment"
+    openApiSpecification = "OAS content for Self Assessment",
+    apiStatus = LIVE
   )
 
   val apiDetail1 = ApiDetail(
@@ -117,7 +119,8 @@ trait ApiTestData {
     endpoints = endpoints,
     components = Components(List.empty, List.empty),
     shortDescription = None,
-    openApiSpecification = "OAS content for Marriage Allowance"
+    openApiSpecification = "OAS content for Marriage Allowance",
+    apiStatus = LIVE
   )
 
   val apiDetail2 = ApiDetail(
@@ -134,7 +137,8 @@ trait ApiTestData {
     endpoints = endpoints,
     components = Components(List.empty, List.empty),
     shortDescription = None,
-    openApiSpecification = "OAS content for API#1001"
+    openApiSpecification = "OAS content for API#1001",
+    apiStatus = LIVE
   )
 
   val apiDetail3 = ApiDetail(
@@ -151,7 +155,8 @@ trait ApiTestData {
     endpoints = endpoints,
     components = Components(List.empty, List.empty),
     shortDescription = None,
-    openApiSpecification = "OAS content for API#1002"
+    openApiSpecification = "OAS content for API#1002",
+    apiStatus = LIVE
   )
 
   val apiList = List(apiDetail0, apiDetail1, apiDetail2, apiDetail3)

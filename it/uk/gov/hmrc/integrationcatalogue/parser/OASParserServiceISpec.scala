@@ -268,6 +268,19 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
 
     }
 
+    "parse oas file correctly with valid status" in new Setup {
+      val publisherReference = "SOMEFILEREFERENCE"
+      val oasFileContents: String = parseFileToString("/API1000_withValidStatus.yaml")
+
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
+      result match {
+        case Valid(parsedObject) =>
+          parsedObject.apiStatus shouldBe ApiStatus.BETA
+        case _ => fail()
+      }
+
+    }
+
     "catch error in oas file with short description over maximum length set in config" in new Setup {
       testValidationFailureMessage("/API1000_withInvalidShortDesc-tooLong.yaml", "Short Description cannot be more than 180 characters long.")
 
@@ -307,6 +320,10 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
 
     "catch error in invalid oas file" in new Setup {
       testValidationFailureMessage("/API1000_InvalidOpenApiSpec.yaml", "attribute openapi is missing")
+    }
+
+    "catch error in invalid oas status" in new Setup {
+      testValidationFailureMessage("/API1000_InValidStatus.yaml", "Status must be one of ALPHA, BETA, LIVE or DEPRECATED")
     }
 
     "catch error when publisher ref in oas file does not match the one in the request" in new Setup {
@@ -370,6 +387,7 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
           parsedObject.platform shouldBe PlatformType.CORE_IF
           parsedObject.specificationType shouldBe SpecificationType.OAS_V3
           parsedObject.shortDescription shouldBe None
+          parsedObject.apiStatus shouldBe ApiStatus.LIVE
 
           parsedObject.endpoints.head.methods.head.responses.head.description shouldBe Some("Successful Response")
           parsedObject.endpoints.head.methods.head.responses.head.schema.get.ref shouldBe Some("#/components/schemas/successResponse")

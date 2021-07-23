@@ -20,6 +20,7 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, Maintainer, PlatformType, SpecificationType}
 import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
 
 import java.util.UUID
 
@@ -110,7 +111,8 @@ trait OasParsedItTestData {
     endpoints = endpoints,
     components = Components(List.empty, List.empty),
     shortDescription = Some("exampleApiDetail's short description"),
-    openApiSpecification = "OAS file contents 1"
+    openApiSpecification = "OAS file contents 1",
+    apiStatus = LIVE
   )
 
   val exampleFileTransfer: FileTransferDetail =
@@ -153,7 +155,8 @@ trait OasParsedItTestData {
     endpoints = endpoints2,
     components = Components(List.empty, List.empty),
     shortDescription = None,
-    openApiSpecification = "OAS file contents 2"
+    openApiSpecification = "OAS file contents 2",
+    apiStatus = LIVE
   )
 
   val exampleApiDetailForSearch2: ApiDetail = ApiDetail(
@@ -170,7 +173,8 @@ trait OasParsedItTestData {
     endpoints = endpoints2,
     components = Components(List.empty, List.empty),
     shortDescription = None,
-    openApiSpecification = "OAS file contents 3"
+    openApiSpecification = "OAS file contents 3",
+    apiStatus = LIVE
   )
 
   val exampleApiDetail2: ApiDetail = ApiDetail(
@@ -187,7 +191,8 @@ trait OasParsedItTestData {
     endpoints = endpointsNoDeepSearch,
     components = Components(List.empty, List.empty),
     shortDescription = Some("A short description"),
-    openApiSpecification = "OAS file contents 4"
+    openApiSpecification = "OAS file contents 4",
+    apiStatus = LIVE
   )
 
   val exampleApiDetail3: ApiDetail = ApiDetail(
@@ -204,6 +209,7 @@ trait OasParsedItTestData {
     endpoints = endpointsNoDeepSearch,
     components = Components(List.empty, List.empty),
     shortDescription = None,
-    openApiSpecification = "OAS file contents 5"
+    openApiSpecification = "OAS file contents 5",
+    apiStatus = LIVE
   )
 }
