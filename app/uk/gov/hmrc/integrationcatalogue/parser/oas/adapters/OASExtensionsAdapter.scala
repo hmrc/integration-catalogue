@@ -27,6 +27,11 @@ import scala.collection.JavaConverters._
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
+import scala.util.Try
+import scala.util.Failure
+import scala.util.Success
 
 trait OASExtensionsAdapter extends ExtensionKeys {
 
@@ -39,10 +44,11 @@ trait OASExtensionsAdapter extends ExtensionKeys {
             getBackends(integrationCatalogueExtensions),
             getPublisherReference(integrationCatalogueExtensions, publisherReference),
             getShortDescription(integrationCatalogueExtensions, appConfig),
-            getStatus(integrationCatalogueExtensions)
+            getStatus(integrationCatalogueExtensions),
+            getReviewedDate(integrationCatalogueExtensions)
           )
-        }.mapN((backends, publisherReference, shortDescription, status) => {
-          IntegrationCatalogueExtensions(backends, publisherReference, shortDescription, status)
+        }.mapN((backends, publisherReference, shortDescription, status, reviewedDate) => {
+          IntegrationCatalogueExtensions(backends, publisherReference, shortDescription, status, reviewedDate)
         })
       })
       .toEither
@@ -98,6 +104,22 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     }
   }
 
+  def getReviewedDate(extensions: Map[String, AnyRef]): ValidatedNel[String, DateTime] = {
+    extensions.get(REVIEWED_DATE_EXTENSION_KEY) match {
+      case None =>  "Reviewed date must be provided".invalidNel[DateTime]
+      case Some(x: String) => {
+        Try[DateTime]{
+          DateTime.parse(x, DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"))
+        } match {
+         case Success(dateTime) => Validated.valid(dateTime) 
+         case Failure(e) =>  "Reviewed date is not a valid date".invalidNel[DateTime]
+        }
+      }
+      case unknown => "Reviewed date must be valid".invalidNel[DateTime]
+      
+    }
+  }
+
   def getPublisherReference(extensions: Map[String, AnyRef], publisherReference: Option[String]): ValidatedNel[String, String] = {
 
     def handlePublisherReference(publisherReference: Option[String]) = publisherReference match {
@@ -123,4 +145,4 @@ trait OASExtensionsAdapter extends ExtensionKeys {
   }
 }
 
-case class IntegrationCatalogueExtensions(backends: Seq[String], publisherReference: String, shortDescription: Option[String], status: ApiStatus)
+case class IntegrationCatalogueExtensions(backends: Seq[String], publisherReference: String, shortDescription: Option[String], status: ApiStatus, reviewedDate: DateTime)

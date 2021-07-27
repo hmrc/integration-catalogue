@@ -22,4 +22,5 @@ trait ExtensionKeys {
   val PUBLISHER_REF_EXTENSION_KEY = "publisher-reference"
   val SHORT_DESC_EXTENSION_KEY = "short-description"
   val STATUS_EXTENSION_KEY = "status"
+  val REVIEWED_DATE_EXTENSION_KEY = "reviewed-date"
 }

@@ -71,6 +71,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
                 val componentSchemas = extractComponentSchemas(openApi)
                 val componentHeaders = extractComponentHeaders(openApi)
                 val componentParameters = extractComponentParameters(openApi)
+                val extensionReviewedDate = extensions.reviewedDate
 
                 Valid(ApiDetail(
                   id = IntegrationId(uuidService.newUuid()),
@@ -87,7 +88,9 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
                   shortDescription = extensions.shortDescription,
                   components = Components(componentSchemas, componentHeaders, componentParameters),
                   openApiSpecification = openApiSpecificationContent,
-                  apiStatus = status
+                  apiStatus = status,
+                  reviewedDate = extensionReviewedDate
+
                 ))
               case Left(x)                                           => x.toList.invalidNel[ApiDetail]
             }
