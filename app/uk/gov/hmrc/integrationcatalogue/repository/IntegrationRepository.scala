@@ -97,6 +97,7 @@ class IntegrationRepository @Inject()(config: AppConfig,
           set("specificationType", Codecs.toBson(apiDetail.specificationType)),
           set("hods", apiDetail.hods),
           set("apiStatus", Codecs.toBson(apiDetail.apiStatus)),
+          set("reviewedDate", Codecs.toBson(apiDetail.reviewedDate)),
           set("endpoints", apiDetail.endpoints.map(Codecs.toBson(_))),
           set("components", Codecs.toBson(apiDetail.components)),
           set("openApiSpecification", Codecs.toBson(apiDetail.openApiSpecification))

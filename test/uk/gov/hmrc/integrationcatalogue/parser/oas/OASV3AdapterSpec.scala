@@ -21,6 +21,8 @@ import cats.data._
 import cats.implicits._
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.info.Info
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
 import uk.gov.hmrc.integrationcatalogue.models.ApiDetail
@@ -28,7 +30,6 @@ import uk.gov.hmrc.integrationcatalogue.models.common.{ContactInformation, Integ
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.OASV3Adapter
 import uk.gov.hmrc.integrationcatalogue.service.UuidService
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
-
 
 import java.util.UUID
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
@@ -52,14 +53,17 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
     }
     val parseFailure: ValidatedNel[List[String], ApiDetail] =
       invalid(NonEmptyList[List[String]](List("Invalid OAS, info item missing from OAS specification"), List()))
+
+    val reviewedDate = DateTime.parse("25/12/20", DateTimeFormat.forPattern("dd/MM/yy"));
   }
 
   "extractOpenApi" should {
     "do happy path with extensions" in new Setup {
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
       val hods = List("ITMP", "NPS")
+      val expectedReviewedDate = DateTime.parse("24/07/2021 00:00:00", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
       val result: ValidatedNel[List[String], ApiDetail] =
-        objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = true, hods), openApiSpecificationContent = apiDetail0.openApiSpecification)
+        objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = true, hods, reviewedDateExtension = Some("24/07/21")), openApiSpecificationContent = apiDetail0.openApiSpecification)
       result match {
         case Valid(parsedObject)                    =>
           parsedObject.id shouldBe IntegrationId(generatedUuid)
@@ -69,6 +73,7 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
           parsedObject.platform shouldBe apiDetail0.platform
           parsedObject.specificationType shouldBe apiDetail0.specificationType
           parsedObject.openApiSpecification shouldBe apiDetail0.openApiSpecification
+          parsedObject.reviewedDate shouldBe expectedReviewedDate
 
           val contact: ContactInformation = parsedObject.maintainer.contactInfo.head
           contact.name.getOrElse("") shouldBe oasContactName
@@ -82,9 +87,10 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
 
     }
 
-    "do happy path without extensions" in new Setup {
+    "do happy path with reviewedDate but without backends and publisherRef extensions" in new Setup {
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = false), openApiSpecificationContent = apiDetail0.openApiSpecification)
+      val expectedReviewedDate = DateTime.parse("24/07/2021 00:00:00", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = false, reviewedDateExtension = Some("24/07/21")), openApiSpecificationContent = apiDetail0.openApiSpecification)
       result match {
         case Valid(parsedObject)                    =>
           parsedObject.id shouldBe IntegrationId(generatedUuid)
@@ -95,6 +101,7 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
           parsedObject.platform shouldBe apiDetail0.platform
           parsedObject.specificationType shouldBe apiDetail0.specificationType
           parsedObject.openApiSpecification shouldBe apiDetail0.openApiSpecification
+          parsedObject.reviewedDate shouldBe expectedReviewedDate
 
           val contact: ContactInformation = parsedObject.maintainer.contactInfo.head
           contact.name.getOrElse("") shouldBe oasContactName
@@ -102,6 +109,15 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
           parsedObject.hods shouldBe Nil
 
         case _: Invalid[NonEmptyList[List[String]]] => fail()
+      }
+
+    }
+
+    "fail with no extensions" in new Setup {
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = false, reviewedDateExtension = None), openApiSpecificationContent = apiDetail0.openApiSpecification)
+      result match {
+        case Valid(parsedObject)                    => fail()
+        case _: Invalid[NonEmptyList[List[String]]] => succeed
       }
 
     }

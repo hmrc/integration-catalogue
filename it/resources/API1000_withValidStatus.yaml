@@ -7,6 +7,7 @@ info:
     name: Developer
     email: contact@example.com
   x-integration-catalogue:
+    reviewed-date: 25/12/2020
     status: BETA
     backends:
       - ETMP    

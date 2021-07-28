@@ -110,13 +110,12 @@ trait OASExtensionsAdapter extends ExtensionKeys {
       case None =>  "Reviewed date must be provided".invalidNel[DateTime]
       case Some(x: String) =>
         Try[DateTime]{
-          DateTime.parse(x, DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"))
+          DateTime.parse(x, DateTimeFormat.forPattern("dd/MM/yy"))
         } match {
          case Success(dateTime) => Validated.valid(dateTime)
          case Failure(_) =>  "Reviewed date is not a valid date".invalidNel[DateTime]
         }
-      case _ => "Reviewed date must be valid".invalidNel[DateTime]
-      
+      case Some(_)  => "Reviewed date is not a valid date".invalidNel[DateTime]
     }
   }
 

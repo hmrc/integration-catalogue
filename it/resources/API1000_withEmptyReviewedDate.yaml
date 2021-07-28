@@ -7,8 +7,10 @@ info:
     name: Developer
     email: contact@example.com
   x-integration-catalogue:
-    reviewed-date: 25/12/2020
-    publisher-reference: 'API 1001' 
+    reviewed-date:
+    short-description: 'Hello Im a sensible short description, you wont find me getting too long and breaking any tests. No sireee!!'
+    backends:
+      - ETMP    
 servers:
   - url: 'https://hostname'
     description: server description

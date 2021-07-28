@@ -44,11 +44,11 @@ class OasExtensionsAdapterSpec extends WordSpec
     backendValues.add("ITMP"); backendValues.add("NPS")
 
     val extensionsWithOnlyBackendsAndReviewDate = new util.HashMap[String, Object]()
-    extensionsWithOnlyBackendsAndReviewDate.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/2020 20:27:05")
+    extensionsWithOnlyBackendsAndReviewDate.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/20")
     extensionsWithOnlyBackendsAndReviewDate.put(BACKEND_EXTENSION_KEY, backendValues)
 
     val extensionsWithReviewDateAndStatus = new util.HashMap[String, Object]()
-    extensionsWithReviewDateAndStatus.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/2020 20:27:05")
+    extensionsWithReviewDateAndStatus.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/20")
     extensionsWithReviewDateAndStatus.put(STATUS_EXTENSION_KEY, ApiStatus.ALPHA.entryName)
 
     val extensionsWithInvalidStatus = new util.HashMap[String, Object]()
@@ -58,26 +58,26 @@ class OasExtensionsAdapterSpec extends WordSpec
     extensionsWithWrongTypeStatus.put(STATUS_EXTENSION_KEY, new java.lang.Double(10.5))
 
     val extensionsWithReviewDateAndPublisherReference = new util.HashMap[String, Object]()
-    extensionsWithReviewDateAndPublisherReference.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/2020 20:27:05")
+    extensionsWithReviewDateAndPublisherReference.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/20")
     extensionsWithReviewDateAndPublisherReference.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefValue)
 
     val extensionsWithInvalidShortDesc = new util.HashMap[String, Object]()
     extensionsWithInvalidShortDesc.put(SHORT_DESC_EXTENSION_KEY, new java.lang.Double(10.5))
 
     val extensionsWithReviewDatePublisherReferenceAndBackends = new util.HashMap[String,Object]()
-    extensionsWithReviewDatePublisherReferenceAndBackends.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/2020 20:27:05")
+    extensionsWithReviewDatePublisherReferenceAndBackends.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/20")
     extensionsWithReviewDatePublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefValue)
     extensionsWithReviewDatePublisherReferenceAndBackends.put(BACKEND_EXTENSION_KEY, backendValues)
 
     val extensionsWithShortDescAndPublisherReferenceAndBackends = new util.HashMap[String,Object]()
-    extensionsWithShortDescAndPublisherReferenceAndBackends.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/2020 20:27:05")
+    extensionsWithShortDescAndPublisherReferenceAndBackends.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/20")
     extensionsWithShortDescAndPublisherReferenceAndBackends.put(SHORT_DESC_EXTENSION_KEY, shortDescription)
     extensionsWithShortDescAndPublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefValue)
     extensionsWithShortDescAndPublisherReferenceAndBackends.put(BACKEND_EXTENSION_KEY, backendValues)
     extensionsWithShortDescAndPublisherReferenceAndBackends.put(STATUS_EXTENSION_KEY, ApiStatus.DEPRECATED.entryName)
 
     val extensionsWithReviewDate = new util.HashMap[String,Object]()
-    extensionsWithReviewDate.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/2020 20:27:05")
+    extensionsWithReviewDate.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/20")
 
 
     def generateInfoObject(extensionsValues: util.HashMap[String, Object]): Info ={
