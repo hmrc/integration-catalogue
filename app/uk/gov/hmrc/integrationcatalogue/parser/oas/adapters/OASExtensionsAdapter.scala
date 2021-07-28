@@ -35,8 +35,9 @@ import scala.util.Success
 
 trait OASExtensionsAdapter extends ExtensionKeys {
 
-  def parseExtensions(info: Info, publisherReference: Option[String], appConfig: AppConfig): Either[cats.data.NonEmptyList[String], IntegrationCatalogueExtensions] = {
-
+  def parseExtensions(info: Info,
+                      publisherReference: Option[String],
+                      appConfig: AppConfig): Either[cats.data.NonEmptyList[String], IntegrationCatalogueExtensions] = {
     getIntegrationCatalogueExtensionsMap(getExtensions(info))
       .andThen(integrationCatalogueExtensions => {
         {
@@ -107,15 +108,14 @@ trait OASExtensionsAdapter extends ExtensionKeys {
   def getReviewedDate(extensions: Map[String, AnyRef]): ValidatedNel[String, DateTime] = {
     extensions.get(REVIEWED_DATE_EXTENSION_KEY) match {
       case None =>  "Reviewed date must be provided".invalidNel[DateTime]
-      case Some(x: String) => {
+      case Some(x: String) =>
         Try[DateTime]{
           DateTime.parse(x, DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"))
         } match {
-         case Success(dateTime) => Validated.valid(dateTime) 
-         case Failure(e) =>  "Reviewed date is not a valid date".invalidNel[DateTime]
+         case Success(dateTime) => Validated.valid(dateTime)
+         case Failure(_) =>  "Reviewed date is not a valid date".invalidNel[DateTime]
         }
-      }
-      case unknown => "Reviewed date must be valid".invalidNel[DateTime]
+      case _ => "Reviewed date must be valid".invalidNel[DateTime]
       
     }
   }

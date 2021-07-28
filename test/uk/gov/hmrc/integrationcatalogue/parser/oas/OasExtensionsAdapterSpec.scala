@@ -27,7 +27,8 @@ import java.util
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
 
-class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach with ExtensionKeys with OASExtensionsAdapter {
+class OasExtensionsAdapterSpec extends WordSpec
+  with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach with ExtensionKeys with OASExtensionsAdapter {
 
   trait Setup {
     val publisherRefValue = "SOMEREFERENCE"
@@ -42,11 +43,13 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
     val backendValues = new util.ArrayList[Object]()
     backendValues.add("ITMP"); backendValues.add("NPS")
 
-    val extensionsWithOnlyBackends = new util.HashMap[String, Object]()
-    extensionsWithOnlyBackends.put(BACKEND_EXTENSION_KEY, backendValues)
+    val extensionsWithOnlyBackendsAndReviewDate = new util.HashMap[String, Object]()
+    extensionsWithOnlyBackendsAndReviewDate.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/2020 20:27:05")
+    extensionsWithOnlyBackendsAndReviewDate.put(BACKEND_EXTENSION_KEY, backendValues)
 
-    val extensionsWithOnlyStatus = new util.HashMap[String, Object]()
-    extensionsWithOnlyStatus.put(STATUS_EXTENSION_KEY, ApiStatus.ALPHA.entryName)
+    val extensionsWithReviewDateAndStatus = new util.HashMap[String, Object]()
+    extensionsWithReviewDateAndStatus.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/2020 20:27:05")
+    extensionsWithReviewDateAndStatus.put(STATUS_EXTENSION_KEY, ApiStatus.ALPHA.entryName)
 
     val extensionsWithInvalidStatus = new util.HashMap[String, Object]()
     extensionsWithInvalidStatus.put(STATUS_EXTENSION_KEY, "invalid_status")
@@ -54,21 +57,28 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
     val extensionsWithWrongTypeStatus = new util.HashMap[String, Object]()
     extensionsWithWrongTypeStatus.put(STATUS_EXTENSION_KEY, new java.lang.Double(10.5))
 
-    val extensionsWithOnlyPublisherReference = new util.HashMap[String, Object]()
-    extensionsWithOnlyPublisherReference.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefValue)
+    val extensionsWithReviewDateAndPublisherReference = new util.HashMap[String, Object]()
+    extensionsWithReviewDateAndPublisherReference.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/2020 20:27:05")
+    extensionsWithReviewDateAndPublisherReference.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefValue)
 
     val extensionsWithInvalidShortDesc = new util.HashMap[String, Object]()
     extensionsWithInvalidShortDesc.put(SHORT_DESC_EXTENSION_KEY, new java.lang.Double(10.5))
 
-    val extensionsWithBothPublisherReferenceAndBackends = new util.HashMap[String,Object]()
-    extensionsWithBothPublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefValue)
-    extensionsWithBothPublisherReferenceAndBackends.put(BACKEND_EXTENSION_KEY, backendValues)
+    val extensionsWithReviewDatePublisherReferenceAndBackends = new util.HashMap[String,Object]()
+    extensionsWithReviewDatePublisherReferenceAndBackends.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/2020 20:27:05")
+    extensionsWithReviewDatePublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefValue)
+    extensionsWithReviewDatePublisherReferenceAndBackends.put(BACKEND_EXTENSION_KEY, backendValues)
 
     val extensionsWithShortDescAndPublisherReferenceAndBackends = new util.HashMap[String,Object]()
+    extensionsWithShortDescAndPublisherReferenceAndBackends.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/2020 20:27:05")
     extensionsWithShortDescAndPublisherReferenceAndBackends.put(SHORT_DESC_EXTENSION_KEY, shortDescription)
     extensionsWithShortDescAndPublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefValue)
     extensionsWithShortDescAndPublisherReferenceAndBackends.put(BACKEND_EXTENSION_KEY, backendValues)
     extensionsWithShortDescAndPublisherReferenceAndBackends.put(STATUS_EXTENSION_KEY, ApiStatus.DEPRECATED.entryName)
+
+    val extensionsWithReviewDate = new util.HashMap[String,Object]()
+    extensionsWithReviewDate.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/2020 20:27:05")
+
 
     def generateInfoObject(extensionsValues: util.HashMap[String, Object]): Info ={
       val info = new Info()
@@ -85,8 +95,8 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
   "parse" should {
 
     "return Right when extensions is empty but publisher reference from header is provided" in new Setup {
-      val info = new Info()
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(info, Some(publisherRefValue), mockAppConfig)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithReviewDateAndPublisherReference), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(_)      => fail
         case Right(extensions) =>
@@ -96,8 +106,8 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
     }
 
     "return Left with error when extensions is empty and publisher reference is empty" in new Setup {
-      val info = new Info()
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(info, None, mockAppConfig)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(new util.HashMap[String, Object]()), None, mockAppConfig)
       result match {
         case Left(errors)   => errors.head shouldBe "Publisher Reference must be provided and must be valid"
         case Right(_) => fail
@@ -105,7 +115,8 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
     }
 
   "return Right when extensions has backends but no status or publisher reference and publisher reference from header is provided" in new Setup {
-    val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithOnlyBackends), Some(publisherRefValue), mockAppConfig)
+    val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+      parseExtensions(generateInfoObject(extensionsWithOnlyBackendsAndReviewDate), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(_)      => fail
         case Right(extensions) =>
@@ -116,7 +127,8 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
     }
 
     "return Right when extensions has backends and publisher reference and publisher reference from header matches extensions" in new Setup {
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), Some(publisherRefValue), mockAppConfig)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(_)      => fail
         case Right(extensions) =>
@@ -126,7 +138,8 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
     }
 
     "return Left with error when extensions has a value but no publisher reference provided" in new Setup {
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithOnlyBackends), None, mockAppConfig)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithOnlyBackendsAndReviewDate), None, mockAppConfig)
       result match {
         case Left(errors)   => errors.head shouldBe "Publisher Reference must be provided and must be valid"
         case Right(_) => fail
@@ -135,7 +148,8 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
 
 
     "return Left when extensions is set with backends and publisher ref and header publisher reference does not match extensions value" in new Setup {
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), Some("SOMEOTHERREFERENCE"), mockAppConfig)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), Some("SOMEOTHERREFERENCE"), mockAppConfig)
       result match {
         case Left(errors)   => errors.head shouldBe "Publisher reference provided twice but they do not match"
         case Right(_) => fail
@@ -144,63 +158,78 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
 
 
     "return Right with backend strings and publisher ref when extensions is set with backends and publisher ref as string" in new Setup {
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), None, mockAppConfig)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), None, mockAppConfig)
       result match {
         case Left(_)   => fail
-        case Right(extensions) => 
+        case Right(extensions) =>
                 extensions.backends shouldBe List("ITMP", "NPS")
                 extensions.publisherReference shouldBe publisherRefValue
       }
     }
 
     "return Right with backend strings and publisher ref when extensions is set with backends and publisher ref as Integer" in new Setup {
-      extensionsWithBothPublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefInt)
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), None, mockAppConfig)
+      extensionsWithReviewDatePublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefInt)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), None, mockAppConfig)
       result match {
         case Left(_)   => fail
-        case Right(extensions) => 
+        case Right(extensions) =>
                 extensions.backends shouldBe List("ITMP", "NPS")
                 extensions.publisherReference shouldBe publisherRefInt.toString
       }
     }
 
     "return Right with backend strings and publisher ref when extensions is set with backends and publisher ref as Double" in new Setup {
-      extensionsWithBothPublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefDouble)
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), None, mockAppConfig)
+      extensionsWithReviewDatePublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefDouble)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), None, mockAppConfig)
       result match {
         case Left(_)   => fail
-        case Right(extensions) => 
+        case Right(extensions) =>
                 extensions.backends shouldBe List("ITMP", "NPS")
                 extensions.publisherReference shouldBe publisherRefDouble.toString
       }
     }
 
     "return Right with backend strings and publisher ref when extensions is set with backends and publisher ref as List" in new Setup {
-      extensionsWithBothPublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefList)
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithBothPublisherReferenceAndBackends), None, mockAppConfig)
+      extensionsWithReviewDatePublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefList)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), None, mockAppConfig)
       result match {
         case Left(errors)   => errors.head shouldBe "Invalid value. Expected a string, integer or double but found value: [] of type class java.util.ArrayList"
         case Right(_) => fail
       }
     }
-    
+
     "return Right with backend strings when extensions is set and backends are defined" in new Setup {
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithOnlyBackends), Some(publisherRefValue), mockAppConfig)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithOnlyBackendsAndReviewDate), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(_)   => fail
-        case Right(extensions) => 
+        case Right(extensions) =>
          extensions.backends shouldBe List("ITMP", "NPS")
          extensions.publisherReference shouldBe publisherRefValue
       }
     }
 
-    "return Right with empty List when extensions is set and no backends are defined" in new Setup {
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(new util.HashMap()), Some(""), mockAppConfig)
+    "return Right when extensions is and only review date is added" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithReviewDate), Some(""), mockAppConfig)
       result match {
         case Left(_)   => fail
         case Right(extensions) => extensions.backends shouldBe Nil
       }
     }
+
+    "return Left when extensions is empty" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(new util.HashMap[String,Object]()), Some(""), mockAppConfig)
+      result match {
+        case Left(errors)   => errors.head shouldBe "Reviewed date must be provided"
+        case Right(_) => fail
+      }
+    }
+
 
     "return a Left with the correct error message when extensions is unexpected format " in new Setup {
       val info = new Info()
@@ -231,10 +260,11 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
 
     "return Right with short description when extensions is set and short description is defined" in new Setup {
       when(mockAppConfig.shortDescLength).thenReturn(180)
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithShortDescAndPublisherReferenceAndBackends), Some(publisherRefValue), mockAppConfig)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithShortDescAndPublisherReferenceAndBackends), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(_)   => fail
-        case Right(extensions) => 
+        case Right(extensions) =>
          extensions.backends shouldBe List("ITMP", "NPS")
          extensions.publisherReference shouldBe publisherRefValue
          extensions.shortDescription.isDefined shouldBe true
@@ -244,15 +274,17 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
 
     "return Left when short description length is over maximum specified in config" in new Setup {
       when(mockAppConfig.shortDescLength).thenReturn(10)
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithShortDescAndPublisherReferenceAndBackends), Some(publisherRefValue), mockAppConfig)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithShortDescAndPublisherReferenceAndBackends), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe s"Short Description cannot be more than ${mockAppConfig.shortDescLength} characters long."
         case Right(_) => fail
       }
     }
-  
+
     "return Left when short description is not a string" in new Setup {
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithInvalidShortDesc), Some(publisherRefValue), mockAppConfig)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithInvalidShortDesc), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe s"Short Description must be a String"
         case Right(_) => fail
@@ -260,7 +292,8 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
     }
 
     "return Right when extensions only has status" in new Setup {
-    val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithOnlyStatus), Some(publisherRefValue), mockAppConfig)
+    val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+      parseExtensions(generateInfoObject(extensionsWithReviewDateAndStatus), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(e)      => fail
         case Right(extensions) =>
@@ -271,7 +304,8 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
     }
 
     "return Left when status is invalid" in new Setup {
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithInvalidStatus), Some(publisherRefValue), mockAppConfig)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithInvalidStatus), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe s"Status must be one of ALPHA, BETA, LIVE or DEPRECATED"
         case Right(_) => fail
@@ -279,7 +313,8 @@ class OasExtensionsAdapterSpec extends WordSpec with Matchers with MockitoSugar 
     }
 
     "return Left when status is not a string" in new Setup {
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(generateInfoObject(extensionsWithWrongTypeStatus), Some(publisherRefValue), mockAppConfig)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithWrongTypeStatus), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe s"Status must be a String"
         case Right(_) => fail
