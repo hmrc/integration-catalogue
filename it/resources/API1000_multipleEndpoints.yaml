@@ -7,7 +7,7 @@ info:
     email: apiteam@swagger.io
     name: John Doe
   x-integration-catalogue:
-    reviewed-date: 25/12/2020
+    reviewed-date: 2020-12-25
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html

@@ -7,7 +7,7 @@ info:
     name: Developer
     email: contact@example.com
   x-integration-catalogue:
-    reviewed-date: 25/12/2020
+    reviewed-date: 2020-12-25
     status: INVALID
     backends:
       - ETMP    

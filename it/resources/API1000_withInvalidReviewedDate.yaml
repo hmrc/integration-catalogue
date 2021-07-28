@@ -7,7 +7,7 @@ info:
     name: Developer
     email: contact@example.com
   x-integration-catalogue:
-    reviewed-date: 04/11/2020 20:27:05
+    reviewed-date: NONSENSE
     short-description: 'Hello Im a sensible short description, you wont find me getting too long and breaking any tests. No sireee!!'
     backends:
       - ETMP    

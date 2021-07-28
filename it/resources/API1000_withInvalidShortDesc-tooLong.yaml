@@ -7,7 +7,7 @@ info:
     name: Developer
     email: contact@example.com
   x-integration-catalogue:
-    reviewed-date: 25/12/2020
+    reviewed-date: 2020-12-25
     short-description: 'This is an invalid short description and is very very long hopefully this will break the test it is being used in. We will have to wait and see, oooooh Im so excited hip hip hooorah!!!'
     backends:
       - ETMP    

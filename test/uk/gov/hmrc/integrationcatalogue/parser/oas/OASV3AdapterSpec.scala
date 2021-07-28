@@ -33,6 +33,7 @@ import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 
 import java.util.UUID
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
+import org.joda.time.format.ISODateTimeFormat
 
 class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach {
 
@@ -61,9 +62,9 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
     "do happy path with extensions" in new Setup {
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
       val hods = List("ITMP", "NPS")
-      val expectedReviewedDate = DateTime.parse("24/07/2021 00:00:00", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
+      val expectedReviewedDate = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser());
       val result: ValidatedNel[List[String], ApiDetail] =
-        objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = true, hods, reviewedDateExtension = Some("24/07/21")), openApiSpecificationContent = apiDetail0.openApiSpecification)
+        objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = true, hods, reviewedDateExtension = Some("2021-07-24")), openApiSpecificationContent = apiDetail0.openApiSpecification)
       result match {
         case Valid(parsedObject)                    =>
           parsedObject.id shouldBe IntegrationId(generatedUuid)
@@ -89,8 +90,8 @@ class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with Api
 
     "do happy path with reviewedDate but without backends and publisherRef extensions" in new Setup {
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
-      val expectedReviewedDate = DateTime.parse("24/07/2021 00:00:00", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = false, reviewedDateExtension = Some("24/07/21")), openApiSpecificationContent = apiDetail0.openApiSpecification)
+      val expectedReviewedDate = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser());
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = false, reviewedDateExtension = Some("2021-07-24")), openApiSpecificationContent = apiDetail0.openApiSpecification)
       result match {
         case Valid(parsedObject)                    =>
           parsedObject.id shouldBe IntegrationId(generatedUuid)

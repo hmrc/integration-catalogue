@@ -26,6 +26,8 @@ import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 import java.util
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
+import org.joda.time.format.ISODateTimeFormat
+import org.joda.time.DateTime
 
 class OasExtensionsAdapterSpec extends WordSpec
   with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach with ExtensionKeys with OASExtensionsAdapter {
@@ -44,11 +46,11 @@ class OasExtensionsAdapterSpec extends WordSpec
     backendValues.add("ITMP"); backendValues.add("NPS")
 
     val extensionsWithOnlyBackendsAndReviewDate = new util.HashMap[String, Object]()
-    extensionsWithOnlyBackendsAndReviewDate.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/20")
+    extensionsWithOnlyBackendsAndReviewDate.put(REVIEWED_DATE_EXTENSION_KEY, "2020-12-25")
     extensionsWithOnlyBackendsAndReviewDate.put(BACKEND_EXTENSION_KEY, backendValues)
 
     val extensionsWithReviewDateAndStatus = new util.HashMap[String, Object]()
-    extensionsWithReviewDateAndStatus.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/20")
+    extensionsWithReviewDateAndStatus.put(REVIEWED_DATE_EXTENSION_KEY, "2020-12-25")
     extensionsWithReviewDateAndStatus.put(STATUS_EXTENSION_KEY, ApiStatus.ALPHA.entryName)
 
     val extensionsWithInvalidStatus = new util.HashMap[String, Object]()
@@ -58,26 +60,26 @@ class OasExtensionsAdapterSpec extends WordSpec
     extensionsWithWrongTypeStatus.put(STATUS_EXTENSION_KEY, new java.lang.Double(10.5))
 
     val extensionsWithReviewDateAndPublisherReference = new util.HashMap[String, Object]()
-    extensionsWithReviewDateAndPublisherReference.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/20")
+    extensionsWithReviewDateAndPublisherReference.put(REVIEWED_DATE_EXTENSION_KEY, "2020-12-25")
     extensionsWithReviewDateAndPublisherReference.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefValue)
 
     val extensionsWithInvalidShortDesc = new util.HashMap[String, Object]()
     extensionsWithInvalidShortDesc.put(SHORT_DESC_EXTENSION_KEY, new java.lang.Double(10.5))
 
     val extensionsWithReviewDatePublisherReferenceAndBackends = new util.HashMap[String,Object]()
-    extensionsWithReviewDatePublisherReferenceAndBackends.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/20")
+    extensionsWithReviewDatePublisherReferenceAndBackends.put(REVIEWED_DATE_EXTENSION_KEY, "2020-12-25")
     extensionsWithReviewDatePublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefValue)
     extensionsWithReviewDatePublisherReferenceAndBackends.put(BACKEND_EXTENSION_KEY, backendValues)
 
     val extensionsWithShortDescAndPublisherReferenceAndBackends = new util.HashMap[String,Object]()
-    extensionsWithShortDescAndPublisherReferenceAndBackends.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/20")
+    extensionsWithShortDescAndPublisherReferenceAndBackends.put(REVIEWED_DATE_EXTENSION_KEY, "2020-12-25")
     extensionsWithShortDescAndPublisherReferenceAndBackends.put(SHORT_DESC_EXTENSION_KEY, shortDescription)
     extensionsWithShortDescAndPublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefValue)
     extensionsWithShortDescAndPublisherReferenceAndBackends.put(BACKEND_EXTENSION_KEY, backendValues)
     extensionsWithShortDescAndPublisherReferenceAndBackends.put(STATUS_EXTENSION_KEY, ApiStatus.DEPRECATED.entryName)
 
-    val extensionsWithReviewDate = new util.HashMap[String,Object]()
-    extensionsWithReviewDate.put(REVIEWED_DATE_EXTENSION_KEY, "25/12/20")
+    val extensionsWithReviewDateAndTime = new util.HashMap[String,Object]()
+    extensionsWithReviewDateAndTime.put(REVIEWED_DATE_EXTENSION_KEY, "2020-12-25T12:00:00")
 
 
     def generateInfoObject(extensionsValues: util.HashMap[String, Object]): Info ={
@@ -98,7 +100,8 @@ class OasExtensionsAdapterSpec extends WordSpec
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
         parseExtensions(generateInfoObject(extensionsWithReviewDateAndPublisherReference), Some(publisherRefValue), mockAppConfig)
       result match {
-        case Left(_)      => fail
+        case Left(errors)      => errors.map(println)
+        fail
         case Right(extensions) =>
           extensions.backends shouldBe Nil
           extensions.publisherReference shouldBe publisherRefValue
@@ -212,9 +215,9 @@ class OasExtensionsAdapterSpec extends WordSpec
       }
     }
 
-    "return Right when extensions is and only review date is added" in new Setup {
+    "return Right when extensions is and only review datetime is added" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithReviewDate), Some(""), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithReviewDateAndTime), Some(""), mockAppConfig)
       result match {
         case Left(_)   => fail
         case Right(extensions) => extensions.backends shouldBe Nil

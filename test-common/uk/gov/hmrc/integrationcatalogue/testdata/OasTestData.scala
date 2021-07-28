@@ -157,7 +157,7 @@ trait OasTestData extends ExtensionKeys {
                                       |    name: Test Developer
                                       |    email: test.developer@hmrc.gov.uk
                                       |  x-integration-catalogue:
-                                      |    reviewed-date: 25/12/2020
+                                      |    reviewed-date: 2020-12-25
                                       |    short-description: "I am a short description"
                                       |    backends:
                                       |      - ITMP
@@ -717,7 +717,7 @@ trait OasTestData extends ExtensionKeys {
                         |    name: Test Developer
                         |    email: test.developer@hmrc.gov.uk
                         |  x-integration-catalogue:
-                        |    reviewed-date: 25/12/2020
+                        |    reviewed-date: 2020-12-25
                         |servers:
                         |  - url: 'https://{hostname}:{port}'
                         |    description: >-

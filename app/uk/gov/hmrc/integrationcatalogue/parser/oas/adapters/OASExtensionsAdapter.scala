@@ -32,6 +32,7 @@ import org.joda.time.format.DateTimeFormat
 import scala.util.Try
 import scala.util.Failure
 import scala.util.Success
+import org.joda.time.format.ISODateTimeFormat
 
 trait OASExtensionsAdapter extends ExtensionKeys {
 
@@ -110,10 +111,11 @@ trait OASExtensionsAdapter extends ExtensionKeys {
       case None =>  "Reviewed date must be provided".invalidNel[DateTime]
       case Some(x: String) =>
         Try[DateTime]{
-          DateTime.parse(x, DateTimeFormat.forPattern("dd/MM/yy"))
+          DateTime.parse(x, ISODateTimeFormat.dateOptionalTimeParser())
         } match {
          case Success(dateTime) => Validated.valid(dateTime)
-         case Failure(_) =>  "Reviewed date is not a valid date".invalidNel[DateTime]
+         case Failure(e) =>  println(e.getMessage())
+         "Reviewed date is not a valid date".invalidNel[DateTime]
         }
       case Some(_)  => "Reviewed date is not a valid date".invalidNel[DateTime]
     }
