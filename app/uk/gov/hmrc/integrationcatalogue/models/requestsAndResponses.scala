@@ -30,6 +30,7 @@ case class FileTransferPublishRequest(
                               description: String,
                               platformType: PlatformType, // Split this to Platform and type. TBD
                               lastUpdated: DateTime,
+                              reviewedDate: DateTime,
                               contact: ContactInformation, // (single name + email)
                               sourceSystem: List[String], // One or many
                               targetSystem: List[String],

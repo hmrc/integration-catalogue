@@ -84,6 +84,7 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
       description = "A file transfer from Birth Verification Data (BVD) to Data Provisioning Systems (DPS)",
       platformType = PlatformType.CORE_IF,
       lastUpdated = dateValue,
+      reviewedDate = reviewedDate,
       contact = ContactInformation(Some("Core IF Team"), Some("example@gmail.com")),
       sourceSystem = List("BVD"),
       targetSystem = List("DPS"),
