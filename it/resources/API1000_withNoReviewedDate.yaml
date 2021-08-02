@@ -7,7 +7,7 @@ info:
     name: Developer
     email: contact@example.com
   x-integration-catalogue:
-    status: INVALID
+    short-description: 'Hello Im a sensible short description, you wont find me getting too long and breaking any tests. No sireee!!'
     backends:
       - ETMP    
 servers:

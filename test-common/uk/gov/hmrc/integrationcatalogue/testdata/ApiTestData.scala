@@ -27,6 +27,7 @@ import java.util.UUID
 trait ApiTestData {
 
   val dateValue = DateTime.parse("04/11/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
+  val reviewedDate = DateTime.parse("25/12/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
 
   val coreIfPlatform = PlatformType.CORE_IF
   val apiPlatform = PlatformType.API_PLATFORM
@@ -103,7 +104,8 @@ trait ApiTestData {
     components = Components(List.empty, List.empty),
     shortDescription = None,
     openApiSpecification = "OAS content for Self Assessment",
-    apiStatus = LIVE
+    apiStatus = LIVE,
+    reviewedDate = reviewedDate
   )
 
   val apiDetail1 = ApiDetail(
@@ -120,7 +122,8 @@ trait ApiTestData {
     components = Components(List.empty, List.empty),
     shortDescription = None,
     openApiSpecification = "OAS content for Marriage Allowance",
-    apiStatus = LIVE
+    apiStatus = LIVE,
+    reviewedDate = reviewedDate
   )
 
   val apiDetail2 = ApiDetail(
@@ -138,7 +141,8 @@ trait ApiTestData {
     components = Components(List.empty, List.empty),
     shortDescription = None,
     openApiSpecification = "OAS content for API#1001",
-    apiStatus = LIVE
+    apiStatus = LIVE,
+    reviewedDate = reviewedDate
   )
 
   val apiDetail3 = ApiDetail(
@@ -156,7 +160,8 @@ trait ApiTestData {
     components = Components(List.empty, List.empty),
     shortDescription = None,
     openApiSpecification = "OAS content for API#1002",
-    apiStatus = LIVE
+    apiStatus = LIVE,
+    reviewedDate = reviewedDate
   )
 
   val apiList = List(apiDetail0, apiDetail1, apiDetail2, apiDetail3)

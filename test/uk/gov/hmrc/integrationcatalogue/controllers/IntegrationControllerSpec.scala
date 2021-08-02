@@ -94,6 +94,7 @@ class IntegrationControllerSpec extends WordSpec with Matchers with MockitoSugar
     val fileContents = "{}"
     val uuid = UUID.fromString("28c0bd67-4176-42c7-be13-53be98a4db58")
     val dateValue: DateTime = DateTime.parse("04/11/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
+    val reviewedDate = DateTime.parse("25/12/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
 
     val apiPlatformMaintainer: Maintainer = Maintainer("API Platform Team", "#team-api-platform-sup")
     val coreIfMaintainer: Maintainer = Maintainer("IF Team", "N/A", List.empty)
@@ -129,7 +130,8 @@ class IntegrationControllerSpec extends WordSpec with Matchers with MockitoSugar
       components = Components(List.empty, List.empty),
       shortDescription = None,
       openApiSpecification = "OAS content",
-      apiStatus = LIVE
+      apiStatus = LIVE,
+    reviewedDate = reviewedDate
     )
 
     val fakeDeleteRequest = FakeRequest("DELETE", s"/apis/${exampleApiDetail.publisherReference}")

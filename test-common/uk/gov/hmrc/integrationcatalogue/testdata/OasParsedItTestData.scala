@@ -30,6 +30,7 @@ trait OasParsedItTestData {
   val fileContents = "{}"
   val uuid: UUID = UUID.fromString("28c0bd67-4176-42c7-be13-53be98a4db58")
   val dateValue: DateTime = DateTime.parse("04/11/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"))
+  val reviewedDate = DateTime.parse("25/12/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
 
   val apiPlatformMaintainer: Maintainer = Maintainer("API Platform Team", "#team-api-platform-sup")
   val coreIfMaintainer: Maintainer = Maintainer("IF Team", "N/A", List.empty)
@@ -112,7 +113,8 @@ trait OasParsedItTestData {
     components = Components(List.empty, List.empty),
     shortDescription = Some("exampleApiDetail's short description"),
     openApiSpecification = "OAS file contents 1",
-    apiStatus = LIVE
+    apiStatus = LIVE,
+    reviewedDate = reviewedDate
   )
 
   val exampleFileTransfer: FileTransferDetail =
@@ -122,6 +124,7 @@ trait OasParsedItTestData {
       title = "getKnownFactsName ETMP",
       description = "getKnownFactsDesc",
       lastUpdated = dateValue,
+      reviewedDate = reviewedDate,
       platform = PlatformType.CORE_IF,
       maintainer = coreIfMaintainer,
       sourceSystem = List("source"),
@@ -135,6 +138,7 @@ trait OasParsedItTestData {
       title = "filetransfer 2",
       description = "file transfer 2 desc",
       lastUpdated = dateValue,
+      reviewedDate = reviewedDate,
       platform = PlatformType.API_PLATFORM,
       maintainer = apiPlatformMaintainer,
       sourceSystem = List("someSource"),
@@ -156,7 +160,8 @@ trait OasParsedItTestData {
     components = Components(List.empty, List.empty),
     shortDescription = None,
     openApiSpecification = "OAS file contents 2",
-    apiStatus = LIVE
+    apiStatus = LIVE,
+    reviewedDate = reviewedDate
   )
 
   val exampleApiDetailForSearch2: ApiDetail = ApiDetail(
@@ -174,7 +179,8 @@ trait OasParsedItTestData {
     components = Components(List.empty, List.empty),
     shortDescription = None,
     openApiSpecification = "OAS file contents 3",
-    apiStatus = LIVE
+    apiStatus = LIVE,
+    reviewedDate = reviewedDate
   )
 
   val exampleApiDetail2: ApiDetail = ApiDetail(
@@ -192,7 +198,8 @@ trait OasParsedItTestData {
     components = Components(List.empty, List.empty),
     shortDescription = Some("A short description"),
     openApiSpecification = "OAS file contents 4",
-    apiStatus = LIVE
+    apiStatus = LIVE,
+    reviewedDate = reviewedDate
   )
 
   val exampleApiDetail3: ApiDetail = ApiDetail(
@@ -210,6 +217,7 @@ trait OasParsedItTestData {
     components = Components(List.empty, List.empty),
     shortDescription = None,
     openApiSpecification = "OAS file contents 5",
-    apiStatus = LIVE
+    apiStatus = LIVE,
+    reviewedDate = reviewedDate
   )
 }

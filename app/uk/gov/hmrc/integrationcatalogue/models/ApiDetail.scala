@@ -27,6 +27,7 @@ sealed trait IntegrationDetail {
   def description: String
   def platform: PlatformType
   def lastUpdated: DateTime
+  def reviewedDate: DateTime
   def maintainer: Maintainer
   def integrationType: IntegrationType
   def score: Option[Double]
@@ -163,6 +164,7 @@ case class ApiDetail(
     platform: PlatformType,
     hods: List[String] = List.empty,
     lastUpdated: DateTime,
+    reviewedDate: DateTime,
     maintainer: Maintainer,
     score: Option[Double] = None,
     version: String,
@@ -184,6 +186,7 @@ case class FileTransferDetail(
     description: String,
     platform: PlatformType,
     lastUpdated: DateTime,
+    reviewedDate: DateTime,
     maintainer: Maintainer,
     score: Option[Double] = None,
     sourceSystem: List[String],
@@ -204,6 +207,7 @@ object FileTransferDetail {
       description = request.description,
       platform = request.platformType,
       lastUpdated = request.lastUpdated,
+      reviewedDate = request.reviewedDate,
       maintainer = Maintainer(name = "", slackChannel = "", contactInfo = List(request.contact)),
       sourceSystem = request.sourceSystem,
       targetSystem = request.targetSystem,

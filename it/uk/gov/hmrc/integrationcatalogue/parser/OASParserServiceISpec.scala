@@ -58,8 +58,9 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(publisherReference, PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
-        case errors: Invalid[NonEmptyList[List[String]]] =>
-          errors.e.head.contains(expectedErrorMessage) shouldBe true
+        case Invalid(errors: NonEmptyList[List[String]]) =>
+          println(s"*****${errors.head.mkString}")
+          errors.head.contains(expectedErrorMessage) shouldBe true
         case _ => fail()
       }
 
@@ -323,7 +324,19 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
     }
 
     "catch error in invalid oas status" in new Setup {
-      testValidationFailureMessage("/API1000_InValidStatus.yaml", "Status must be one of ALPHA, BETA, LIVE or DEPRECATED")
+      testValidationFailureMessage("/API1000_InvalidStatus.yaml", "Status must be one of ALPHA, BETA, LIVE or DEPRECATED")
+    }
+
+    "catch error in invalid oas reviewed date" in new Setup {
+      testValidationFailureMessage("/API1000_withInvalidReviewedDate.yaml", "Reviewed date is not a valid date")
+    }
+
+    "catch error in invalid oas with no reviewed date" in new Setup {
+      testValidationFailureMessage("/API1000_withNoReviewedDate.yaml", "Reviewed date must be provided")
+    }
+
+    "catch error in invalid oas with empty reviewed date" in new Setup {
+      testValidationFailureMessage("/API1000_withEmptyReviewedDate.yaml", "Reviewed date is not a valid date")
     }
 
     "catch error when publisher ref in oas file does not match the one in the request" in new Setup {

@@ -8,7 +8,9 @@ info:
     email: contact@example.com
   x-integration-catalogue:
     reviewed-date: 2020-12-25
-    publisher-reference: 1001
+    status: INVALID
+    backends:
+      - ETMP    
 servers:
   - url: 'https://hostname'
     description: server description

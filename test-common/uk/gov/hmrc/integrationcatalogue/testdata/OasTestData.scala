@@ -23,11 +23,14 @@ import io.swagger.v3.oas.models.parameters.RequestBody
 import io.swagger.v3.oas.models.responses.{ApiResponse, ApiResponses}
 import io.swagger.v3.oas.models.{OpenAPI, Operation, PathItem, Paths}
 import io.swagger.v3.parser.core.models.SwaggerParseResult
+import org.joda.time.DateTime
 
 import java.util.HashMap
 import scala.collection.JavaConverters._
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.ExtensionKeys
+
 import java.{util => ju}
+import org.joda.time.format.DateTimeFormat
 
 trait OasTestData extends ExtensionKeys {
   //*** - OPENAPI STUFF
@@ -69,27 +72,30 @@ trait OasTestData extends ExtensionKeys {
     openAPIInfo
   }
 
-  def getOpenAPIObject(withExtensions: Boolean, backendsExtension: List[String] = List.empty): OpenAPI = {
+  def getOpenAPIObject(withExtensions: Boolean, backendsExtension: List[String] = List.empty, reviewedDateExtension: Option[String] = None): OpenAPI = {
 
     val openAPIInfo = getOpenApiInfo()
 
-    if (withExtensions) {
-      // Extensions
+    if (withExtensions || reviewedDateExtension.isDefined) {
       val sublevelExtensions = new HashMap[String, AnyRef]()
-      var backends: ju.List[String] = null
-      if(Option(backendsExtension).isDefined) {
-        backends = new java.util.ArrayList[String]()
-        backendsExtension.foreach(e => backends.add(e))
-      }
-      
-      
-      sublevelExtensions.put(BACKEND_EXTENSION_KEY, backends)
-      sublevelExtensions.put(PUBLISHER_REF_EXTENSION_KEY, "self-assessment-api")
 
+      if (withExtensions) {
+        var backends: ju.List[String] = null
+        if (Option(backendsExtension).isDefined) {
+          backends = new java.util.ArrayList[String]()
+          backendsExtension.foreach(e => backends.add(e))
+        }
+        sublevelExtensions.put(BACKEND_EXTENSION_KEY, backends)
+        sublevelExtensions.put(PUBLISHER_REF_EXTENSION_KEY, "self-assessment-api")
+      }
+
+      if(reviewedDateExtension.isDefined) {
+        sublevelExtensions.put(REVIEWED_DATE_EXTENSION_KEY, reviewedDateExtension.get)
+    }
       val topLevelExtensionsMap = new HashMap[String, AnyRef]()
       topLevelExtensionsMap.put(EXTENSIONS_KEY, sublevelExtensions)
-
       openAPIInfo.setExtensions(topLevelExtensionsMap)
+
     }
 
     val requestBody1 = new RequestBody()
@@ -126,18 +132,14 @@ trait OasTestData extends ExtensionKeys {
     getOperation.setResponses(responseBodies)
 
     pathItem1.setGet(getOperation)
-
     val pathItem2 = new PathItem()
     pathItem2.setGet(getOperation)
-
     val pathItem3 = new PathItem()
     pathItem3.setGet(getOperation)
-
     val pathsObj = new Paths()
     pathsObj.addPathItem(oasPath1Uri, pathItem1)
     pathsObj.addPathItem(oasPath2Uri, pathItem2)
     pathsObj.addPathItem(oasPath3Uri, pathItem3)
-
     val openApiObj = new OpenAPI()
     openApiObj.setInfo(openAPIInfo)
     openApiObj.setPaths(pathsObj)
@@ -155,6 +157,7 @@ trait OasTestData extends ExtensionKeys {
                                       |    name: Test Developer
                                       |    email: test.developer@hmrc.gov.uk
                                       |  x-integration-catalogue:
+                                      |    reviewed-date: 2020-12-25
                                       |    short-description: "I am a short description"
                                       |    backends:
                                       |      - ITMP
@@ -713,6 +716,8 @@ trait OasTestData extends ExtensionKeys {
                         |  contact:
                         |    name: Test Developer
                         |    email: test.developer@hmrc.gov.uk
+                        |  x-integration-catalogue:
+                        |    reviewed-date: 2020-12-25
                         |servers:
                         |  - url: 'https://{hostname}:{port}'
                         |    description: >-
