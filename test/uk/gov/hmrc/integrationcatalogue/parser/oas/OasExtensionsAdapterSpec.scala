@@ -26,8 +26,6 @@ import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 import java.util
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
-import org.joda.time.format.ISODateTimeFormat
-import org.joda.time.DateTime
 
 class OasExtensionsAdapterSpec extends WordSpec
   with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach with ExtensionKeys with OASExtensionsAdapter {
@@ -58,6 +56,12 @@ class OasExtensionsAdapterSpec extends WordSpec
 
     val extensionsWithWrongTypeStatus = new util.HashMap[String, Object]()
     extensionsWithWrongTypeStatus.put(STATUS_EXTENSION_KEY, new java.lang.Double(10.5))
+
+    val extensionsWithEmptyStatus = new util.HashMap[String, Object]()
+    extensionsWithEmptyStatus.put(STATUS_EXTENSION_KEY, "")
+
+    val extensionsWithNullStatus = new util.HashMap[String, Object]()
+    extensionsWithNullStatus.put(STATUS_EXTENSION_KEY, "")
 
     val extensionsWithReviewDateAndPublisherReference = new util.HashMap[String, Object]()
     extensionsWithReviewDateAndPublisherReference.put(REVIEWED_DATE_EXTENSION_KEY, "2020-12-25")
@@ -304,7 +308,7 @@ class OasExtensionsAdapterSpec extends WordSpec
                 extensions.backends shouldBe List.empty
                 extensions.publisherReference shouldBe publisherRefValue
       }
-    }
+    }    
 
     "return Left when status is invalid" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
@@ -319,7 +323,25 @@ class OasExtensionsAdapterSpec extends WordSpec
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
         parseExtensions(generateInfoObject(extensionsWithWrongTypeStatus), Some(publisherRefValue), mockAppConfig)
       result match {
-        case Left(errors) => errors.head shouldBe s"Status must be a String"
+        case Left(errors) => errors.head shouldBe s"Status must be one of ALPHA, BETA, LIVE or DEPRECATED"
+        case Right(_) => fail
+      }
+    }    
+    
+    "return Left when status empty" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithEmptyStatus), Some(publisherRefValue), mockAppConfig)
+      result match {
+        case Left(errors) => errors.head shouldBe s"Status must be one of ALPHA, BETA, LIVE or DEPRECATED"
+        case Right(_) => fail
+      }
+    }
+
+    "return Left when status null" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithNullStatus), Some(publisherRefValue), mockAppConfig)
+      result match {
+        case Left(errors) => errors.head shouldBe s"Status must be one of ALPHA, BETA, LIVE or DEPRECATED"
         case Right(_) => fail
       }
     }
