@@ -28,7 +28,6 @@ import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
 import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
 import scala.util.Try
 import scala.util.Failure
 import scala.util.Success
@@ -102,7 +101,8 @@ trait OASExtensionsAdapter extends ExtensionKeys {
             Validated.valid(ApiStatus.withName(x))
           } else "Status must be one of ALPHA, BETA, LIVE or DEPRECATED".invalidNel[ApiStatus]
       }
-      case unknown => "Status must be a String".invalidNel[ApiStatus]
+      case Some(_)  => "Status must be one of ALPHA, BETA, LIVE or DEPRECATED".invalidNel[ApiStatus]
+      
     }
   }
 
