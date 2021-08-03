@@ -102,7 +102,8 @@ trait OASExtensionsAdapter extends ExtensionKeys {
             Validated.valid(ApiStatus.withName(x))
           } else "Status must be one of ALPHA, BETA, LIVE or DEPRECATED".invalidNel[ApiStatus]
       }
-      case unknown => "Status must be a String".invalidNel[ApiStatus]
+      case Some(_)  => "Status must be one of ALPHA, BETA, LIVE or DEPRECATED".invalidNel[ApiStatus]
+      
     }
   }
 
