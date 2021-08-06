@@ -198,8 +198,6 @@ class IntegrationRepositoryISpec
           case Left(_)                                        => fail()
         }
 
-        getAll.size shouldBe 1
-
       }
 
       "save api should handle duplicates " in {
@@ -244,15 +242,14 @@ class IntegrationRepositoryISpec
       "return 2 when delete by platformType called against collection with 2 matching apis" in {
 
         await(repo.findAndModify(exampleApiDetail))
-        await(repo.findAndModify(exampleFileTransfer))
         await(repo.findAndModify(exampleApiDetailForSearch1))
         await(repo.findAndModify(exampleApiDetailForSearch2))
 
         val result2 = getAll
-        result2.size shouldBe 4
+        result2.size shouldBe 3
 
         val result = await(repo.deleteByPlatform(PlatformType.CORE_IF))
-        result shouldBe 3
+        result shouldBe 2
 
         val result3 = getAll
         result3.size shouldBe 1
