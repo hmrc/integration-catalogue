@@ -18,6 +18,7 @@ package uk.gov.hmrc.integrationcatalogue.models
 
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformType, SpecificationType, ContactInformation}
 import org.joda.time.DateTime
+import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType
 
 case class IntegrationResponse(count: Int, pagedCount: Option[Int] = None, results: List[IntegrationDetail])
 
@@ -37,7 +38,7 @@ case class FileTransferPublishRequest(
                               fileTransferPattern: String)
 
 // TODO : Move me
-case class IntegrationFilter(searchText: List[String] = List.empty, platforms: List[PlatformType] = List.empty, backends: List[String] = List.empty, itemsPerPage: Option[Int] = None, currentPage: Option[Int] = None)
+case class IntegrationFilter(searchText: List[String] = List.empty, platforms: List[PlatformType] = List.empty, backends: List[String] = List.empty, itemsPerPage: Option[Int] = None, currentPage: Option[Int] = None, typeFilter: Option[IntegrationType] = None)
 
 //TODO remove code from PublishError
 case class PublishError(code: Int, message: String)

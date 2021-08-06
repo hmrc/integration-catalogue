@@ -62,7 +62,7 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
         await(apiRepo.findAndModify(exampleApiDetail))
         await(apiRepo.findAndModify(exampleApiDetail2))
         await(apiRepo.findAndModify(exampleApiDetailForSearch2))
-       //await(apiRepo.findAndModify(exampleFileTransfer))
+        await(apiRepo.findAndModify(exampleFileTransfer))
 
         val result = callGetEndpoint(s"$url/integrations?$searchTerm")
         result.status mustBe expectedResult
@@ -84,26 +84,27 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       }
 
       "respond with 200 and return 2 Apis for the first page when using no search term or filter" in {
-        setupFilterTestDataAndRunTest("itemsPerPage=2&currentPage=1", OK, List(exampleApiDetailForSearch2.publisherReference, exampleApiDetail.publisherReference), Some(3))
+        setupFilterTestDataAndRunTest("itemsPerPage=2&currentPage=1", OK, List(exampleApiDetailForSearch2.publisherReference, exampleApiDetail.publisherReference), Some(4))
       }
 
-      "respond with 200 and return 1 Api for the second page when using no search term or filter" in {
-        setupFilterTestDataAndRunTest("itemsPerPage=2&currentPage=2", OK, List(exampleApiDetail2.publisherReference), Some(3))
+      "respond with 200 and return 2 Apis for the second page when using no search term or filter" in {
+        setupFilterTestDataAndRunTest("itemsPerPage=2&currentPage=2", OK, List(exampleFileTransfer.publisherReference, exampleApiDetail2.publisherReference), Some(4))
       }
 
       "respond with 200 and return 0 Apis for the third page when using no search term or filter" in {
-        setupFilterTestDataAndRunTest("itemsPerPage=2&currentPage=3", OK, List.empty, Some(3))
+        setupFilterTestDataAndRunTest("itemsPerPage=2&currentPage=3", OK, List.empty, Some(4))
       }
 
       "respond with 200 and return 2 Apis for the first page when no currentPage is passed in with no search term or filter" in {
-        setupFilterTestDataAndRunTest("itemsPerPage=2", OK, List(exampleApiDetailForSearch2.publisherReference, exampleApiDetail.publisherReference), Some(3))
+        setupFilterTestDataAndRunTest("itemsPerPage=2", OK, List(exampleApiDetailForSearch2.publisherReference, exampleApiDetail.publisherReference), Some(4))
       }
 
-      "respond with 200 and return all 3 Apis and ignore paging when passing in currentPage=1 with no search term or filter" in {
+      "respond with 200 and return all 4 Apis and ignore paging when passing in currentPage=1 with no search term or filter" in {
         setupFilterTestDataAndRunTest("currentPage=1", OK, List(
           exampleApiDetailForSearch2.publisherReference,
             exampleApiDetail.publisherReference,
-            exampleApiDetail2.publisherReference), Some(3))
+            exampleFileTransfer.publisherReference,
+            exampleApiDetail2.publisherReference), Some(4))
       }
 
       "respond with 200 and return matching Api when searching by searchTerm" in {
@@ -120,11 +121,11 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
         setupFilterTestDataAndRunTest("searchTerm=getKnownFactsName&platformFilter=DES&backendsFilter=CUSTOMS", OK, List(exampleApiDetailForSearch2.publisherReference))
       }
 
-      "respond with 200 and return 2 CORE_IF apis when filtering by CORE_IF platform" in {
+      "respond with 200 and return 2 CORE_IF apis and 1 file transfer when filtering by CORE_IF platform" in {
         setupFilterTestDataAndRunTest(
           "platformFilter=CORE_IF",
           OK,
-          List(exampleApiDetail.publisherReference, exampleApiDetail2.publisherReference)
+          List(exampleApiDetail.publisherReference, exampleFileTransfer.publisherReference, exampleApiDetail2.publisherReference)
         )
       }
 
@@ -147,6 +148,7 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
           List(
             exampleApiDetailForSearch2.publisherReference,
             exampleApiDetail.publisherReference,
+            exampleFileTransfer.publisherReference,
             exampleApiDetail2.publisherReference
           )
         )
@@ -160,12 +162,25 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
         )
       }
 
-      "respond with 200 and return 1 api when filtering by 'CUSTOMS' hod and 'source' sourceSystem" in {
+      "respond with 200 and return 1 api and 1 file transfer when filtering by 'CUSTOMS' hod and 'source' sourceSystem" in {
         setupFilterTestDataAndRunTest(
           "backendsFilter=CUSTOMS&backendsFilter=source",
           OK,
-          List(exampleApiDetailForSearch2.publisherReference)
+          List(exampleApiDetailForSearch2.publisherReference, exampleFileTransfer.publisherReference)
         )
+      }
+
+      "respond with 200 and return all Apis when filtering by API type" in {
+        setupFilterTestDataAndRunTest("integrationType=API", OK, 
+        List(
+          exampleApiDetailForSearch2.publisherReference,
+          exampleApiDetail.publisherReference, 
+          exampleApiDetail2.publisherReference))
+      }
+
+      "respond with 200 and return all File Transfers when filtering by FILE_TRANSFER type" in {
+        setupFilterTestDataAndRunTest("integrationType=FILE_TRANSFER", OK, 
+        List(exampleFileTransfer.publisherReference))
       }
 
     }

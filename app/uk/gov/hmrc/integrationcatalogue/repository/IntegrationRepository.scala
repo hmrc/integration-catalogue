@@ -162,7 +162,7 @@ class IntegrationRepository @Inject()(config: AppConfig,
     def sendPagedResults(results: List[IntegrationDetail], perPageFilter: Option[Int])={
         if(perPageFilter.isDefined) Some(results.size) else None
     }
-    val integrationTypeFilter = Filters.equal("_type", "uk.gov.hmrc.integrationcatalogue.models.ApiDetail")
+    val integrationTypeFilter = filter.typeFilter.map(typeVal =>  Filters.equal("_type", typeVal.integrationType))
     val textFilter: Option[Bson] = filter.searchText.headOption.map(searchText => Filters.text(searchText))
     val platformFilter = if (filter.platforms.nonEmpty) Some(Filters.in("platform", filter.platforms.map(Codecs.toBson(_)): _*)) else None
     val backendsFilter = if(filter.backends.nonEmpty) Some(Filters.in("hods", filter.backends : _*)) else None
@@ -171,7 +171,7 @@ class IntegrationRepository @Inject()(config: AppConfig,
    val combinedHodsFilters = Seq(backendsFilter,  sourceFilter, targetFilter).flatten
     val hodsFilter = if(combinedHodsFilters.isEmpty) None else Some(Filters.or(combinedHodsFilters: _*))
 
-    val filters: Seq[Bson] = Seq(Some(integrationTypeFilter), textFilter, platformFilter, hodsFilter).flatten
+    val filters: Seq[Bson] = Seq(integrationTypeFilter, textFilter, platformFilter, hodsFilter).flatten
     val sortByScore = Sorts.metaTextScore("score")
     val scoreProjection = Projections.metaTextScore("score")
      val sortOp = if (textFilter.isEmpty) ascending("title") else sortByScore

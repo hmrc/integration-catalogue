@@ -155,8 +155,9 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
         publishResult.isSuccess mustBe true
         publishResult.errors.size mustBe 0
 
-        val fileTransfer: Option[IntegrationDetail] = Await.result(apiRepo.findById(publishResult.publishDetails.get.integrationId), 500 millis)
-        fileTransfer.get.publisherReference mustBe fileTransferPublishRequestObj.publisherReference
+        val apis: immutable.Seq[IntegrationDetail] = Await.result(apiRepo.findWithFilters(IntegrationFilter()), 500 millis).results
+        apis.size mustBe 1
+        apis.head.publisherReference mustBe fileTransferPublishRequestObj.publisherReference
       }
     }
 
