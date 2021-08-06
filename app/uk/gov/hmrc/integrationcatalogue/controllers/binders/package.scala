@@ -17,7 +17,7 @@
 package uk.gov.hmrc.integrationcatalogue.controllers
 
 import play.api.mvc.{PathBindable, QueryStringBindable}
-import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformType}
+import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformType, IntegrationType}
 
 import java.util.UUID
 import scala.util.Try
@@ -46,6 +46,26 @@ package object binders {
       .toOption
       .toRight(s"Cannot accept $stringVal as PlatformType")
   }
+
+  private def handleStringToIntegrationType(stringVal: String): Either[String, IntegrationType] = {
+    Try(IntegrationType.withNameInsensitive(stringVal))
+      .toOption
+      .toRight(s"Cannot accept $stringVal as IntegrationType")
+  }
+
+  implicit def integrationTypeQueryStringBindable(implicit textBinder: QueryStringBindable[String]): QueryStringBindable[IntegrationType] =
+    new QueryStringBindable[IntegrationType] {
+      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, IntegrationType]] = {
+        textBinder.bind(key, params).map {
+          case Right(integrationType) => handleStringToIntegrationType(integrationType)
+          case Left(_) => Left("Unable to bind an integrationType")
+        }
+      }
+
+      override def unbind(key: String, integrationType: IntegrationType): String = {
+        textBinder.unbind(key, integrationType.entryName)
+      }
+    }
 
   implicit def platformTypeQueryStringBindable(implicit textBinder: QueryStringBindable[String]): QueryStringBindable[PlatformType] =
     new QueryStringBindable[PlatformType] {

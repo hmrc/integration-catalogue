@@ -17,6 +17,7 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import java.util.UUID
 import cats.instances.int
+import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType
 
 class IntegrationRepositoryISpec
     extends WordSpecLike
@@ -422,6 +423,16 @@ class IntegrationRepositoryISpec
       "find 4 result when searching for backend CUSTOMS, ETMP and source" in new FilterSetup {
        setUpTest()
        validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP", "source"))).results, List("API1003", "API1004", "API1002", "API1005"))
+     }
+
+      "find 2 file transfers when searching for type File Transfer" in new FilterSetup {
+       setUpTest()
+       validateResults(findWithFilters(IntegrationFilter(typeFilter = Some(IntegrationType.FILE_TRANSFER))).results, List("API1007", "API1002"))
+     }
+
+      "find 4 apis when searching for type API" in new FilterSetup {
+       setUpTest()
+       validateResults(findWithFilters(IntegrationFilter(typeFilter = Some(IntegrationType.API))).results, List("API1003", "API1004", "API1001", "API1005"))
      }
 
     }

@@ -28,6 +28,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType
 @Singleton
 class IntegrationController @Inject()(controllerComponents: ControllerComponents,
                                       integrationService: IntegrationService,
@@ -45,18 +46,21 @@ class IntegrationController @Inject()(controllerComponents: ControllerComponents
      }
   }
 
- def findWithFilters(searchTerm: List[String],
+
+def findWithFilters(searchTerm: List[String],
                      platformFilter: List[PlatformType],
                      backendsFilter: List[String],
                      itemsPerPage: Option[Int],
-                     currentPage: Option[Int]) : Action[AnyContent] =
+                     currentPage: Option[Int],
+                     integrationType: Option[IntegrationType]) : Action[AnyContent] =
     (Action andThen validateQueryParamKeyAction).async {
-      integrationService.findWithFilters(IntegrationFilter(searchTerm, platformFilter, backendsFilter, itemsPerPage, currentPage))
+      integrationService.findWithFilters(IntegrationFilter(searchTerm, platformFilter, backendsFilter, itemsPerPage, currentPage, integrationType))
       .map(result => {
        logger.warn(s"FindWithFilter results: ${result.count} - SearchTerms: ${valuesOrNone(searchTerm)} PlatformFilters: ${valuesOrNone(platformFilter.map(_.toString))} itemsPerPage: ${itemsPerPage.map(_.toString).getOrElse("Value Not Set")} currentPage: ${currentPage.map(_.toString).getOrElse("Value Not Set")}" )
         Ok(Json.toJson(result))
       })
-  }
+    }
+  
 
   private def valuesOrNone(listOfThings: List[String]) ={
     listOfThings match{

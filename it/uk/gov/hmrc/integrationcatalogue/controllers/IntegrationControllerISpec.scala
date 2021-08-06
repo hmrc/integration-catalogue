@@ -170,6 +170,19 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
         )
       }
 
+      "respond with 200 and return all Apis when filtering by API type" in {
+        setupFilterTestDataAndRunTest("integrationType=API", OK, 
+        List(
+          exampleApiDetailForSearch2.publisherReference,
+          exampleApiDetail.publisherReference, 
+          exampleApiDetail2.publisherReference))
+      }
+
+      "respond with 200 and return all File Transfers when filtering by FILE_TRANSFER type" in {
+        setupFilterTestDataAndRunTest("integrationType=FILE_TRANSFER", OK, 
+        List(exampleFileTransfer.publisherReference))
+      }
+
     }
 
     "GET /integrations/:id" should {
