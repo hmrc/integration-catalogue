@@ -84,6 +84,7 @@ class PublishControllerSpec extends WordSpec with Matchers with GuiceOneAppPerSu
       contact = ContactInformation(Some("Core IF Team"), Some("example@gmail.com")),
       sourceSystem = List("BVD"),
       targetSystem = List("DPS"),
+      transports = List("S3"),
       fileTransferPattern = "Corporate to corporate"
     )
     val publishRequest = Json.toJson(publishRequestObj)

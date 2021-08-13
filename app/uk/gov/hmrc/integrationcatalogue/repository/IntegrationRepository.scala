@@ -114,6 +114,7 @@ class IntegrationRepository @Inject()(config: AppConfig,
             set("maintainer", Codecs.toBson(fileTransferDetail.maintainer)),
             set("sourceSystem", fileTransferDetail.sourceSystem),
             set("targetSystem", fileTransferDetail.targetSystem),
+            set("transports", fileTransferDetail.transports),
             set("fileTransferPattern", fileTransferDetail.fileTransferPattern)
           )
     }

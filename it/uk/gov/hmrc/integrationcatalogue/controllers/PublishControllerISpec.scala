@@ -88,6 +88,7 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
       contact = ContactInformation(Some("Core IF Team"), Some("example@gmail.com")),
       sourceSystem = List("BVD"),
       targetSystem = List("DPS"),
+      transports = List("S3"),
       fileTransferPattern = "Corporate to corporate"
     )
 
@@ -157,7 +158,12 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
 
         val apis: immutable.Seq[IntegrationDetail] = Await.result(apiRepo.findWithFilters(IntegrationFilter()), 500 millis).results
         apis.size mustBe 1
-        apis.head.publisherReference mustBe fileTransferPublishRequestObj.publisherReference
+        
+        apis.head match{
+            case ft: FileTransferDetail => ft.publisherReference mustBe fileTransferPublishRequestObj.publisherReference
+                                          ft.transports mustBe List("S3")
+            case _ => fail()
+        }
       }
     }
 
