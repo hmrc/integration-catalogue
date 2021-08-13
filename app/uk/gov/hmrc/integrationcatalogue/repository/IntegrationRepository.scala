@@ -208,7 +208,7 @@ class IntegrationRepository @Inject()(config: AppConfig,
 
   def getCounts(): Future[List[IntegrationCountResponse]] = {
   collection
-      .aggregate[BsonValue](List(group("platform" -> "$platform", sum("count", 1))))
+      .aggregate[BsonValue](List(group("$platform", first("platform", "$platform"), sum("count", 1))))
       .toFuture
       .map(_.toList.map(Codecs.fromBson[IntegrationCountResponse]))
 
