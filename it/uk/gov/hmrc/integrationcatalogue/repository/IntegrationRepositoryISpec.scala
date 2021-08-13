@@ -18,6 +18,7 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import java.util.UUID
 import cats.instances.int
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType
+import akka.dispatch.Filter
 
 class IntegrationRepositoryISpec
     extends WordSpecLike
@@ -435,6 +436,14 @@ class IntegrationRepositoryISpec
        validateResults(findWithFilters(IntegrationFilter(typeFilter = Some(IntegrationType.API))).results, List("API1003", "API1004", "API1001", "API1005"))
      }
 
+    }
+
+    "integrationCount" should {
+      "return some count" in new FilterSetup {
+        setUpTest()
+        val result: List[IntegrationCountResponse] = await(repo.getCounts())
+        println(s"**** result is: $result")
+      }
     }
   }
 

@@ -52,6 +52,8 @@ object MongoFormatters extends MongoJodaFormats {
   implicit val integrationDetailFormats: OFormat[IntegrationDetail] = Json.format[IntegrationDetail]
   implicit val apiDetailParsedFormats: OFormat[ApiDetail] = Json.format[ApiDetail]
   implicit val fileTransferDetailFormats: OFormat[FileTransferDetail] = Json.format[FileTransferDetail]
+  implicit val integrationCountResponseFormats: OFormat[IntegrationCountResponse] = Json.format[IntegrationCountResponse]
+
 
 
 }

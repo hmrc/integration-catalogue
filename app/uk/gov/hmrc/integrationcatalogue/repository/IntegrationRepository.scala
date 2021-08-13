@@ -30,12 +30,16 @@ import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, Integratio
 import uk.gov.hmrc.integrationcatalogue.repository.MongoFormatters._
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
+import org.mongodb.scala.model.Aggregates._
+import org.mongodb.scala.model.Accumulators._
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 import com.mongodb.BasicDBObject
+import org.mongodb.scala.bson.collection.immutable.Document
+import org.bson.BsonValue
 
 
 @Singleton
@@ -201,6 +205,25 @@ class IntegrationRepository @Inject()(config: AppConfig,
        } yield IntegrationResponse(count.toInt, sendPagedResults(results, filter.itemsPerPage), results)
     }
   }
+
+  def getCounts(): Future[List[IntegrationCountResponse]] = {
+  collection
+      .aggregate[BsonValue](List(group("platform" -> "$platform", sum("count", 1))))
+      .toFuture
+      .map(_.toList.map(Codecs.fromBson[IntegrationCountResponse]))
+
+}
+  
+  // def countByPlatform(): Future[IntegrationCountResponse] = {
+  //   collection.aggregate(List(
+  //     group(Document("countByPlatform" -> "$platform", "type" -> "$_type"), Accumulators.sum("count", 1)),
+  //     ))
+    
+
+    //db.getCollection('integrations').aggregate([
+    //{"$group" : {_id:{platform:"$platform",_type:"$_type"}, count:{$sum:1}}}
+    //])
+  // }
 
   def findById(id: IntegrationId): Future[Option[IntegrationDetail]] = {
     collection.find(equal("id", Codecs.toBson(id))).toFuture().map(_.headOption)

@@ -61,3 +61,5 @@ case class DeleteIntegrationsResponse(numberOfIntegrationsDeleted: Int)
 
 
 case class PlatformContactResponse(platformType: PlatformType, contactInfo: Option[ContactInformation])
+
+case class IntegrationCountResponse(platform: PlatformType, count: Int)
