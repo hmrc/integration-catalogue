@@ -108,4 +108,13 @@ class IntegrationServiceSpec extends WordSpec with Matchers with MockitoSugar wi
     }
   }
 
+  "getCatalogueReport" should {
+    "returns count" in new Setup {
+      when(mockIntegrationRepo.getCatalogueReport()).thenReturn(Future.successful(List.empty))
+      val result = await(inTest.getCatalogueReport())
+      result shouldBe List.empty
+      verify(mockIntegrationRepo).getCatalogueReport()
+    }
+  }
+
 }

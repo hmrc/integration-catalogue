@@ -76,5 +76,7 @@ object JsonFormatters {
 
   implicit val formatPlatformContactsResponse: Format[PlatformContactResponse] = Json.format[PlatformContactResponse]
 
+  implicit val integrationPlatformReportFormats: OFormat[IntegrationPlatformReport] = Json.format[IntegrationPlatformReport]
+
 
 }

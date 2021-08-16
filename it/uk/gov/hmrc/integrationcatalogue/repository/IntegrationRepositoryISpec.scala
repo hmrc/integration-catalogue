@@ -16,9 +16,9 @@ import uk.gov.hmrc.integrationcatalogue.testdata.OasParsedItTestData
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import java.util.UUID
-import cats.instances.int
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType
-import akka.dispatch.Filter
+import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType.{API, FILE_TRANSFER}
+import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.{API_PLATFORM, CORE_IF, DES}
 
 class IntegrationRepositoryISpec
     extends WordSpecLike
@@ -287,7 +287,7 @@ class IntegrationRepositoryISpec
         val result = await(repo.findAndModify(exampleApiDetail))
         result match {
           case Left(_)                                    => fail()
-          case Right((integration: IntegrationDetail, _)) => {
+          case Right((integration: IntegrationDetail, _)) =>
             val result2 = getAll
             result2.size shouldBe 2
 
@@ -296,7 +296,6 @@ class IntegrationRepositoryISpec
             val result3 = getAll
             result3.size shouldBe 1
             validateApi(result3.head, exampleApiDetail2)
-          }
         }
 
       }
@@ -357,9 +356,15 @@ class IntegrationRepositoryISpec
 
       "find 2 results when no search term or platform filters and currentPage = 1, perPage = 2" in new FilterSetup {
         setUpTest()
-        validatePagedResults(findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(1), itemsPerPage = Some(2))), List("API1007", "API1003"), 6)
-        validatePagedResults(findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(2), itemsPerPage = Some(2))), List("API1004", "API1001"), 6)
-        validatePagedResults(findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(3), itemsPerPage = Some(2))), List("API1002", "API1005"), 6)
+        validatePagedResults(
+          findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(1), itemsPerPage = Some(2))),
+          List("API1007", "API1003"), 6)
+        validatePagedResults(
+          findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(2), itemsPerPage = Some(2))),
+          List("API1004", "API1001"), 6)
+        validatePagedResults(
+          findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(3), itemsPerPage = Some(2))),
+          List("API1002", "API1005"), 6)
       }
 
       "find 3 results when searching for text that exists in title, endpoint summary with no platform filters" in new FilterSetup {
@@ -438,11 +443,22 @@ class IntegrationRepositoryISpec
 
     }
 
-    "integrationCount" should {
-      "return some count" in new FilterSetup {
+    "getCatalogueReport" should {
+      "return List of results when entries exist in the database" in new FilterSetup {
         setUpTest()
-        val result: List[IntegrationCountResponse] = await(repo.getCounts())
-        println(s"**** result is: $result")
+        val expectedList = List(
+          IntegrationPlatformReport(API_PLATFORM, FILE_TRANSFER,1),
+          IntegrationPlatformReport(CORE_IF,API,3),
+          IntegrationPlatformReport(CORE_IF, FILE_TRANSFER,1),
+          IntegrationPlatformReport(DES, API,1),
+        )
+        val result: List[IntegrationPlatformReport] = await(repo.getCatalogueReport())
+        result.sortBy(_.integrationType.toString).sortBy(_.platformType.toString) shouldBe expectedList
+
+      }
+
+      "return empty List when no results in database" in new FilterSetup {
+        await(repo.getCatalogueReport()) shouldBe List.empty
       }
     }
   }
