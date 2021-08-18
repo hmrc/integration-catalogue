@@ -6,7 +6,9 @@ import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{BAD_REQUEST, NOT_FOUND, OK}
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
-import uk.gov.hmrc.integrationcatalogue.models.{IntegrationDetail, IntegrationResponse}
+import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType.{API, FILE_TRANSFER}
+import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.{API_PLATFORM, CDS_CLASSIC, CORE_IF, DES}
+import uk.gov.hmrc.integrationcatalogue.models.{IntegrationDetail, IntegrationPlatformReport, IntegrationResponse}
 import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 import uk.gov.hmrc.integrationcatalogue.support.{AwaitTestSupport, MongoApp, ServerBaseISpec}
 import uk.gov.hmrc.integrationcatalogue.testdata.OasParsedItTestData
@@ -71,9 +73,9 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
           case OK        =>
             val response = Json.parse(result.body).as[IntegrationResponse]
             if(searchTerm.contains("itemsPerPage")) {
-             response.pagedCount.map(x => x mustBe expectedReferences.size) 
+             response.pagedCount.map(x => x mustBe expectedReferences.size)
              expectedCount.map(x => x mustBe response.count)
-            } else { 
+            } else {
               response.count mustBe expectedReferences.size
             }
             response.results.map(_.publisherReference) mustBe expectedReferences
@@ -171,15 +173,15 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       }
 
       "respond with 200 and return all Apis when filtering by API type" in {
-        setupFilterTestDataAndRunTest("integrationType=API", OK, 
+        setupFilterTestDataAndRunTest("integrationType=API", OK,
         List(
           exampleApiDetailForSearch2.publisherReference,
-          exampleApiDetail.publisherReference, 
+          exampleApiDetail.publisherReference,
           exampleApiDetail2.publisherReference))
       }
 
       "respond with 200 and return all File Transfers when filtering by FILE_TRANSFER type" in {
-        setupFilterTestDataAndRunTest("integrationType=FILE_TRANSFER", OK, 
+        setupFilterTestDataAndRunTest("integrationType=FILE_TRANSFER", OK,
         List(exampleFileTransfer.publisherReference))
       }
 
@@ -193,14 +195,13 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
         result1 match {
           case Left(_) => fail()
-          case Right((integration: IntegrationDetail, _)) => {
+          case Right((integration: IntegrationDetail, _)) =>
             val result = callGetEndpoint(s"$url/integrations/${integration.id.value.toString}")
             result.status mustBe OK
 
             val response = Json.parse(result.body).as[IntegrationDetail]
             response.publisherReference mustBe exampleApiDetail3.publisherReference
             response.platform mustBe exampleApiDetail3.platform
-          }
         }
 
       }
@@ -223,6 +224,30 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
     }
 
+    "GET  /report " should {
+
+
+      "respond with correct report when integrations exist" in {
+        await(apiRepo.findAndModify(exampleApiDetail)) // CORE_IF - API
+        await(apiRepo.findAndModify(exampleApiDetailForSearch1))// CORE_IF - API
+        await(apiRepo.findAndModify(exampleApiDetailForSearch2)) //DES - API
+        await(apiRepo.findAndModify(exampleApiDetail3)) // CDS_CLASSIC - API
+        await(apiRepo.findAndModify(exampleFileTransfer)) // CORE_IF - FILE_TRANSFER
+        await(apiRepo.findAndModify(exampleFileTransfer2)) // API_PLATFORM - FILE_TRANSFER
+
+        val expectedResults = List(
+          IntegrationPlatformReport(API_PLATFORM, FILE_TRANSFER, 1),
+          IntegrationPlatformReport(CDS_CLASSIC, API, 1),
+          IntegrationPlatformReport(CORE_IF, API, 2),
+          IntegrationPlatformReport(CORE_IF, FILE_TRANSFER, 1),
+          IntegrationPlatformReport(DES, API, 1)
+        )
+
+        val result = callGetEndpoint(s"$url/report")
+        result.body mustBe Json.toJson(expectedResults).toString()
+      }
+
+    }
     "DELETE /integrations/:integrationId" should {
       "not remove integration when integrationId does not exist" in {
 

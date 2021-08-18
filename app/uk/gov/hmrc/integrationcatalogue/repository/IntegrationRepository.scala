@@ -30,12 +30,16 @@ import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, Integratio
 import uk.gov.hmrc.integrationcatalogue.repository.MongoFormatters._
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
+import org.mongodb.scala.model.Aggregates._
+import org.mongodb.scala.model.Accumulators._
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 import com.mongodb.BasicDBObject
+import org.mongodb.scala.bson.collection.immutable.Document
+import org.bson.BsonValue
 
 
 @Singleton
@@ -163,22 +167,27 @@ class IntegrationRepository @Inject()(config: AppConfig,
     def sendPagedResults(results: List[IntegrationDetail], perPageFilter: Option[Int])={
         if(perPageFilter.isDefined) Some(results.size) else None
     }
-    val integrationTypeFilter = filter.typeFilter.map(typeVal =>  Filters.equal("_type", typeVal.integrationType))
-    val textFilter: Option[Bson] = filter.searchText.headOption.map(searchText => Filters.text(searchText))
-    val platformFilter = if (filter.platforms.nonEmpty) Some(Filters.in("platform", filter.platforms.map(Codecs.toBson(_)): _*)) else None
-    val backendsFilter = if(filter.backends.nonEmpty) Some(Filters.in("hods", filter.backends : _*)) else None
-    val sourceFilter = if(filter.backends.nonEmpty) Some(Filters.in("sourceSystem", filter.backends : _*)) else None
-    val targetFilter = if(filter.backends.nonEmpty) Some(Filters.in("targetSystem", filter.backends : _*)) else None
-   val combinedHodsFilters = Seq(backendsFilter,  sourceFilter, targetFilter).flatten
-    val hodsFilter = if(combinedHodsFilters.isEmpty) None else Some(Filters.or(combinedHodsFilters: _*))
 
-    val filters: Seq[Bson] = Seq(integrationTypeFilter, textFilter, platformFilter, hodsFilter).flatten
+    def buildFilters() ={
+      val integrationTypeFilter = filter.typeFilter.map(typeVal =>  Filters.equal("_type", typeVal.integrationType))
+      val textFilter: Option[Bson] = filter.searchText.headOption.map(searchText => Filters.text(searchText))
+      val platformFilter = if (filter.platforms.nonEmpty) Some(Filters.in("platform", filter.platforms.map(Codecs.toBson(_)): _*)) else None
+      val backendsFilter = if(filter.backends.nonEmpty) Some(Filters.in("hods", filter.backends : _*)) else None
+      val sourceFilter = if(filter.backends.nonEmpty) Some(Filters.in("sourceSystem", filter.backends : _*)) else None
+      val targetFilter = if(filter.backends.nonEmpty) Some(Filters.in("targetSystem", filter.backends : _*)) else None
+      val combinedHodsFilters = Seq(backendsFilter,  sourceFilter, targetFilter).flatten
+      val hodsFilter = if(combinedHodsFilters.isEmpty) None else Some(Filters.or(combinedHodsFilters: _*))
+
+       Seq(integrationTypeFilter, textFilter, platformFilter, hodsFilter).flatten
+    }
+    val filters = buildFilters()
+
     val sortByScore = Sorts.metaTextScore("score")
     val scoreProjection = Projections.metaTextScore("score")
-     val sortOp = if (textFilter.isEmpty) ascending("title") else sortByScore
+     val sortOp = if (filter.searchText.headOption.isEmpty) ascending("title") else sortByScore
       val perPage = filter.itemsPerPage.getOrElse(0)
       val currentPage = filter.currentPage.getOrElse(1)
-      val skipAmount = if(currentPage>1) ((currentPage -1 ) * perPage) else 0
+      val skipAmount = if(currentPage>1) (currentPage -1 ) * perPage else 0
     if(filters.isEmpty){
       for{ count <- collection.countDocuments.toFuture()
            results <-  collection.find()
@@ -201,6 +210,17 @@ class IntegrationRepository @Inject()(config: AppConfig,
        } yield IntegrationResponse(count.toInt, sendPagedResults(results, filter.itemsPerPage), results)
     }
   }
+
+  def getCatalogueReport(): Future[List[IntegrationPlatformReport]] = {
+    collection.aggregate[BsonValue](List(
+      group(Document("platform" -> "$platform", "integrationType" -> "$_type"), sum("count", 1)))
+    ).toFuture
+    .map(_.toList.map(Codecs.fromBson[IntegrationCountResponse]))
+    .map(items => items.map(item => IntegrationPlatformReport(item._id.platform,
+                      IntegrationType.fromIntegrationTypeString(item._id.integrationType), item.count))
+                      .sortBy(x => (x.platformType.toString.replace("_", ""), x.integrationType.entryName ))
+    )
+}
 
   def findById(id: IntegrationId): Future[Option[IntegrationDetail]] = {
     collection.find(equal("id", Codecs.toBson(id))).toFuture().map(_.headOption)

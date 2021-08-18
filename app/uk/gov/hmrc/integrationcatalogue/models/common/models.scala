@@ -69,4 +69,12 @@ object IntegrationType extends Enum[IntegrationType] with PlayJsonEnum[Integrati
   case object FILE_TRANSFER extends IntegrationType {
     override val integrationType: String = "uk.gov.hmrc.integrationcatalogue.models.FileTransferDetail"
   }
+
+  def fromIntegrationTypeString(typeAsString: String): IntegrationType = {
+    typeAsString match {
+      case API.integrationType => API
+      case FILE_TRANSFER.integrationType => FILE_TRANSFER
+      case _ => throw new IllegalArgumentException(s"$typeAsString is not a valid integration Type")
+    }
+  }
 }

@@ -53,6 +53,10 @@ class IntegrationService @Inject()(integrationRepository: IntegrationRepository)
     integrationRepository.deleteByPlatform(platform)
   }
 
+  def getCatalogueReport(): Future[List[IntegrationPlatformReport]] ={
+    integrationRepository.getCatalogueReport()
+  }
+
 }
 
 

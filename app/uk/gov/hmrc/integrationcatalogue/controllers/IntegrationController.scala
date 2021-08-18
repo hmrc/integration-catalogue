@@ -18,7 +18,7 @@ package uk.gov.hmrc.integrationcatalogue.controllers
 
 import play.api.Logging
 import play.api.libs.json.Json
-import play.api.mvc._
+import play.api.mvc.{Action, _}
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformType}
 import uk.gov.hmrc.integrationcatalogue.models._
@@ -89,5 +89,11 @@ def findWithFilters(searchTerm: List[String],
         
       }
     }
+  }
+
+  def getIntegrationCatalogueReport()  : Action[AnyContent] = Action.async{ implicit request =>
+   integrationService.getCatalogueReport()
+     .map( result =>   Ok(Json.toJson(result)))
+
   }
 }
