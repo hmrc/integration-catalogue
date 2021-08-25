@@ -94,6 +94,10 @@ def findWithFilters(searchTerm: List[String],
   def getIntegrationCatalogueReport()  : Action[AnyContent] = Action.async{ implicit request =>
    integrationService.getCatalogueReport()
      .map( result =>   Ok(Json.toJson(result)))
+  }
 
+  def getFileTransferTransportsByPlatform(source: String, target: String)  : Action[AnyContent] = Action.async{ implicit request =>
+   integrationService.getFileTransferTransportsByPlatform(source, target)
+     .map( result =>   Ok(Json.toJson(result)))
   }
 }

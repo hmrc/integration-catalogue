@@ -66,3 +66,7 @@ case class IntegrationCount(platform: PlatformType, integrationType: String)
 case class IntegrationCountResponse(_id: IntegrationCount, count: Int)
 
 case class IntegrationPlatformReport(platformType: PlatformType, integrationType: IntegrationType, count: Int)
+
+case class FileTransferPlatform(platform: PlatformType)
+case class FileTransferTransportsResponse(_id: FileTransferPlatform, transports: List[String])
+case class FileTransferTransportsForPlatform(platform: PlatformType, transports: List[String])
