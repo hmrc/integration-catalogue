@@ -28,7 +28,7 @@ import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
 @Singleton
 class IntegrationService @Inject()(integrationRepository: IntegrationRepository) extends Logging {
 
-  def getFileTransferTransportsByPlatform(source: String, target: String): Future[List[FileTransferTransportsForPlatform]] = {
+  def getFileTransferTransportsByPlatform(source: Option[String], target: Option[String]): Future[List[FileTransferTransportsForPlatform]] = {
     integrationRepository.getFileTransferTransportsByPlatform(source, target)
   }
 

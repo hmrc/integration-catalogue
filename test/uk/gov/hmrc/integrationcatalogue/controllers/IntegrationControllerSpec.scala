@@ -138,7 +138,7 @@ class IntegrationControllerSpec extends WordSpec with Matchers with MockitoSugar
 
   }
 
-  "GET /integrations/search-with-filter" should {
+  "GET /integrations" should {
     "return 200" in {
       when(mockApiService.findWithFilters(*)).thenReturn(Future.successful(IntegrationResponse(count = 1, results = apiList)))
       val result: Future[Result] = controller.findWithFilters(List(""), List(PlatformType.CORE_IF), List.empty, None, None, None)(fakeRequest)
@@ -160,7 +160,7 @@ class IntegrationControllerSpec extends WordSpec with Matchers with MockitoSugar
     }
   }
 
-  "DELETE /integrations/:publisherReference" should {
+  "DELETE /integrations/:id" should {
     "return 204 when valid publisherReference and delete is successful" in new Setup {
       when(mockApiService.deleteByIntegrationId(*[IntegrationId])(*)).thenReturn(Future.successful(NoContentDeleteApiResult))
 

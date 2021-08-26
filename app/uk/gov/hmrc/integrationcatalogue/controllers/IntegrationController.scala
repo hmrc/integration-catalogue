@@ -32,7 +32,8 @@ import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType
 @Singleton
 class IntegrationController @Inject()(controllerComponents: ControllerComponents,
                                       integrationService: IntegrationService,
-                                      validateQueryParamKeyAction: ValidateQueryParamKeyAction)
+                                      validateQueryParamKeyAction: ValidateQueryParamKeyAction,
+                                      validateFileTransferWizardQueryParamKeyAction: ValidateFileTransferWizardQueryParamKeyAction)
                                      (implicit val ec: ExecutionContext)
     extends BackendController(controllerComponents)
     with Logging {
@@ -96,7 +97,8 @@ def findWithFilters(searchTerm: List[String],
      .map( result =>   Ok(Json.toJson(result)))
   }
 
-  def getFileTransferTransportsByPlatform(source: String, target: String)  : Action[AnyContent] = Action.async{ implicit request =>
+  def getFileTransferTransportsByPlatform(source: Option[String], target: Option[String])  : Action[AnyContent] =
+    (Action andThen validateFileTransferWizardQueryParamKeyAction).async{ implicit request =>
    integrationService.getFileTransferTransportsByPlatform(source, target)
      .map( result =>   Ok(Json.toJson(result)))
   }

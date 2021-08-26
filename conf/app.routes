@@ -10,7 +10,7 @@ GET           /report                                   uk.gov.hmrc.integrationc
 
 PUT           /apis/publish                             uk.gov.hmrc.integrationcatalogue.controllers.PublishController.publishApi
 PUT           /filetransfer/publish                     uk.gov.hmrc.integrationcatalogue.controllers.PublishController.publishFileTransfer
-GET           /filetransfer/transports                  uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.getFileTransferTransportsByPlatform(source: String, target: String)
+GET           /filetransfers/platform/transports        uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.getFileTransferTransportsByPlatform(source: Option[String], target: Option[String])
 
 GET           /platform/contacts                        uk.gov.hmrc.integrationcatalogue.controllers.PlatformController.getPlatformContacts
 

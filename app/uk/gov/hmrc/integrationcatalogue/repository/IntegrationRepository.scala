@@ -40,6 +40,8 @@ import com.mongodb.BasicDBObject
 import org.mongodb.scala.bson.collection.immutable.Document
 import org.bson.BsonValue
 
+import scala.+:
+
 @Singleton
 class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[IntegrationDetail](
@@ -223,13 +225,19 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
       )
   }
 
-  def getFileTransferTransportsByPlatform(source: String, target: String): Future[List[FileTransferTransportsForPlatform]] = {
+  def getFileTransferTransportsByPlatform(source: Option[String], target: Option[String]): Future[List[FileTransferTransportsForPlatform]] = {
 
-    collection.aggregate[BsonValue](List(
-      `match`(Document("sourceSystem" -> source, "targetSystem" -> target)),
+    val aggregatePipelineWithoutMatch: Seq[Bson] = List(
       unwind("$transports"),
       group(Document("platform" -> "$platform"), addToSet("transports", "$transports"))
-    )).toFuture
+    )
+
+    val aggregatePipeline = (source, target) match {
+      case (Some(s), Some(t)) => `match`(Document("sourceSystem" -> s, "targetSystem" -> t)) +: aggregatePipelineWithoutMatch
+      case _ => aggregatePipelineWithoutMatch
+    }
+
+    collection.aggregate[BsonValue](aggregatePipeline).toFuture
       .map(_.toList.map(Codecs.fromBson[FileTransferTransportsResponse]))
       .map(items => items.map(item => FileTransferTransportsForPlatform(item._id.platform, item.transports)))
   }
