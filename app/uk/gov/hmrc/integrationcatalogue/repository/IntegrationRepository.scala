@@ -40,8 +40,6 @@ import com.mongodb.BasicDBObject
 import org.mongodb.scala.bson.collection.immutable.Document
 import org.bson.BsonValue
 
-import scala.+:
-
 @Singleton
 class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[IntegrationDetail](
@@ -239,7 +237,9 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
 
     collection.aggregate[BsonValue](aggregatePipeline).toFuture
       .map(_.toList.map(Codecs.fromBson[FileTransferTransportsResponse]))
-      .map(items => items.map(item => FileTransferTransportsForPlatform(item._id.platform, item.transports)))
+      .map(items => items.map(item => FileTransferTransportsForPlatform(item._id.platform, item.transports.sortWith(_<_)))
+        .sortBy(x => x.platform.toString.replace("_", ""))
+      )
   }
 
   def findById(id: IntegrationId): Future[Option[IntegrationDetail]] = {
