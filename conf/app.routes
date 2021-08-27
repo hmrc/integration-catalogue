@@ -1,15 +1,16 @@
 # microservice specific routes
 
-GET           /integrations                           uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.findWithFilters(searchTerm: List[String], platformFilter: List[uk.gov.hmrc.integrationcatalogue.models.common.PlatformType], backendsFilter: List[String], itemsPerPage: Option[Int], currentPage: Option[Int], integrationType: Option[uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType])
-GET           /integrations/:integrationId            uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.findById(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId)
-DELETE        /integrations/:integrationId            uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.deleteByIntegrationId(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId)
+GET           /integrations                             uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.findWithFilters(searchTerm: List[String], platformFilter: List[uk.gov.hmrc.integrationcatalogue.models.common.PlatformType], backendsFilter: List[String], itemsPerPage: Option[Int], currentPage: Option[Int], integrationType: Option[uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType])
+GET           /integrations/:integrationId              uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.findById(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId)
+DELETE        /integrations/:integrationId              uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.deleteByIntegrationId(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId)
 
-DELETE        /integrations                           uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.deleteWithFilters(platformFilter: List[uk.gov.hmrc.integrationcatalogue.models.common.PlatformType])
+DELETE        /integrations                             uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.deleteWithFilters(platformFilter: List[uk.gov.hmrc.integrationcatalogue.models.common.PlatformType])
 
-GET           /report                     uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.getIntegrationCatalogueReport()
+GET           /report                                   uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.getIntegrationCatalogueReport()
 
 PUT           /apis/publish                             uk.gov.hmrc.integrationcatalogue.controllers.PublishController.publishApi
 PUT           /filetransfer/publish                     uk.gov.hmrc.integrationcatalogue.controllers.PublishController.publishFileTransfer
+GET           /filetransfers/platform/transports        uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.getFileTransferTransportsByPlatform(source: Option[String], target: Option[String])
 
 GET           /platform/contacts                        uk.gov.hmrc.integrationcatalogue.controllers.PlatformController.getPlatformContacts
 

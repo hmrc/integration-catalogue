@@ -8,7 +8,7 @@ import play.api.test.Helpers.{BAD_REQUEST, NOT_FOUND, OK}
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType.{API, FILE_TRANSFER}
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.{API_PLATFORM, CDS_CLASSIC, CORE_IF, DES}
-import uk.gov.hmrc.integrationcatalogue.models.{IntegrationDetail, IntegrationPlatformReport, IntegrationResponse}
+import uk.gov.hmrc.integrationcatalogue.models.{FileTransferTransportsForPlatform, IntegrationDetail, IntegrationPlatformReport, IntegrationResponse}
 import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 import uk.gov.hmrc.integrationcatalogue.support.{AwaitTestSupport, MongoApp, ServerBaseISpec}
 import uk.gov.hmrc.integrationcatalogue.testdata.OasParsedItTestData
@@ -17,10 +17,10 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import java.util.UUID
 
 class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with MongoApp with OasParsedItTestData with AwaitTestSupport {
-  
-  override protected def repository: PlayMongoRepository[IntegrationDetail] =   app.injector.instanceOf[IntegrationRepository]
- val apiRepo: IntegrationRepository = repository.asInstanceOf[IntegrationRepository]
- 
+
+  override protected def repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
+  val apiRepo: IntegrationRepository = repository.asInstanceOf[IntegrationRepository]
+
   override def beforeEach(): Unit = {
     super.beforeEach()
     dropMongoDb()
@@ -72,9 +72,9 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
         result.status match {
           case OK        =>
             val response = Json.parse(result.body).as[IntegrationResponse]
-            if(searchTerm.contains("itemsPerPage")) {
-             response.pagedCount.map(x => x mustBe expectedReferences.size)
-             expectedCount.map(x => x mustBe response.count)
+            if (searchTerm.contains("itemsPerPage")) {
+              response.pagedCount.map(x => x mustBe expectedReferences.size)
+              expectedCount.map(x => x mustBe response.count)
             } else {
               response.count mustBe expectedReferences.size
             }
@@ -102,11 +102,17 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       }
 
       "respond with 200 and return all 4 Apis and ignore paging when passing in currentPage=1 with no search term or filter" in {
-        setupFilterTestDataAndRunTest("currentPage=1", OK, List(
-          exampleApiDetailForSearch2.publisherReference,
+        setupFilterTestDataAndRunTest(
+          "currentPage=1",
+          OK,
+          List(
+            exampleApiDetailForSearch2.publisherReference,
             exampleApiDetail.publisherReference,
             exampleFileTransfer.publisherReference,
-            exampleApiDetail2.publisherReference), Some(4))
+            exampleApiDetail2.publisherReference
+          ),
+          Some(4)
+        )
       }
 
       "respond with 200 and return matching Api when searching by searchTerm" in {
@@ -173,16 +179,19 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       }
 
       "respond with 200 and return all Apis when filtering by API type" in {
-        setupFilterTestDataAndRunTest("integrationType=API", OK,
-        List(
-          exampleApiDetailForSearch2.publisherReference,
-          exampleApiDetail.publisherReference,
-          exampleApiDetail2.publisherReference))
+        setupFilterTestDataAndRunTest(
+          "integrationType=API",
+          OK,
+          List(
+            exampleApiDetailForSearch2.publisherReference,
+            exampleApiDetail.publisherReference,
+            exampleApiDetail2.publisherReference
+          )
+        )
       }
 
       "respond with 200 and return all File Transfers when filtering by FILE_TRANSFER type" in {
-        setupFilterTestDataAndRunTest("integrationType=FILE_TRANSFER", OK,
-        List(exampleFileTransfer.publisherReference))
+        setupFilterTestDataAndRunTest("integrationType=FILE_TRANSFER", OK, List(exampleFileTransfer.publisherReference))
       }
 
     }
@@ -191,10 +200,10 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       "respond with integration when search for existing CDS_CLASSIC integration " in {
 
         await(apiRepo.findAndModify(exampleApiDetail2))
-        val result1 =  await(apiRepo.findAndModify(exampleApiDetail3))
+        val result1 = await(apiRepo.findAndModify(exampleApiDetail3))
 
         result1 match {
-          case Left(_) => fail()
+          case Left(_)                                    => fail()
           case Right((integration: IntegrationDetail, _)) =>
             val result = callGetEndpoint(s"$url/integrations/${integration.id.value.toString}")
             result.status mustBe OK
@@ -226,10 +235,9 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
     "GET  /report " should {
 
-
       "respond with correct report when integrations exist" in {
         await(apiRepo.findAndModify(exampleApiDetail)) // CORE_IF - API
-        await(apiRepo.findAndModify(exampleApiDetailForSearch1))// CORE_IF - API
+        await(apiRepo.findAndModify(exampleApiDetailForSearch1)) // CORE_IF - API
         await(apiRepo.findAndModify(exampleApiDetailForSearch2)) //DES - API
         await(apiRepo.findAndModify(exampleApiDetail3)) // CDS_CLASSIC - API
         await(apiRepo.findAndModify(exampleFileTransfer)) // CORE_IF - FILE_TRANSFER
@@ -246,8 +254,60 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
         val result = callGetEndpoint(s"$url/report")
         result.body mustBe Json.toJson(expectedResults).toString()
       }
-
     }
+
+    "GET /filetransfers/platform/transports" should {
+      def setupFileTransfers {
+
+        await(apiRepo.findAndModify(exampleFileTransfer)) // CORE_IF | source -> target | transports = UTM
+        await(apiRepo.findAndModify(exampleFileTransfer2)) // API_PLATFORM | someSource -> target | transports = S3
+        await(apiRepo.findAndModify(exampleFileTransfer3)) // API_PLATFORM | someSource -> target | transports = S3, WTM
+      }
+      "return all transports when called without query params" in {
+        setupFileTransfers
+        val expectedResults = List(
+          FileTransferTransportsForPlatform(API_PLATFORM, List("AB", "S3", "WTM")),
+          FileTransferTransportsForPlatform(CORE_IF, List("UTM"))
+        )
+
+        val result = callGetEndpoint(s"$url/filetransfers/platform/transports")
+        result.body mustBe Json.toJson(expectedResults).toString
+
+      }
+
+      "return CORE_IF transports when source=source and target=target" in {
+        setupFileTransfers
+        val expectedResults = List(
+          FileTransferTransportsForPlatform(CORE_IF, List("UTM"))
+        )
+
+        val result = callGetEndpoint(s"$url/filetransfers/platform/transports?source=source&target=target")
+        result.body mustBe Json.toJson(expectedResults).toString
+
+      }
+
+      "return 400 when only source query param is provided" in {
+        val result = callGetEndpoint(s"$url/filetransfers/platform/transports?source=someSource")
+        result.status mustBe BAD_REQUEST
+        result.body mustBe "{\"errors\":[{\"message\":\"You must either provide both source and target or no query parameters\"}]}"
+
+      }
+
+      "return 400 when only target query param is provided" in {
+        val result = callGetEndpoint(s"$url/filetransfers/platform/transports?target=target")
+        result.status mustBe BAD_REQUEST
+        result.body mustBe "{\"errors\":[{\"message\":\"You must either provide both source and target or no query parameters\"}]}"
+
+      }
+
+      "return 400 when invalid query param key is provided" in {
+        val result = callGetEndpoint(s"$url/filetransfers/platform/transports?invalidkey=invalidvalue")
+        result.status mustBe BAD_REQUEST
+        result.body mustBe "{\"errors\":[{\"message\":\"Invalid query parameter key provided. It is case sensitive\"}]}"
+
+      }
+    }
+
     "DELETE /integrations/:integrationId" should {
       "not remove integration when integrationId does not exist" in {
 
@@ -276,7 +336,7 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
         val result = callDeleteEndpoint(s"$url/integrations?platformFilter=UNKNOWN")
         result.status mustBe BAD_REQUEST
-         result.body mustBe "{\"errors\":[{\"message\":\"Cannot accept UNKNOWN as PlatformType\"}]}"
+        result.body mustBe "{\"errors\":[{\"message\":\"Cannot accept UNKNOWN as PlatformType\"}]}"
       }
       "return 400 when multiple platform type filters are provided" in {
 
@@ -293,6 +353,5 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       }
     }
   }
-
 
 }

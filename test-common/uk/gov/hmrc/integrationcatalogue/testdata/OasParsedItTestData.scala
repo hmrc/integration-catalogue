@@ -129,7 +129,7 @@ trait OasParsedItTestData {
       maintainer = coreIfMaintainer,
       sourceSystem = List("source"),
       targetSystem = List("target"),
-      transports = List("S3"),
+      transports = List("UTM"),
       fileTransferPattern = "pattern1")
 
   val exampleFileTransfer2: FileTransferDetail =
@@ -144,7 +144,22 @@ trait OasParsedItTestData {
       maintainer = apiPlatformMaintainer,
       sourceSystem = List("someSource"),
       targetSystem = List("target"),
-      transports = List("S3"),
+      transports = List("AB"),
+      fileTransferPattern = "pattern3")
+
+  val exampleFileTransfer3: FileTransferDetail =
+    FileTransferDetail(IntegrationId(UUID.fromString("8f8190dc-d992-11eb-b8bc-0242ac130003")),
+      fileTransferSpecificationVersion = "0.1",
+      publisherReference = "API1007",
+      title = "filetransfer 2",
+      description = "file transfer 2 desc",
+      lastUpdated = dateValue,
+      reviewedDate = reviewedDate,
+      platform = PlatformType.API_PLATFORM,
+      maintainer = apiPlatformMaintainer,
+      sourceSystem = List("someSource"),
+      targetSystem = List("target"),
+      transports = List("WTM", "AB","S3"),
       fileTransferPattern = "pattern3")
 
   val exampleApiDetailForSearch1: ApiDetail = ApiDetail(

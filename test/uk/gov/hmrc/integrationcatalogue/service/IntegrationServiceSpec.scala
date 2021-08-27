@@ -117,4 +117,13 @@ class IntegrationServiceSpec extends WordSpec with Matchers with MockitoSugar wi
     }
   }
 
+  "getFileTransferTransportsByPlatform" should {
+    "returns no transports" in new Setup {
+      when(mockIntegrationRepo.getFileTransferTransportsByPlatform(Some("a source"), Some("a target"))).thenReturn(Future.successful(List.empty))
+      val result = await(inTest.getFileTransferTransportsByPlatform(Some("a source"), Some("a target")))
+      result shouldBe List.empty
+      verify(mockIntegrationRepo).getFileTransferTransportsByPlatform(Some("a source"), Some("a target"))
+    }
+  }
+
 }

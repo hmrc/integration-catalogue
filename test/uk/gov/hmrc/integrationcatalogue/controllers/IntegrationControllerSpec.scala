@@ -30,7 +30,7 @@ import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
 import uk.gov.hmrc.integrationcatalogue.service.IntegrationService
 import uk.gov.hmrc.integrationcatalogue.testdata.ApiTestData
-import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.ValidateQueryParamKeyAction
+import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.{ValidateFileTransferWizardQueryParamKeyAction, ValidateQueryParamKeyAction}
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -42,8 +42,14 @@ class IntegrationControllerSpec extends WordSpec with Matchers with MockitoSugar
 
   private val mockApiService = mock[IntegrationService]
   private val validateQueryParamKeyAction = app.injector.instanceOf[ValidateQueryParamKeyAction]
+  private val validateFileTransferWizardQueryParamKeyAction = app.injector.instanceOf[ValidateFileTransferWizardQueryParamKeyAction]
 
-  private val controller = new IntegrationController(Helpers.stubControllerComponents(), mockApiService, validateQueryParamKeyAction)
+  private val controller = new IntegrationController(
+    Helpers.stubControllerComponents(),
+    mockApiService,
+    validateQueryParamKeyAction,
+    validateFileTransferWizardQueryParamKeyAction
+  )
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -131,14 +137,14 @@ class IntegrationControllerSpec extends WordSpec with Matchers with MockitoSugar
       shortDescription = None,
       openApiSpecification = "OAS content",
       apiStatus = LIVE,
-    reviewedDate = reviewedDate
+      reviewedDate = reviewedDate
     )
 
     val fakeDeleteRequest = FakeRequest("DELETE", s"/apis/${exampleApiDetail.publisherReference}")
 
   }
 
-  "GET /integrations/search-with-filter" should {
+  "GET /integrations" should {
     "return 200" in {
       when(mockApiService.findWithFilters(*)).thenReturn(Future.successful(IntegrationResponse(count = 1, results = apiList)))
       val result: Future[Result] = controller.findWithFilters(List(""), List(PlatformType.CORE_IF), List.empty, None, None, None)(fakeRequest)
@@ -160,7 +166,7 @@ class IntegrationControllerSpec extends WordSpec with Matchers with MockitoSugar
     }
   }
 
-  "DELETE /integrations/:publisherReference" should {
+  "DELETE /integrations/:id" should {
     "return 204 when valid publisherReference and delete is successful" in new Setup {
       when(mockApiService.deleteByIntegrationId(*[IntegrationId])(*)).thenReturn(Future.successful(NoContentDeleteApiResult))
 

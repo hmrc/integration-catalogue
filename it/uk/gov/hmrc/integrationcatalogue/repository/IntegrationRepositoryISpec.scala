@@ -461,6 +461,53 @@ class IntegrationRepositoryISpec
         await(repo.getCatalogueReport()) shouldBe List.empty
       }
     }
+
+    "getFileTransferTransportsByPlatform" should {
+      def setupFileTransfers() = {
+        await(repo.findAndModify(exampleFileTransfer)) // CORE_IF | source -> target | transports = UTM
+        await(repo.findAndModify(exampleFileTransfer2)) // API_PLATFORM | someSource -> target | transports = S3
+        await(repo.findAndModify(exampleFileTransfer3)) // API_PLATFORM | someSource -> target | transports = S3, WTM
+      }
+
+      "return all transports when no source and target are provided" in {
+        setupFileTransfers()
+        val expectedResults = List(
+          FileTransferTransportsForPlatform(API_PLATFORM, List("AB", "S3", "WTM")),
+          FileTransferTransportsForPlatform(CORE_IF, List("UTM"))
+        )
+        val result: List[FileTransferTransportsForPlatform] = await(repo.getFileTransferTransportsByPlatform(None, None))
+        result shouldBe expectedResults
+      }
+
+      "return all transports when only source is provided" in {
+        setupFileTransfers()
+        val expectedResults = List(
+          FileTransferTransportsForPlatform(API_PLATFORM, List("AB", "S3", "WTM")),
+          FileTransferTransportsForPlatform(CORE_IF, List("UTM"))
+        )
+        val result: List[FileTransferTransportsForPlatform] = await(repo.getFileTransferTransportsByPlatform(Some("someSource"), None))
+        result shouldBe expectedResults
+      }
+
+      "return all transports when only target is provided" in {
+        setupFileTransfers()
+        val expectedResults = List(
+          FileTransferTransportsForPlatform(API_PLATFORM, List("AB", "S3", "WTM")),
+          FileTransferTransportsForPlatform(CORE_IF, List("UTM"))
+        )
+        val result: List[FileTransferTransportsForPlatform] = await(repo.getFileTransferTransportsByPlatform(None, Some("target")))
+        result shouldBe expectedResults
+      }
+
+      "return CORE_IF transports when source=source and target=target" in {
+        setupFileTransfers()
+        val expectedResults = List(
+          FileTransferTransportsForPlatform(CORE_IF, List("UTM"))
+        )
+        val result: List[FileTransferTransportsForPlatform] = await(repo.getFileTransferTransportsByPlatform(Some("source"), Some("target")))
+        result shouldBe expectedResults
+      }
+    }
   }
 
 }
