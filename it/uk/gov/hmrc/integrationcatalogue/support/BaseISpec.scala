@@ -2,7 +2,7 @@ package uk.gov.hmrc.integrationcatalogue.support
 
 
 import akka.stream.Materializer
-import org.scalatest.MustMatchers
+
 import org.scalatestplus.play.PlaySpec
 import play.api.Application
 import play.api.i18n.{Lang, Messages, MessagesApi}
@@ -11,10 +11,11 @@ import play.api.test.FakeRequest
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
+import org.scalatest.matchers.must.Matchers
 
 
 abstract class BaseISpec
-  extends PlaySpec with WireMockSupport with MetricsTestSupport with MustMatchers {
+  extends PlaySpec with WireMockSupport with MetricsTestSupport with Matchers {
 
   def app: Application
   protected def appBuilder: GuiceApplicationBuilder
