@@ -38,8 +38,7 @@ object PlatformType extends Enum[PlatformType] with PlayJsonEnum[PlatformType] {
   case object API_PLATFORM extends PlatformType
   case object CMA extends PlatformType
   case object CDS_CLASSIC extends PlatformType
-  case object DAPI extends PlatformType
-  case object DIGI extends PlatformType
+  case object DIGI_DAPI extends PlatformType
   case object SDES extends PlatformType
   case object TRANSACTION_ENGINE extends PlatformType
 }
