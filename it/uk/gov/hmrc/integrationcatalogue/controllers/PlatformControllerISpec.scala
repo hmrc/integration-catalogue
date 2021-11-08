@@ -19,7 +19,9 @@ class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
         "auditing.consumer.baseUri.host" -> wireMockHost,
         "auditing.consumer.baseUri.port" -> wireMockPort,
         "platforms.DES.email" -> "des@mail.com",
-        "platforms.DES.name" -> "DES Platform support hot line"
+        "platforms.DES.name" -> "DES Platform support hot line",
+        "platforms.SOMENEW.email" -> "des@mail.com",
+        "platforms.SOMENEW.name" -> "DES Platform support hot line"
       )
 
   val url = s"http://localhost:$port/integration-catalogue"
@@ -42,7 +44,7 @@ class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
         println(s"****** ${result.body}")
 
         result.status mustBe OK
-        result.body mustBe """[{"platformType":"DES","contactInfo":{"name":"DES Platform support hot line","emailAddress":"des@mail.com"}},{"platformType":"CORE_IF"},{"platformType":"API_PLATFORM"},{"platformType":"CMA"},{"platformType":"CDS_CLASSIC"},{"platformType":"TRANSACTION_ENGINE"}]"""
+        result.body mustBe """[{"platformType":"DES","contactInfo":{"name":"DES Platform support hot line","emailAddress":"des@mail.com"}},{"platformType":"CORE_IF"},{"platformType":"API_PLATFORM"},{"platformType":"CMA"},{"platformType":"CDS_CLASSIC"},{"platformType":"DIGI_DAPI"},{"platformType":"SDES"},{"platformType":"TRANSACTION_ENGINE"}]"""
       }
 
     }
