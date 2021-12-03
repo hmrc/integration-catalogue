@@ -1,0 +1,30 @@
+﻿openapi: 3.0.3
+info:
+  title: 'API1000 Get Data'
+  description: This API provides the capability for retrieving data.
+  version: 1.0.0
+  contact:
+    name: Developer
+    email: contact@example.com
+  x-integration-catalogue:
+    reviewed-date: 2020-12-25
+    status: BETA
+tags:
+  - name: 'API10000'
+    description: This API is for getting data.
+paths:
+  "/path1":
+    get:
+      responses:
+        "200":
+            description: ok
+            content:
+              "application/json":
+                schema:
+                  type: object
+                  properties:
+                    gender:
+                      enum:
+                        - M
+                        - F
+                        - null
