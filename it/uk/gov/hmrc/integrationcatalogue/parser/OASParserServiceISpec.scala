@@ -212,6 +212,21 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
 
       }
     }
+
+    "parse oas file correctly with null enum value" in new Setup {
+      val publisherReference = "SOMEFILEREFERENCE"
+      
+      val oasFileContents: String = parseFileToString("/API1000_withEnumWithNullValue.yaml")
+
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
+      result match {
+        case Valid(parsedObject) => {
+          val actualEnumValues = parsedObject.endpoints.head.methods.head.responses.head.schema.get.properties.head.enum
+          actualEnumValues shouldBe List("M", "F", "null")
+        }
+      }
+    }
+
     "parse oas file and return endpoints in the order specified in the oas spec" in new Setup {
       val publisherReference = "SOMEFILEREFERENCE"
       val oasFileContents: String = parseFileToString("/API1000_multipleEndpoints.yaml")

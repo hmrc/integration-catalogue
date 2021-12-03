@@ -104,13 +104,23 @@ trait OASV3SchemaAdapter {
   }
 
   private def createDefaultSchema(mayBeSchemaName: Option[String], oasSchemaVal: OasSchema[_]) = {
+
+    def parseEnums(oasEnums: Option[java.util.List[_]]) = {
+      oasEnums
+        .map(`enum` => `enum`.asScala.map(Option(_))
+            // to handle an enum value that is 'null'. See 'Nullable enums' here: https://swagger.io/docs/specification/data-models/enums/
+            .map(_.getOrElse("null").toString)
+            .toList)
+        .getOrElse(List.empty)
+    }
+
     val maybeSchemaType = Option(oasSchemaVal.getType)
     val maybePattern = Option(oasSchemaVal.getPattern)
     val maybeDescription = Option(oasSchemaVal.getDescription)
     val maybeRef = Option(oasSchemaVal.get$ref)
     val mayBeOasProperties: Option[util.Map[String, OasSchema[_]]] = Option(oasSchemaVal.getProperties)
     val maybeNot: Option[Schema] = Option(oasSchemaVal.getNot).map(x => extractOasSchema(None, x))
-    val enums: List[String] = Option(oasSchemaVal.getEnum).map(enums => enums.asScala.map(_.toString).toList).getOrElse(List.empty)
+    val enums: List[String] = parseEnums(Option(oasSchemaVal.getEnum))
     val required: List[String] = Option(oasSchemaVal.getRequired).map(x => x.asScala.toList).getOrElse(List.empty)
     val maxLength: Option[Int] = Option(oasSchemaVal.getMaxLength).map(x => x.toInt)
     val minLength: Option[Int] = Option(oasSchemaVal.getMinLength).map(x => x.toInt)
