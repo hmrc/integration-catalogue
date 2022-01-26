@@ -33,7 +33,7 @@ def platformContacts = {
   //TODO handle empty config values
   PlatformType.values.toList
   .map(platform => PlatformContactResponse(platform,  
-  getContactInformationForPlatform(platform, config.getOptional[String](s"platforms.$platform.name"), config.getOptional[String](s"platforms.$platform.email"))))
+  getContactInformationForPlatform(platform, config.getOptional[String](s"platforms.$platform.name"), config.getOptional[String](s"platforms.$platform.email")),  config.getOptional[Boolean](s"platforms.$platform.overrideOasContacts").getOrElse(false)))
 
 }
 

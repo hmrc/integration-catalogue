@@ -20,6 +20,7 @@ class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
         "auditing.consumer.baseUri.port" -> wireMockPort,
         "platforms.DES.email" -> "des@mail.com",
         "platforms.DES.name" -> "DES Platform support hot line",
+        "platforms.DES.overrideOasContacts" -> true,
         "platforms.SOMENEW.email" -> "des@mail.com",
         "platforms.SOMENEW.name" -> "DES Platform support hot line"
       )
@@ -41,10 +42,8 @@ class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
       "return platform with contacts when both email and name are in config" in {
         val result = callGetEndpoint(s"$url/platform/contacts")
 
-        println(s"****** ${result.body}")
-
         result.status mustBe OK
-        result.body mustBe """[{"platformType":"API_PLATFORM"},{"platformType":"CDS_CLASSIC"},{"platformType":"CMA"},{"platformType":"CORE_IF"},{"platformType":"DAPI"},{"platformType":"DES","contactInfo":{"name":"DES Platform support hot line","emailAddress":"des@mail.com"}},{"platformType":"DIGI"},{"platformType":"SDES"},{"platformType":"TRANSACTION_ENGINE"}]"""
+        result.body mustBe """[{"platformType":"API_PLATFORM","overrideOasContacts":false},{"platformType":"CDS_CLASSIC","overrideOasContacts":false},{"platformType":"CMA","overrideOasContacts":false},{"platformType":"CORE_IF","overrideOasContacts":false},{"platformType":"DAPI","overrideOasContacts":false},{"platformType":"DES","contactInfo":{"name":"DES Platform support hot line","emailAddress":"des@mail.com"},"overrideOasContacts":true},{"platformType":"DIGI","overrideOasContacts":false},{"platformType":"SDES","overrideOasContacts":false},{"platformType":"TRANSACTION_ENGINE","overrideOasContacts":false}]"""
       }
 
     }

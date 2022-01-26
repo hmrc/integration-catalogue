@@ -60,7 +60,7 @@ case class ErrorResponse(errors: List[ErrorResponseMessage])
 case class DeleteIntegrationsResponse(numberOfIntegrationsDeleted: Int)
 
 
-case class PlatformContactResponse(platformType: PlatformType, contactInfo: Option[ContactInformation])
+case class PlatformContactResponse(platformType: PlatformType, contactInfo: Option[ContactInformation], overrideOasContacts: Boolean)
 
 case class IntegrationCount(platform: PlatformType, integrationType: String)
 case class IntegrationCountResponse(_id: IntegrationCount, count: Int)

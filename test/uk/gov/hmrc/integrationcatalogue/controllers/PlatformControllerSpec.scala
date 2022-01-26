@@ -41,8 +41,8 @@ class PlatformControllerSpec extends WordSpec with Matchers with GuiceOneAppPerS
   }
 
   trait Setup {
-    val apiPlatformContact = PlatformContactResponse(PlatformType.API_PLATFORM, Some(ContactInformation(Some("ApiPlatform"), Some("api.platform@email"))))
-    val coreIfWithoutContact = PlatformContactResponse(PlatformType.CORE_IF, None)
+    val apiPlatformContact = PlatformContactResponse(PlatformType.API_PLATFORM, Some(ContactInformation(Some("ApiPlatform"), Some("api.platform@email"))), true)
+    val coreIfWithoutContact = PlatformContactResponse(PlatformType.CORE_IF, None, false)
     val controller = new PlatformController(Helpers.stubControllerComponents(), mockAppConfig)
     val fakeRequest = FakeRequest("GET", s"/platform/contacts")
   }
