@@ -66,7 +66,7 @@ class OasParserServiceSpec extends WordSpec with Matchers with  MockitoSugar wit
       
       when(mockAdapterService.extractOpenApi(*, *, *, *, *)).thenReturn(Valid(apiDetail0))
 
-      val result:  ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData)
+      val result:  ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(oasContactName))
       
       result match {
         case Valid(parsedObject) =>
@@ -88,7 +88,7 @@ class OasParserServiceSpec extends WordSpec with Matchers with  MockitoSugar wit
 
       when(mockAdapterService.extractOpenApi(*, *, *, *, *)).thenReturn(Valid(apiDetail0))
 
-      val result:  ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData)
+      val result:  ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(oasContactName))
       
       result match {
         case Valid(parsedObject) =>  fail("parsed object shouold not be returned")

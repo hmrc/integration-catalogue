@@ -707,14 +707,14 @@ trait OasTestData extends ExtensionKeys {
                                       |      additionalProperties: false
                                       |""".stripMargin
 
-  val rawOASData = raw"""openapi: 3.0.3
+  def rawOASData(contactName: String) = raw"""openapi: 3.0.3
                         |info:
                         |  title: '$oasApiName'
                         |  description: >-
                         |    $oasApiDescription
                         |  version: 1.0
                         |  contact:
-                        |    name: Test Developer
+                        |    name: $contactName
                         |    email: test.developer@hmrc.gov.uk
                         |  x-integration-catalogue:
                         |    reviewed-date: 2020-12-25
