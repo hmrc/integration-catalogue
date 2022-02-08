@@ -74,7 +74,7 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
     )
 
     def validPublishRequest: PublishRequest = {
-      publishRequest.copy(contents = rawOASData)
+      publishRequest.copy(contents = rawOASData(oasContactName))
     }
 
     val fileTransferPublishRequestObj: FileTransferPublishRequest = FileTransferPublishRequest(

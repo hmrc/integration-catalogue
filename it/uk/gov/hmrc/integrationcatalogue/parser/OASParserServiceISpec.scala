@@ -271,6 +271,27 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
       }
     }
 
+    "parse OpenApi object correctly with null in contact name" in new Setup {
+      val publisherReference = "SOMEFILEREFERENCE"
+
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(""))
+
+      result match {
+        case Valid(parsedObject)                    =>
+          parsedObject.title shouldBe oasApiName
+          parsedObject.description shouldBe oasApiDescription
+          parsedObject.version shouldBe oasVersion
+          parsedObject.platform shouldBe PlatformType.CORE_IF
+          parsedObject.specificationType shouldBe SpecificationType.OAS_V3
+
+          val contact: ContactInformation = parsedObject.maintainer.contactInfo.head
+          contact.name shouldBe None
+          contact.emailAddress.getOrElse("") shouldBe oasContactEMail
+
+        case _: Invalid[NonEmptyList[List[String]]] => fail()
+      }
+    }
+
     "parse oas file correctly with valid short description" in new Setup {
       val publisherReference = "SOMEFILEREFERENCE"
       val oasFileContents: String = parseFileToString("/API1000_withValidShortDesc.yaml")
@@ -405,7 +426,7 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
       "parse OpenApi object correctly without extensions" in new Setup {
       val publisherReference = "SOMEFILEREFERENCE"
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(oasContactName))
 
       result match {
         case Valid(parsedObject)                    =>
