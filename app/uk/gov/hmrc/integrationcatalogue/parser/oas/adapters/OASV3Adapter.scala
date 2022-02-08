@@ -73,8 +73,6 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
                 val componentParameters = extractComponentParameters(openApi)
                 val extensionReviewedDate = extensions.reviewedDate
 
-                println(s"****%%% ${info.getContact()}")
-
                 Valid(ApiDetail(
                   id = IntegrationId(uuidService.newUuid()),
                   publisherReference = extensions.publisherReference,
