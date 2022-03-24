@@ -5,7 +5,7 @@ object AppDependencies {
   lazy val scalaCheckVersion = "1.14.0"
   lazy val enumeratumVersion = "1.6.3"
   lazy val hmrcmongoVersion = "0.59.0"
-  lazy val bootstrapVersion = "5.14.0"
+  lazy val bootstrapVersion = "5.18.0"
   lazy val jacksonVersion = "2.11.1"
 
   val compile = Seq(
