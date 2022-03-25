@@ -22,14 +22,16 @@ import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 import uk.gov.hmrc.mongo.metrix.MetricSource
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 @Singleton
 class TotalApiCount @Inject()(val integrationRepository: IntegrationRepository) extends MetricSource with Logging {
 
   override def metrics(implicit ec: ExecutionContext): Future[Map[String, Int]] = {
-    logger.info(s"Collecting metrics for Total API Count")
-    Future.successful(Map("totalApiCount" -> 110))
+    integrationRepository.getTotalApisCount().map { apisCount =>
+      logger.info(s"[METRIC] Collecting metrics for Total API Count - $apisCount")
+      Map("totalApiCount" -> apisCount.toInt)
+    }
   }
 
 }

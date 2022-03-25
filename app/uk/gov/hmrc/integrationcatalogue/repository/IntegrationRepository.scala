@@ -258,4 +258,8 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
   def deleteByPlatform(platform: PlatformType): Future[Int] = {
     collection.deleteMany(equal("platform", Codecs.toBson(platform))).toFuture().map(x => x.getDeletedCount.toInt)
   }
+
+  def getTotalApisCount(): Future[Long] = {
+    collection.countDocuments(equal("_type", Codecs.toBson("uk.gov.hmrc.integrationcatalogue.models.ApiDetail"))).toFuture()
+  }
 }
