@@ -19,7 +19,7 @@ package uk.gov.hmrc.integrationcatalogue
 import com.google.inject.AbstractModule
 import uk.gov.hmrc.integrationcatalogue.scheduled.MetricsScheduler
 
-class Module extends AbstractModule {
+class CustomModule extends AbstractModule {
   override def configure(): Unit = {
     bind(classOf[MetricsScheduler]).asEagerSingleton()
   }

@@ -27,24 +27,19 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
-class MetricsScheduler @Inject() (
-    actorSystem: ActorSystem,
-    configuration: Configuration,
-    metrics: Metrics,
-    totalApiCount: TotalApiCount,
-    lockRepository: LockRepository,
-    metricRepository: MetricRepository
-  )(implicit ec: ExecutionContext)
-    extends Logging {
+class MetricsScheduler @Inject()(actorSystem: ActorSystem,
+                                 configuration: Configuration,
+                                 metrics: Metrics,
+                                 totalApiCount: TotalApiCount,
+                                 lockRepository: LockRepository,
+                                 metricRepository: MetricRepository
+                                )(implicit ec: ExecutionContext)
+                                 extends Logging {
 
   lazy val refreshInterval: FiniteDuration = configuration.get[FiniteDuration]("queue.metricsGauges.interval")
   lazy val initialDelay: FiniteDuration = configuration.get[FiniteDuration]("queue.initialDelay")
 
-  val lockService: LockService = LockService(
-    lockRepository = lockRepository,
-    lockId = "queue",
-    ttl = refreshInterval
-  )
+  val lockService: LockService = LockService(lockRepository = lockRepository, lockId = "queue", ttl = refreshInterval)
 
   val metricOrchestrator = new MetricOrchestrator(
     metricSources = List(totalApiCount),
@@ -54,7 +49,6 @@ class MetricsScheduler @Inject() (
   )
 
   actorSystem.scheduler.scheduleWithFixedDelay(initialDelay, refreshInterval)(() => {
-    logger.info("Running metrics scheduler")
     metricOrchestrator
       .attemptMetricRefresh()
       .map(_.log())
