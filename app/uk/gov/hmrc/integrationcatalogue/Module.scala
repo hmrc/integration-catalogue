@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.integrationcatalogue.config
+package uk.gov.hmrc.integrationcatalogue
 
 import com.google.inject.AbstractModule
 import uk.gov.hmrc.integrationcatalogue.scheduled.MetricsScheduler
 
-class SchedulerModule extends AbstractModule {
+class Module extends AbstractModule {
   override def configure(): Unit = {
     bind(classOf[MetricsScheduler]).asEagerSingleton()
   }

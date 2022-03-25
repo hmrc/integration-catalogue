@@ -37,29 +37,27 @@ class MetricsScheduler @Inject() (
   )(implicit ec: ExecutionContext)
     extends Logging {
 
-  lazy val refreshIntervalMillis: Long = configuration.getMillis("queue.metricsGauges.interval")
+  lazy val refreshInterval: FiniteDuration = configuration.get[FiniteDuration]("queue.metricsGauges.interval")
+  lazy val initialDelay: FiniteDuration = configuration.get[FiniteDuration]("queue.initialDelay")
 
-  val lock = LockService(
+  val lockService: LockService = LockService(
     lockRepository = lockRepository,
     lockId = "queue",
-    ttl = refreshIntervalMillis.milliseconds
+    ttl = refreshInterval
   )
 
   val metricOrchestrator = new MetricOrchestrator(
     metricSources = List(totalApiCount),
-    lockService = lock,
+    lockService = lockService,
     metricRepository = metricRepository,
     metricRegistry = metrics.defaultRegistry
   )
 
-  actorSystem.scheduler.scheduleWithFixedDelay(1.minute, refreshIntervalMillis.milliseconds)(() => {
+  actorSystem.scheduler.scheduleWithFixedDelay(initialDelay, refreshInterval)(() => {
     logger.info("Running metrics scheduler")
     metricOrchestrator
       .attemptMetricRefresh()
       .map(_.log())
-      .recover({
-        case e: RuntimeException =>
-          logger.error(s"An error occurred processing metrics: ${e.getMessage}", e)
-      })
+      .recover({ case e: RuntimeException => logger.error(s"An error occurred processing metrics: ${e.getMessage}", e) })
   })
 }
