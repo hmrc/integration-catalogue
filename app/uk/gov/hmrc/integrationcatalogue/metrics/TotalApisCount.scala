@@ -25,12 +25,12 @@ import javax.inject.Inject
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 @Singleton
-class TotalApiCount @Inject()(val integrationRepository: IntegrationRepository) extends MetricSource with Logging {
+class TotalApisCount @Inject()(val integrationRepository: IntegrationRepository) extends MetricSource with Logging {
 
   override def metrics(implicit ec: ExecutionContext): Future[Map[String, Int]] = {
     integrationRepository.getTotalApisCount().map { apisCount =>
-      logger.info(s"[METRIC] Collecting metrics for Total API Count - $apisCount")
-      Map("totalApiCount" -> apisCount.toInt)
+      logger.info(s"[METRIC] Collecting metrics for Total APIs Count - $apisCount")
+      Map("totalApisCount" -> apisCount.toInt)
     }
   }
 

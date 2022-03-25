@@ -19,7 +19,7 @@ package uk.gov.hmrc.integrationcatalogue.scheduled
 import akka.actor.ActorSystem
 import com.kenshoo.play.metrics.Metrics
 import play.api.{Configuration, Logging}
-import uk.gov.hmrc.integrationcatalogue.metrics.TotalApiCount
+import uk.gov.hmrc.integrationcatalogue.metrics.TotalApisCount
 import uk.gov.hmrc.mongo.lock.{LockRepository, LockService}
 import uk.gov.hmrc.mongo.metrix.{MetricOrchestrator, MetricRepository}
 
@@ -30,7 +30,7 @@ import scala.concurrent.duration._
 class MetricsScheduler @Inject()(actorSystem: ActorSystem,
                                  configuration: Configuration,
                                  metrics: Metrics,
-                                 totalApiCount: TotalApiCount,
+                                 totalApiCount: TotalApisCount,
                                  lockRepository: LockRepository,
                                  metricRepository: MetricRepository
                                 )(implicit ec: ExecutionContext)
