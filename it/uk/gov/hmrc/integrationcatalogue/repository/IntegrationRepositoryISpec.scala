@@ -508,6 +508,17 @@ class IntegrationRepositoryISpec
         result shouldBe expectedResults
       }
     }
+
+    "getTotalApisCount" should {
+      "return 4 when there are 4 APIs in the DB" in new FilterSetup {
+        setUpTest()
+        await(repo.getTotalApisCount()) shouldBe 4
+      }
+
+      "return 0 when there are none APIs in the DB" in new FilterSetup {
+        await(repo.getTotalApisCount()) shouldBe 0
+      }
+    }
   }
 
 }

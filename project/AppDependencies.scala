@@ -1,22 +1,20 @@
-import play.core.PlayVersion.current
-import play.sbt.PlayImport._
-import sbt.Keys.libraryDependencies
 import sbt._
 
 object AppDependencies {
 
   lazy val scalaCheckVersion = "1.14.0"
   lazy val enumeratumVersion = "1.6.3"
-  lazy val hmrcmongoVersion = "0.49.0"
-  lazy val bootstrapVersion = "5.14.0"
+  lazy val hmrcmongoVersion = "0.59.0"
+  lazy val bootstrapVersion = "5.18.0"
   lazy val jacksonVersion = "2.11.1"
 
   val compile = Seq(
-    "uk.gov.hmrc"                       %% "bootstrap-backend-play-28"      % bootstrapVersion,
-    "com.typesafe.play"                 %% "play-json"                      % "2.9.2",
-    "com.typesafe.play"                 %% "play-json-joda"                 % "2.9.2",
-    "com.beachape"                      %% "enumeratum-play-json"           % enumeratumVersion,
-     "uk.gov.hmrc.mongo"                %% "hmrc-mongo-play-28"             % hmrcmongoVersion,
+    "uk.gov.hmrc"                       %% "bootstrap-backend-play-28"              % bootstrapVersion,
+    "com.typesafe.play"                 %% "play-json"                              % "2.9.2",
+    "com.typesafe.play"                 %% "play-json-joda"                         % "2.9.2",
+    "com.beachape"                      %% "enumeratum-play-json"                   % enumeratumVersion,
+    "uk.gov.hmrc.mongo"                 %% "hmrc-mongo-play-28"                     % hmrcmongoVersion,
+    "uk.gov.hmrc.mongo"                 %% "hmrc-mongo-work-item-repo-play-28"      % hmrcmongoVersion,
 
     "com.fasterxml.jackson.module"      %% "jackson-module-scala"           % jacksonVersion,
     "com.fasterxml.jackson.core"        % "jackson-annotations"             % jacksonVersion,
