@@ -1,7 +1,7 @@
 package uk.gov.hmrc.integrationcatalogue.repository
 
-import org.mongodb.scala.Document
-import org.mongodb.scala.bson.BsonString
+import org.bson.BsonString
+import org.mongodb.scala.bson.collection.immutable.Document
 import org.mongodb.scala.model.IndexOptions
 import org.mongodb.scala.model.Indexes.ascending
 import org.scalatest.concurrent.ScalaFutures
@@ -10,18 +10,17 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.integrationcatalogue.models._
-import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformType}
+import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId
+import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType.{API, FILE_TRANSFER}
+import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.{API_PLATFORM, CMA, CORE_IF, DES}
 import uk.gov.hmrc.integrationcatalogue.support.{AwaitTestSupport, MongoApp}
 import uk.gov.hmrc.integrationcatalogue.testdata.OasParsedItTestData
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import java.util.UUID
-import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType
-import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType.{API, FILE_TRANSFER}
-import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.{API_PLATFORM, CORE_IF, DES}
 
 class IntegrationRepositoryISpec
-    extends WordSpecLike
+  extends WordSpecLike
     with Matchers
     with MongoApp
     with GuiceOneAppPerSuite
@@ -31,6 +30,7 @@ class IntegrationRepositoryISpec
     with AwaitTestSupport {
 
   override protected def repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
+
   val indexNameToDrop = "please_delete_me__let_me_go"
 
   protected def appBuilder: GuiceApplicationBuilder =
@@ -64,7 +64,7 @@ class IntegrationRepositoryISpec
   }
 
   private def validateCommonFields(testItem: IntegrationDetail, itemToValidate: IntegrationDetail): Assertion = {
-//    testItem.id shouldBe itemToValidate.id
+    //    testItem.id shouldBe itemToValidate.id
     testItem.title shouldBe itemToValidate.title
     testItem.description shouldBe itemToValidate.description
     testItem.integrationType shouldBe itemToValidate.integrationType
@@ -87,6 +87,41 @@ class IntegrationRepositoryISpec
     item.fileTransferPattern shouldBe itemToValidate.fileTransferPattern
     item.sourceSystem shouldBe itemToValidate.sourceSystem
     item.targetSystem shouldBe itemToValidate.targetSystem
+  }
+
+  trait FilterSetup {
+
+    def setUpTest() {
+      val result = findWithFilters(IntegrationFilter(List.empty, List.empty)).results
+      result shouldBe List.empty
+
+      //Match in title
+      await(repo.findAndModify(exampleApiDetail))
+      //Match in description
+      await(repo.findAndModify(exampleApiDetail2))
+      //Match in Hods
+      await(repo.findAndModify(exampleApiDetailForSearch1))
+      //Match on DES Platform
+      await(repo.findAndModify(exampleApiDetailForSearch2))
+      //Match on File Transfer platform
+      await(repo.findAndModify(exampleFileTransfer))
+      await(repo.findAndModify(exampleFileTransfer2))
+
+      findWithFilters(IntegrationFilter(List.empty, List.empty)).results.size shouldBe 6
+    }
+
+    def validateResults(results: Seq[IntegrationDetail], expectedReferences: List[String]) {
+      results.size shouldBe expectedReferences.size
+      results.map(_.publisherReference) shouldBe expectedReferences
+
+    }
+
+    def validatePagedResults(integrationResponse: IntegrationResponse, expectedReferences: List[String], expectedCount: Int) {
+      validateResults(integrationResponse.results, expectedReferences)
+
+      integrationResponse.pagedCount.map(x => x shouldBe expectedReferences.size)
+      integrationResponse.count shouldBe expectedCount
+    }
   }
 
   "IntegrationRepository" when {
@@ -129,7 +164,7 @@ class IntegrationRepositoryISpec
             val result2 = await(repo.findById(integration.id))
             validateApi(result2.get, exampleApiDetail)
           }
-          case Left(_)                 => fail()
+          case Left(_) => fail()
         }
 
       }
@@ -179,8 +214,8 @@ class IntegrationRepositoryISpec
           case Right((apiDetail: IntegrationDetail, isUpdate)) =>
             isUpdate shouldBe false
             validateApi(apiDetail, exampleApiDetail)
-          case Right(_)                                        => fail()
-          case Left(_)                                         => fail()
+          case Right(_) => fail()
+          case Left(_) => fail()
         }
 
         getAll.size shouldBe 1
@@ -196,8 +231,8 @@ class IntegrationRepositoryISpec
           case Right((details: FileTransferDetail, isUpdate)) =>
             isUpdate shouldBe false
             validateFileTransfer(details, exampleFileTransfer)
-          case Right(_)                                       => fail()
-          case Left(_)                                        => fail()
+          case Right(_) => fail()
+          case Left(_) => fail()
         }
 
         getAll.size shouldBe 1
@@ -233,8 +268,8 @@ class IntegrationRepositoryISpec
             apiDetail.specificationType shouldBe exampleApiDetail2.specificationType
             apiDetail.hods shouldBe exampleApiDetail2.hods
             apiDetail.openApiSpecification shouldBe exampleApiDetail2.openApiSpecification
-          case Right(_)                                => fail()
-          case Left(_)                                 => fail()
+          case Right(_) => fail()
+          case Left(_) => fail()
         }
 
         getAll.size shouldBe 1
@@ -253,12 +288,12 @@ class IntegrationRepositoryISpec
         val result2 = getAll
         result2.size shouldBe 4
 
-        val result = await(repo.deleteByPlatform(PlatformType.CORE_IF))
+        val result = await(repo.deleteByPlatform(CORE_IF))
         result shouldBe 3
 
         val result3 = getAll
         result3.size shouldBe 1
-        result3.head.platform shouldBe PlatformType.DES
+        result3.head.platform shouldBe DES
 
       }
 
@@ -270,7 +305,7 @@ class IntegrationRepositoryISpec
         val result2 = getAll
         result2.size shouldBe 3
 
-        val result = await(repo.deleteByPlatform(PlatformType.CMA))
+        val result = await(repo.deleteByPlatform(CMA))
         result shouldBe 0
 
         val result3 = getAll
@@ -286,7 +321,7 @@ class IntegrationRepositoryISpec
         await(repo.findAndModify(exampleApiDetail2))
         val result = await(repo.findAndModify(exampleApiDetail))
         result match {
-          case Left(_)                                    => fail()
+          case Left(_) => fail()
           case Right((integration: IntegrationDetail, _)) =>
             val result2 = getAll
             result2.size shouldBe 2
@@ -314,41 +349,6 @@ class IntegrationRepositoryISpec
 
         val result3 = getAll
         result3.size shouldBe 2
-      }
-    }
-
-    trait FilterSetup {
-
-      def setUpTest() {
-        val result = findWithFilters(IntegrationFilter(List.empty, List.empty)).results
-        result shouldBe List.empty
-
-        //Match in title
-        await(repo.findAndModify(exampleApiDetail))
-        //Match in description
-        await(repo.findAndModify(exampleApiDetail2))
-        //Match in Hods
-        await(repo.findAndModify(exampleApiDetailForSearch1))
-        //Match on DES Platform
-        await(repo.findAndModify(exampleApiDetailForSearch2))
-        //Match on File Transfer platform
-        await(repo.findAndModify(exampleFileTransfer))
-        await(repo.findAndModify(exampleFileTransfer2))
-
-        findWithFilters(IntegrationFilter(List.empty, List.empty)).results.size shouldBe 6
-      }
-
-      def validateResults(results: Seq[IntegrationDetail], expectedReferences: List[String]) {
-        results.size shouldBe expectedReferences.size
-        results.map(_.publisherReference) shouldBe expectedReferences
-
-      }
-      def validatePagedResults(integrationResponse: IntegrationResponse, expectedReferences: List[String], expectedCount: Int) {
-        validateResults(integrationResponse.results, expectedReferences)
-
-        integrationResponse.pagedCount.map(x => x shouldBe expectedReferences.size)
-        integrationResponse.count shouldBe expectedCount
-
       }
     }
 
@@ -390,13 +390,13 @@ class IntegrationRepositoryISpec
 
       "find 1 result when searching for for text that exists in all records & DES platform" in new FilterSetup {
         setUpTest()
-        validateResults(findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List(PlatformType.DES))).results, List("API1004"))
+        validateResults(findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List(DES))).results, List("API1004"))
       }
 
       "find 5 results when searching for text that exists in all records & DES or CORE_IF platforms" in new FilterSetup {
         setUpTest()
         validateResults(
-          findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List(PlatformType.DES, PlatformType.CORE_IF))).results,
+          findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List(DES, CORE_IF))).results,
           List("API1001", "API1005", "API1002", "API1003", "API1004")
         )
       }
@@ -406,40 +406,40 @@ class IntegrationRepositoryISpec
         validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS"))).results, List("API1003", "API1004"))
       }
 
-     "find 3 result when searching for backend CUSTOMS and ETMP" in new FilterSetup {
-       setUpTest()
-       validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP"))).results, List("API1003", "API1004", "API1005"))
-     }
+      "find 3 result when searching for backend CUSTOMS and ETMP" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP"))).results, List("API1003", "API1004", "API1005"))
+      }
 
       "find 1 result when searching for backend source " in new FilterSetup {
-       setUpTest()
-       validateResults(findWithFilters(IntegrationFilter(backends = List("source"))).results, List("API1002"))
-     }
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(backends = List("source"))).results, List("API1002"))
+      }
 
       "find 1 result when searching for backend target " in new FilterSetup {
-       setUpTest()
-       validateResults(findWithFilters(IntegrationFilter(backends = List("target"))).results, List("API1007", "API1002"))
-     }
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(backends = List("target"))).results, List("API1007", "API1002"))
+      }
 
       "find 2 result when searching for backend source and target " in new FilterSetup {
-       setUpTest()
-       validateResults(findWithFilters(IntegrationFilter(backends = List("source", "target"))).results, List("API1007", "API1002"))
-     }
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(backends = List("source", "target"))).results, List("API1007", "API1002"))
+      }
 
       "find 4 result when searching for backend CUSTOMS, ETMP and source" in new FilterSetup {
-       setUpTest()
-       validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP", "source"))).results, List("API1003", "API1004", "API1002", "API1005"))
-     }
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP", "source"))).results, List("API1003", "API1004", "API1002", "API1005"))
+      }
 
       "find 2 file transfers when searching for type File Transfer" in new FilterSetup {
-       setUpTest()
-       validateResults(findWithFilters(IntegrationFilter(typeFilter = Some(IntegrationType.FILE_TRANSFER))).results, List("API1007", "API1002"))
-     }
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(typeFilter = Some(FILE_TRANSFER))).results, List("API1007", "API1002"))
+      }
 
       "find 4 apis when searching for type API" in new FilterSetup {
-       setUpTest()
-       validateResults(findWithFilters(IntegrationFilter(typeFilter = Some(IntegrationType.API))).results, List("API1003", "API1004", "API1001", "API1005"))
-     }
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(typeFilter = Some(API))).results, List("API1003", "API1004", "API1001", "API1005"))
+      }
 
     }
 
@@ -447,10 +447,10 @@ class IntegrationRepositoryISpec
       "return List of results when entries exist in the database" in new FilterSetup {
         setUpTest()
         val expectedList = List(
-          IntegrationPlatformReport(API_PLATFORM, FILE_TRANSFER,1),
-          IntegrationPlatformReport(CORE_IF,API,3),
-          IntegrationPlatformReport(CORE_IF, FILE_TRANSFER,1),
-          IntegrationPlatformReport(DES, API,1),
+          IntegrationPlatformReport(API_PLATFORM, FILE_TRANSFER, 1),
+          IntegrationPlatformReport(CORE_IF, API, 3),
+          IntegrationPlatformReport(CORE_IF, FILE_TRANSFER, 1),
+          IntegrationPlatformReport(DES, API, 1),
         )
         val result: List[IntegrationPlatformReport] = await(repo.getCatalogueReport())
         result.sortBy(_.integrationType.toString).sortBy(_.platformType.toString) shouldBe expectedList
@@ -519,6 +519,19 @@ class IntegrationRepositoryISpec
         await(repo.getTotalApisCount()) shouldBe 0
       }
     }
-  }
 
+    "getTotalEndpointsCount" should {
+      "return 8 when there are 8 API endpoints in the DB" in new FilterSetup {
+        setUpTest()
+
+        await(repo.getTotalEndpointsCount()) shouldBe 8
+      }
+
+      "return 0 when there are none APIs in the DB" in new FilterSetup {
+        await(repo.findAndModify(exampleFileTransfer))
+
+        await(repo.getTotalEndpointsCount()) shouldBe 0
+      }
+    }
+  }
 }
