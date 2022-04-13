@@ -5,10 +5,13 @@ import org.mongodb.scala.bson.collection.immutable.Document
 import org.mongodb.scala.model.IndexOptions
 import org.mongodb.scala.model.Indexes.ascending
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{Assertion, BeforeAndAfterEach, Matchers, WordSpecLike}
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.{Assertion, BeforeAndAfterEach}
+import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
+import uk.gov.hmrc.integrationcatalogue.models.Types.IsUpdate
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType.{API, FILE_TRANSFER}
@@ -17,10 +20,14 @@ import uk.gov.hmrc.integrationcatalogue.support.{AwaitTestSupport, MongoApp}
 import uk.gov.hmrc.integrationcatalogue.testdata.OasParsedItTestData
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import java.util.UUID
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 class IntegrationRepositoryISpec
-  extends WordSpecLike
+  extends AnyWordSpec
     with Matchers
     with MongoApp
     with GuiceOneAppPerSuite
@@ -91,29 +98,36 @@ class IntegrationRepositoryISpec
 
   trait FilterSetup {
 
+    def createTestData(): Unit = {
+      val combinedFuture = for {
+        matchInTitle <- repo.findAndModify(exampleApiDetail)
+        matchInDescription <- repo.findAndModify(exampleApiDetail2)
+        matchInHods <- repo.findAndModify(exampleApiDetailForSearch1)
+        matchOnDesPlatform <- repo.findAndModify(exampleApiDetailForSearch2)
+        matchOnFileTransferPlatformOne <- repo.findAndModify(exampleFileTransfer)
+        matchOnFileTransferPlatformTwo <- repo.findAndModify(exampleFileTransfer2)
+      } yield (
+        matchInTitle,
+        matchInDescription,
+        matchInHods,
+        matchOnDesPlatform,
+        matchOnFileTransferPlatformOne,
+        matchOnFileTransferPlatformTwo
+      )
+      Await.result(combinedFuture, Duration.Inf)
+    }
+
     def setUpTest() {
       val result = findWithFilters(IntegrationFilter(List.empty, List.empty)).results
       result shouldBe List.empty
 
-      //Match in title
-      await(repo.findAndModify(exampleApiDetail))
-      //Match in description
-      await(repo.findAndModify(exampleApiDetail2))
-      //Match in Hods
-      await(repo.findAndModify(exampleApiDetailForSearch1))
-      //Match on DES Platform
-      await(repo.findAndModify(exampleApiDetailForSearch2))
-      //Match on File Transfer platform
-      await(repo.findAndModify(exampleFileTransfer))
-      await(repo.findAndModify(exampleFileTransfer2))
-
+      createTestData()
       findWithFilters(IntegrationFilter(List.empty, List.empty)).results.size shouldBe 6
     }
 
     def validateResults(results: Seq[IntegrationDetail], expectedReferences: List[String]) {
       results.size shouldBe expectedReferences.size
       results.map(_.publisherReference) shouldBe expectedReferences
-
     }
 
     def validatePagedResults(integrationResponse: IntegrationResponse, expectedReferences: List[String], expectedCount: Int) {
