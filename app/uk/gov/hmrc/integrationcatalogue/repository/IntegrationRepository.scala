@@ -16,8 +16,13 @@
 
 package uk.gov.hmrc.integrationcatalogue.repository
 
+import com.mongodb.BasicDBObject
+import org.bson.BsonValue
+import org.mongodb.scala.bson.collection.immutable.Document
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.Filters.{equal, _}
+import org.mongodb.scala.model.Accumulators._
+import org.mongodb.scala.model.Aggregates._
+import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Indexes._
 import org.mongodb.scala.model.Updates.{set, setOnInsert}
 import org.mongodb.scala.model._
@@ -29,38 +34,33 @@ import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, Integratio
 import uk.gov.hmrc.integrationcatalogue.repository.MongoFormatters._
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
-import org.mongodb.scala.model.Aggregates._
-import org.mongodb.scala.model.Accumulators._
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
-import com.mongodb.BasicDBObject
-import org.mongodb.scala.bson.collection.immutable.Document
-import org.bson.BsonValue
 
 @Singleton
-class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)(implicit ec: ExecutionContext)
-    extends PlayMongoRepository[IntegrationDetail](
-      collectionName = "integrations",
-      mongoComponent = mongo,
-      domainFormat = integrationDetailFormats,
-      indexes = Seq(
-        IndexModel(ascending("id"), IndexOptions().name("id_index").background(true).unique(true)),
-        IndexModel(ascending("_type"), IndexOptions().name("type_index").background(true).unique(false)),
-        IndexModel(ascending("hods"), IndexOptions().name("hods_index").background(true).unique(false)),
-        IndexModel(ascending("sourceSystem"), IndexOptions().name("sourceSystem_index").background(true).unique(false)),
-        IndexModel(ascending("targetSystem"), IndexOptions().name("targetSystem_index").background(true).unique(false)),
-        IndexModel(ascending(List("platform", "publisherReference"): _*), IndexOptions().name("platform_pub_ref_idx").background(true).unique(true)),
-        IndexModel(
-          Indexes.text("$**"),
-          IndexOptions().weights(new BasicDBObject().append("title", 50).append("description", 25))
-            .name("text_index_1_1").background(true)
-        )
-      ),
-      replaceIndexes = false
-    )
+class IntegrationRepository @Inject()(config: AppConfig, mongo: MongoComponent)(implicit ec: ExecutionContext)
+  extends PlayMongoRepository[IntegrationDetail](
+    collectionName = "integrations",
+    mongoComponent = mongo,
+    domainFormat = integrationDetailFormats,
+    indexes = Seq(
+      IndexModel(ascending("id"), IndexOptions().name("id_index").background(true).unique(true)),
+      IndexModel(ascending("_type"), IndexOptions().name("type_index").background(true).unique(false)),
+      IndexModel(ascending("hods"), IndexOptions().name("hods_index").background(true).unique(false)),
+      IndexModel(ascending("sourceSystem"), IndexOptions().name("sourceSystem_index").background(true).unique(false)),
+      IndexModel(ascending("targetSystem"), IndexOptions().name("targetSystem_index").background(true).unique(false)),
+      IndexModel(ascending(List("platform", "publisherReference"): _*), IndexOptions().name("platform_pub_ref_idx").background(true).unique(true)),
+      IndexModel(
+        Indexes.text("$**"),
+        IndexOptions().weights(new BasicDBObject().append("title", 50).append("description", 25))
+          .name("text_index_1_1").background(true)
+      )
+    ),
+    replaceIndexes = false
+  )
     with Logging {
 
   //https://docs.mongodb.com/manual/core/index-text/#wildcard-text-indexes
@@ -74,7 +74,7 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
             .map(_ => logger.info(s"dropping index $indexToDrop succeeded"))
             .recover {
               case NonFatal(e) => logger.info(s"dropping index $indexToDrop failed ${e.getMessage}")
-              case _           => logger.info(s"dropping index $indexToDrop failed")
+              case _ => logger.info(s"dropping index $indexToDrop failed")
             }
         })),
         collection.createIndexes(models = indexes)
@@ -91,7 +91,7 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
 
   private def determineUpdateOp2(integrationDetail: IntegrationDetail) = {
     integrationDetail.integrationType match {
-      case IntegrationType.API           => val apiDetail = integrationDetail.asInstanceOf[ApiDetail]
+      case IntegrationType.API => val apiDetail = integrationDetail.asInstanceOf[ApiDetail]
         List(
           set("title", apiDetail.title),
           set("description", apiDetail.description),
@@ -129,7 +129,7 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
   def findAndModify(integrationDetail: IntegrationDetail): Future[Either[Exception, (IntegrationDetail, IsUpdate)]] = {
     for {
       isUpdate <- collection.find(and(equal("publisherReference", integrationDetail.publisherReference), equal("platform", Codecs.toBson(integrationDetail.platform))))
-                    .toFuture.map(results => results.nonEmpty)
+        .toFuture.map(results => results.nonEmpty)
       result <- findAndModify2(integrationDetail, isUpdate)
     } yield result
   }
@@ -180,6 +180,7 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
 
       Seq(integrationTypeFilter, textFilter, platformFilter, hodsFilter).flatten
     }
+
     val filters = buildFilters()
 
     val sortByScore = Sorts.metaTextScore("score")
@@ -192,22 +193,22 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
       for {
         count <- collection.countDocuments.toFuture()
         results <- collection.find()
-                     .skip(skipAmount)
-                     .limit(perPage)
-                     .sort(ascending("title"))
-                     .toFuture()
-                     .map(_.toList)
+          .skip(skipAmount)
+          .limit(perPage)
+          .sort(ascending("title"))
+          .toFuture()
+          .map(_.toList)
       } yield IntegrationResponse(count.toInt, sendPagedResults(results, filter.itemsPerPage), results)
     } else {
       for {
         count <- collection.countDocuments(and(filters: _*)).toFuture()
         results <- collection.find(and(filters: _*))
-                     .projection(scoreProjection)
-                     .sort(sortOp)
-                     .skip(skipAmount)
-                     .limit(perPage)
-                     .toFuture()
-                     .map(_.toList)
+          .projection(scoreProjection)
+          .sort(sortOp)
+          .skip(skipAmount)
+          .limit(perPage)
+          .toFuture()
+          .map(_.toList)
       } yield IntegrationResponse(count.toInt, sendPagedResults(results, filter.itemsPerPage), results)
     }
   }
@@ -237,7 +238,7 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
 
     collection.aggregate[BsonValue](aggregatePipeline).toFuture
       .map(_.toList.map(Codecs.fromBson[FileTransferTransportsResponse]))
-      .map(items => items.map(item => FileTransferTransportsForPlatform(item._id.platform, item.transports.sortWith(_<_)))
+      .map(items => items.map(item => FileTransferTransportsForPlatform(item._id.platform, item.transports.sortWith(_ < _)))
         .sortBy(x => x.platform.toString.replace("_", ""))
       )
   }
@@ -261,5 +262,19 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
 
   def getTotalApisCount(): Future[Long] = {
     collection.countDocuments(equal("_type", Codecs.toBson("uk.gov.hmrc.integrationcatalogue.models.ApiDetail"))).toFuture()
+  }
+
+  def getTotalEndpointsCount(): Future[Int] = {
+    val totalEndpointsCountAggregation = Seq(
+      `match`(equal("_type", "uk.gov.hmrc.integrationcatalogue.models.ApiDetail")),
+      unwind("$endpoints"),
+      project(Document("""{_id: 0, endpointsCount: {$size : "$endpoints.methods"}}""")),
+      group(null, sum("totalEndpointsCount", "$endpointsCount"))
+    )
+
+    collection.aggregate[BsonValue](totalEndpointsCountAggregation)
+      .head()
+      .map { result => result.asDocument().get("totalEndpointsCount").asNumber().intValue() }
+      .recover { case e: Exception => 0 }
   }
 }

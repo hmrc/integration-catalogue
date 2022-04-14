@@ -25,19 +25,19 @@ import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class TotalApisCountSpec extends AnyWordSpec with Matchers {
+class TotalEndpointsCountSpec extends AnyWordSpec with Matchers {
 
   val mockIntegrationRepository: IntegrationRepository = mock[IntegrationRepository]
-  val underTest = new TotalApisCount(mockIntegrationRepository)
+  val underTest = new TotalEndpointsCount(mockIntegrationRepository)
 
   "metric refresh" should {
 
-    "produce a metric of total number of apis in database" in {
+    "produce a metric of total number of endpoints in database" in {
       val expectedCount = 1
-      when(mockIntegrationRepository.getTotalApisCount()).thenReturn(Future.successful(expectedCount))
+      when(mockIntegrationRepository.getTotalEndpointsCount()).thenReturn(Future.successful(expectedCount))
 
-      await(underTest.metrics) shouldBe Map("totalApisCount" -> expectedCount)
-      verify(mockIntegrationRepository).getTotalApisCount()
+      await(underTest.metrics) shouldBe Map("totalEndpointsCount" -> expectedCount)
+      verify(mockIntegrationRepository).getTotalEndpointsCount()
     }
   }
 
