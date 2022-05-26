@@ -24,7 +24,7 @@ import io.swagger.v3.oas.models.info.Info
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.mockito.scalatest.MockitoSugar
-import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
+import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.integrationcatalogue.models.ApiDetail
 import uk.gov.hmrc.integrationcatalogue.models.common.{ContactInformation, IntegrationId, PlatformType, SpecificationType}
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.OASV3Adapter
@@ -34,8 +34,10 @@ import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 import java.util.UUID
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import org.joda.time.format.ISODateTimeFormat
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class OASV3AdapterSpec extends WordSpec with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach {
+class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach {
 
   trait Setup {
     val publisherRef = "publisherRef"

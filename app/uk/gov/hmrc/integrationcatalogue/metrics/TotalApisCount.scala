@@ -22,7 +22,7 @@ import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 import uk.gov.hmrc.mongo.metrix.MetricSource
 
 import javax.inject.Inject
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TotalApisCount @Inject()(val integrationRepository: IntegrationRepository) extends MetricSource with Logging {

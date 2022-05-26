@@ -36,7 +36,6 @@ import uk.gov.hmrc.integrationcatalogue.service.{AcronymHelper, UuidService}
 
 import javax.inject.{Inject, Singleton}
 import scala.collection.JavaConverters._
-import scala.collection.immutable.HashSet
 import scala.collection.mutable.LinkedHashSet
 
 @Singleton
