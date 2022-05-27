@@ -16,10 +16,13 @@
 
 package uk.gov.hmrc.integrationcatalogue.controllers
 
-import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import org.mockito.scalatest.MockitoSugar
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.test.Helpers
 import play.api.test.Helpers._
@@ -30,7 +33,7 @@ import play.api.test.FakeRequest
 import play.api.libs.json.Json
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 
-class PlatformControllerSpec extends WordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with BeforeAndAfterEach {
+class PlatformControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   implicit def mat: akka.stream.Materializer = app.injector.instanceOf[akka.stream.Materializer]
   private val mockAppConfig = mock[AppConfig]

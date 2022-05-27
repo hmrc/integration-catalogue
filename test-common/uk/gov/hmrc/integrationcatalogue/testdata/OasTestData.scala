@@ -23,14 +23,12 @@ import io.swagger.v3.oas.models.parameters.RequestBody
 import io.swagger.v3.oas.models.responses.{ApiResponse, ApiResponses}
 import io.swagger.v3.oas.models.{OpenAPI, Operation, PathItem, Paths}
 import io.swagger.v3.parser.core.models.SwaggerParseResult
-import org.joda.time.DateTime
 
 import java.util.HashMap
 import scala.collection.JavaConverters._
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.ExtensionKeys
 
 import java.{util => ju}
-import org.joda.time.format.DateTimeFormat
 
 trait OasTestData extends ExtensionKeys {
   //*** - OPENAPI STUFF

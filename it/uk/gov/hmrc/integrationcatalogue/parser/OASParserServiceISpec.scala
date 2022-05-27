@@ -7,7 +7,9 @@ package uk.gov.hmrc.integrationcatalogue.parser
 
 import cats.data.Validated._
 import cats.data._
-import org.scalatest.{Assertion, Matchers, WordSpec}
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.Assertion
+import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.{ContactInformation, PlatformType, SpecificationType}
@@ -17,9 +19,9 @@ import uk.gov.hmrc.integrationcatalogue.testdata._
 
 import scala.io.BufferedSource
 import scala.io.Source.fromURL
-import scala.collection.mutable.LinkedList
 
-class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestData with OasTestData with GuiceOneAppPerSuite {
+
+class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTestData with OasTestData with GuiceOneAppPerSuite {
 
   trait Setup {
 
@@ -209,7 +211,7 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
           getMethod.responses.size shouldBe 9
           val responseDefault: Response = getMethod.responses.filter(_.statusCode == "default").head
           responseDefault.description shouldBe Some("Test default response")
-
+        case _ => fail()
       }
     }
 
@@ -220,10 +222,10 @@ class OASParserServiceISpec extends WordSpec with Matchers with OasParsedItTestD
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
-        case Valid(parsedObject) => {
+        case Valid(parsedObject) =>
           val actualEnumValues = parsedObject.endpoints.head.methods.head.responses.head.schema.get.properties.head.enum
           actualEnumValues shouldBe List("M", "F", "null")
-        }
+        case _ => fail()
       }
     }
 

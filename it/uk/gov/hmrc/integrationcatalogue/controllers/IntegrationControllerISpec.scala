@@ -257,14 +257,14 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
     }
 
     "GET /filetransfers/platform/transports" should {
-      def setupFileTransfers {
+      def setupFileTransfers() {
 
         await(apiRepo.findAndModify(exampleFileTransfer)) // CORE_IF | source -> target | transports = UTM
         await(apiRepo.findAndModify(exampleFileTransfer2)) // API_PLATFORM | someSource -> target | transports = S3
         await(apiRepo.findAndModify(exampleFileTransfer3)) // API_PLATFORM | someSource -> target | transports = S3, WTM
       }
       "return all transports when called without query params" in {
-        setupFileTransfers
+        setupFileTransfers()
         val expectedResults = List(
           FileTransferTransportsForPlatform(API_PLATFORM, List("AB", "S3", "WTM")),
           FileTransferTransportsForPlatform(CORE_IF, List("UTM"))

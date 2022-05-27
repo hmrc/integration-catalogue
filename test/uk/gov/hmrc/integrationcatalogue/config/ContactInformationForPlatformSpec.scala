@@ -16,11 +16,13 @@
 
 package uk.gov.hmrc.integrationcatalogue.config
 
-import org.scalatest.{Matchers, WordSpec}
+
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
 import uk.gov.hmrc.integrationcatalogue.models.common.ContactInformation
 
-class ContactInformationForPlatformSpec extends WordSpec with Matchers {
+class ContactInformationForPlatformSpec extends AnyWordSpec with Matchers {
 
   "getContactInformationForPlatform" should {
     "return Some ContactInformation when both name and email are passed in" in {

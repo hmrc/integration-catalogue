@@ -21,7 +21,9 @@ import cats.data._
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.parser.core.models.SwaggerParseResult
 import org.mockito.scalatest.MockitoSugar
-import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.hmrc.integrationcatalogue.models.ApiDetail
 import uk.gov.hmrc.integrationcatalogue.models.common.{PlatformType, SpecificationType}
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.OASV3Adapter
@@ -30,7 +32,7 @@ import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 import scala.collection.JavaConverters._
 
 
-class OasParserServiceSpec extends WordSpec with Matchers with  MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach {
+class OasParserServiceSpec extends AnyWordSpec with Matchers with  MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach {
  
   val mockAdapterService: OASV3Adapter = mock[OASV3Adapter]
    val mockFileLoader: OASFileLoader = mock[OASFileLoader]

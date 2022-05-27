@@ -19,7 +19,9 @@ package uk.gov.hmrc.integrationcatalogue.service
 import cats.data.Validated._
 import cats.data._
 import org.mockito.scalatest.MockitoSugar
-import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes._
 import uk.gov.hmrc.integrationcatalogue.models.common.SpecificationType
 import uk.gov.hmrc.integrationcatalogue.models._
@@ -32,7 +34,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class PublishServiceSpec extends WordSpec with Matchers with  MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData {
+class PublishServiceSpec extends AnyWordSpec with Matchers with  MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData {
 
   val mockOasParserService: OASParserService = mock[OASParserService]
   val mockApiRepo: IntegrationRepository = mock[IntegrationRepository]

@@ -19,7 +19,9 @@ package uk.gov.hmrc.integrationcatalogue.parser.oas
 import cats.data.NonEmptyList
 import io.swagger.v3.oas.models.info.Info
 import org.mockito.scalatest.MockitoSugar
-import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.{ExtensionKeys, IntegrationCatalogueExtensions, OASExtensionsAdapter}
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 
@@ -27,7 +29,7 @@ import java.util
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
 
-class OasExtensionsAdapterSpec extends WordSpec
+class OasExtensionsAdapterSpec extends AnyWordSpec
   with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach with ExtensionKeys with OASExtensionsAdapter {
 
   trait Setup {

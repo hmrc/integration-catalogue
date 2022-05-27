@@ -1,7 +1,6 @@
 package uk.gov.hmrc.integrationcatalogue.controllers
 
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import uk.gov.hmrc.integrationcatalogue.support.ServerBaseISpec
 import uk.gov.hmrc.integrationcatalogue.support.AwaitTestSupport
