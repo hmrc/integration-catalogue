@@ -70,7 +70,10 @@ trait OasTestData extends ExtensionKeys {
     openAPIInfo
   }
 
-  def getOpenAPIObject(withExtensions: Boolean, backendsExtension: List[String] = List.empty, reviewedDateExtension: Option[String] = None): OpenAPI = {
+  def getOpenAPIObject(withExtensions: Boolean,
+                       backendsExtension: List[String] = List.empty,
+                       reviewedDateExtension: Option[String] = None,
+                       hasEmptyReqRespContent: Boolean  = false): OpenAPI = {
 
     val openAPIInfo = getOpenApiInfo()
 
@@ -96,38 +99,12 @@ trait OasTestData extends ExtensionKeys {
 
     }
 
-    val requestBody1      = new RequestBody()
-    val rbContent1        = new Content
-    val content1MediaType = new MediaType()
-    val content1Example   = new io.swagger.v3.oas.models.examples.Example()
-
-    val responseBodies       = new ApiResponses()
-    val apiResponse          = new ApiResponse()
-    apiResponse.setDescription("response description")
-    val apiResponseContent1  = new Content()
-    val apiResponseMediaType = new MediaType()
-    val apiResponseExample   = new io.swagger.v3.oas.models.examples.Example()
-    apiResponseExample.setValue("{\"SomeRequestValue\" : \"theValue\"}")
-    apiResponseExample.setSummary("response summary")
-    apiResponseMediaType.addExamples("some example response description", apiResponseExample)
-    apiResponseContent1.put("application/json", apiResponseMediaType)
-    apiResponse.setContent(apiResponseContent1)
-
-    responseBodies.addApiResponse("200", apiResponse)
-
-    val mapper      = new ObjectMapper()
-    val jsonNodeVal = mapper.readTree("{\"SomeValue\": \"theValue\"}")
-    content1Example.setValue(jsonNodeVal)
-
-    content1MediaType.addExamples("some description", content1Example)
-    rbContent1.put("application/json", content1MediaType)
-    requestBody1.setContent(rbContent1)
-    val pathItem1    = new PathItem()
+    val pathItem1 = new PathItem()
     val getOperation = new Operation()
     getOperation.setDescription(oasGetEndpointDesc)
     getOperation.setSummary(oasGetEndpointSummary)
-    getOperation.setRequestBody(requestBody1)
-    getOperation.setResponses(responseBodies)
+    getOperation.setRequestBody(buildRequestBody(hasEmptyReqRespContent))
+    getOperation.setResponses(buildResponseBodies(hasEmptyReqRespContent))
 
     pathItem1.setGet(getOperation)
     val pathItem2  = new PathItem()
@@ -143,6 +120,41 @@ trait OasTestData extends ExtensionKeys {
     openApiObj.setPaths(pathsObj)
 
     openApiObj
+  }
+
+  def buildRequestBody(hasEmptyContent: Boolean = false): RequestBody = {
+    val requestBody1 = new RequestBody()
+    val rbContent1 = new Content
+    val content1MediaType = new MediaType()
+    val content1Example = new io.swagger.v3.oas.models.examples.Example()
+
+    val mapper = new ObjectMapper()
+    val jsonNodeVal = mapper.readTree("{\"SomeValue\": \"theValue\"}")
+    content1Example.setValue(jsonNodeVal)
+
+    content1MediaType.addExamples("some description", content1Example)
+    if(!hasEmptyContent) {
+      rbContent1.put("application/json", content1MediaType)
+    }
+    requestBody1.setContent(rbContent1)
+    requestBody1
+  }
+
+  def buildResponseBodies(hasEmptyContent: Boolean = false)= {
+    val responseBodies = new ApiResponses()
+    val apiResponse = new ApiResponse()
+    apiResponse.setDescription("response description")
+    val apiResponseContent1 = new Content()
+    val apiResponseMediaType = new MediaType()
+    val apiResponseExample = new io.swagger.v3.oas.models.examples.Example()
+    apiResponseExample.setValue("{\"SomeRequestValue\" : \"theValue\"}")
+    apiResponseExample.setSummary("response summary")
+    apiResponseMediaType.addExamples("some example response description", apiResponseExample)
+    apiResponseContent1.put("application/json", apiResponseMediaType)
+    if(!hasEmptyContent) {
+      apiResponse.setContent(apiResponseContent1)
+    }
+    responseBodies.addApiResponse("200", apiResponse)
   }
 
   val rawOASDataWithExtensions = raw"""openapi: 3.0.3

@@ -178,11 +178,12 @@ trait OASV3SchemaAdapter {
 
   def extractEndpointSchema(contentMap: Map[String, MediaType]): Option[Schema] = {
     Option(contentMap)
-      .flatMap(contentMapVal =>
-        contentMapVal.map(mediaTypeKeyValue => {
+      .flatMap {
+        case m: Map[String, MediaType] if m.isEmpty => None
+        case m: Map[String, MediaType] => m.map(mediaTypeKeyValue => {
           extractSchemaValue(Option(mediaTypeKeyValue._2))
         }).toList.head
-      )
+      }
   }
 
   private def extractSchemaValue(mayBeMediaType: Option[MediaType]): Option[Schema] = {
