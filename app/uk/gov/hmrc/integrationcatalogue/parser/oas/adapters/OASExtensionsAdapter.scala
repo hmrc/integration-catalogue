@@ -35,9 +35,7 @@ import org.joda.time.format.ISODateTimeFormat
 
 trait OASExtensionsAdapter extends ExtensionKeys {
 
-  def parseExtensions(info: Info,
-                      publisherReference: Option[String],
-                      appConfig: AppConfig): Either[cats.data.NonEmptyList[String], IntegrationCatalogueExtensions] = {
+  def parseExtensions(info: Info, publisherReference: Option[String], appConfig: AppConfig): Either[cats.data.NonEmptyList[String], IntegrationCatalogueExtensions] = {
     getIntegrationCatalogueExtensionsMap(getExtensions(info))
       .andThen(integrationCatalogueExtensions => {
         {
@@ -82,42 +80,43 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     }
   }
 
-  def getShortDescription(extensions: Map[String, AnyRef], appConfig: AppConfig) : ValidatedNel[String, Option[String]] = {
+  def getShortDescription(extensions: Map[String, AnyRef], appConfig: AppConfig): ValidatedNel[String, Option[String]] = {
     extensions.get(SHORT_DESC_EXTENSION_KEY) match {
-      case None =>  Validated.valid(None)
-      case Some(x: String) => if(x.length > appConfig.shortDescLength) {
-        s"Short Description cannot be more than ${appConfig.shortDescLength} characters long.".invalidNel[Option[String]]
-      } else Validated.valid(Some(x))
-      case unknown => "Short Description must be a String".invalidNel[Option[String]]
+      case None            => Validated.valid(None)
+      case Some(x: String) => if (x.length > appConfig.shortDescLength) {
+          s"Short Description cannot be more than ${appConfig.shortDescLength} characters long.".invalidNel[Option[String]]
+        } else Validated.valid(Some(x))
+      case unknown         => "Short Description must be a String".invalidNel[Option[String]]
 
     }
   }
 
   def getStatus(extensions: Map[String, AnyRef]): ValidatedNel[String, ApiStatus] = {
     extensions.get(STATUS_EXTENSION_KEY) match {
-      case None => Validated.valid(LIVE)
+      case None            => Validated.valid(LIVE)
       case Some(x: String) => {
-          if(ApiStatus.values.toList.map(_.entryName).contains(x.toUpperCase)){
-            Validated.valid(ApiStatus.withName(x))
-          } else "Status must be one of ALPHA, BETA, LIVE or DEPRECATED".invalidNel[ApiStatus]
+        if (ApiStatus.values.toList.map(_.entryName).contains(x.toUpperCase)) {
+          Validated.valid(ApiStatus.withName(x))
+        } else "Status must be one of ALPHA, BETA, LIVE or DEPRECATED".invalidNel[ApiStatus]
       }
-      case Some(_)  => "Status must be one of ALPHA, BETA, LIVE or DEPRECATED".invalidNel[ApiStatus]
-      
+      case Some(_)         => "Status must be one of ALPHA, BETA, LIVE or DEPRECATED".invalidNel[ApiStatus]
+
     }
   }
 
   def getReviewedDate(extensions: Map[String, AnyRef]): ValidatedNel[String, DateTime] = {
     extensions.get(REVIEWED_DATE_EXTENSION_KEY) match {
-      case None =>  "Reviewed date must be provided".invalidNel[DateTime]
+      case None            => "Reviewed date must be provided".invalidNel[DateTime]
       case Some(x: String) =>
-        Try[DateTime]{
+        Try[DateTime] {
           DateTime.parse(x, ISODateTimeFormat.dateOptionalTimeParser())
         } match {
-         case Success(dateTime) => Validated.valid(dateTime)
-         case Failure(e) =>  println(e.getMessage())
-         "Reviewed date is not a valid date".invalidNel[DateTime]
+          case Success(dateTime) => Validated.valid(dateTime)
+          case Failure(e)        =>
+            println(e.getMessage())
+            "Reviewed date is not a valid date".invalidNel[DateTime]
         }
-      case Some(_)  => "Reviewed date is not a valid date".invalidNel[DateTime]
+      case Some(_)         => "Reviewed date is not a valid date".invalidNel[DateTime]
     }
   }
 
@@ -130,18 +129,18 @@ trait OASExtensionsAdapter extends ExtensionKeys {
 
     def handleMultiplePublisherReferences(publisherReference: Option[String], extractedPublisherRef: String) = {
       publisherReference match {
-        case None    => Validated.valid(extractedPublisherRef)
+        case None                                                   => Validated.valid(extractedPublisherRef)
         case Some(x) if (x.equalsIgnoreCase(extractedPublisherRef)) => Validated.valid(extractedPublisherRef)
-        case Some(_) =>  "Publisher reference provided twice but they do not match".invalidNel[String]
+        case Some(_)                                                => "Publisher reference provided twice but they do not match".invalidNel[String]
       }
     }
 
     extensions.get(PUBLISHER_REF_EXTENSION_KEY) match {
-      case None             => handlePublisherReference(publisherReference)
-      case Some(x: String)  => handleMultiplePublisherReferences(publisherReference, x)
-      case Some(x: Integer) => handleMultiplePublisherReferences(publisherReference, x.toString)
-      case Some(x: java.lang.Double)  => handleMultiplePublisherReferences(publisherReference, x.toString)
-      case Some(o)  => s"Invalid value. Expected a string, integer or double but found value: $o of type ${o.getClass.toString}".invalidNel[String]
+      case None                      => handlePublisherReference(publisherReference)
+      case Some(x: String)           => handleMultiplePublisherReferences(publisherReference, x)
+      case Some(x: Integer)          => handleMultiplePublisherReferences(publisherReference, x.toString)
+      case Some(x: java.lang.Double) => handleMultiplePublisherReferences(publisherReference, x.toString)
+      case Some(o)                   => s"Invalid value. Expected a string, integer or double but found value: $o of type ${o.getClass.toString}".invalidNel[String]
     }
   }
 }

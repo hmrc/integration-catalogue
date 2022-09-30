@@ -26,13 +26,13 @@ import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
 
 @Singleton
-class IntegrationService @Inject()(integrationRepository: IntegrationRepository) extends Logging {
+class IntegrationService @Inject() (integrationRepository: IntegrationRepository) extends Logging {
 
   def getFileTransferTransportsByPlatform(source: Option[String], target: Option[String]): Future[List[FileTransferTransportsForPlatform]] = {
     integrationRepository.getFileTransferTransportsByPlatform(source, target)
   }
 
-  def findWithFilters(filter: IntegrationFilter): Future[IntegrationResponse] ={
+  def findWithFilters(filter: IntegrationFilter): Future[IntegrationResponse] = {
     integrationRepository.findWithFilters(filter)
   }
 
@@ -44,23 +44,21 @@ class IntegrationService @Inject()(integrationRepository: IntegrationRepository)
   def deleteByIntegrationId(integrationId: IntegrationId)(implicit ec: ExecutionContext): Future[DeleteApiResult] = {
 
     def doDelete(integrationId: IntegrationId): Future[NoContentDeleteApiResult.type] = {
-     integrationRepository.deleteById(integrationId).map(_ => NoContentDeleteApiResult)
+      integrationRepository.deleteById(integrationId).map(_ => NoContentDeleteApiResult)
     }
 
     integrationRepository.findById(integrationId).flatMap {
-        case None                     => Future.successful(NotFoundDeleteApiResult)
-        case Some(_: IntegrationDetail) => doDelete(integrationId)
-      }
+      case None                       => Future.successful(NotFoundDeleteApiResult)
+      case Some(_: IntegrationDetail) => doDelete(integrationId)
+    }
   }
 
   def deleteByPlatform(platform: PlatformType): Future[Int] = {
     integrationRepository.deleteByPlatform(platform)
   }
 
-  def getCatalogueReport(): Future[List[IntegrationPlatformReport]] ={
+  def getCatalogueReport(): Future[List[IntegrationPlatformReport]] = {
     integrationRepository.getCatalogueReport()
   }
 
 }
-
-

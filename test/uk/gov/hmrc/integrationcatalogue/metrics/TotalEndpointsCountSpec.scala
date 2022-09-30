@@ -28,7 +28,7 @@ import scala.concurrent.Future
 class TotalEndpointsCountSpec extends AnyWordSpec with Matchers {
 
   val mockIntegrationRepository: IntegrationRepository = mock[IntegrationRepository]
-  val underTest = new TotalEndpointsCount(mockIntegrationRepository)
+  val underTest                                        = new TotalEndpointsCount(mockIntegrationRepository)
 
   "metric refresh" should {
 

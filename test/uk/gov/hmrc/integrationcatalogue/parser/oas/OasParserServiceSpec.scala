@@ -31,50 +31,51 @@ import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 
 import scala.collection.JavaConverters._
 
+class OasParserServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach {
 
-class OasParserServiceSpec extends AnyWordSpec with Matchers with  MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach {
- 
-  val mockAdapterService: OASV3Adapter = mock[OASV3Adapter]
-   val mockFileLoader: OASFileLoader = mock[OASFileLoader]
-   val mockSwaggerParseResult: SwaggerParseResult = mock[SwaggerParseResult]
+  val mockAdapterService: OASV3Adapter           = mock[OASV3Adapter]
+  val mockFileLoader: OASFileLoader              = mock[OASFileLoader]
+  val mockSwaggerParseResult: SwaggerParseResult = mock[SwaggerParseResult]
+
   trait Setup {
 
-    val errors = List("error1", "error2")
+    val errors                         = List("error1", "error2")
     val OASSpecType: SpecificationType = SpecificationType.OAS_V3
-    val objInTest = new OASParserService(mockFileLoader, mockAdapterService)
+    val objInTest                      = new OASParserService(mockFileLoader, mockAdapterService)
     when(mockFileLoader.parseOasSpec(*)).thenReturn(mockSwaggerParseResult)
 
-    def primeSuccessNoWarnings(){
+    def primeSuccessNoWarnings() {
       when(mockSwaggerParseResult.getOpenAPI).thenReturn(getOpenAPIObject(withExtensions = false))
       when(mockSwaggerParseResult.getMessages).thenReturn(null)
     }
-    def primeFailureWithErrors(){
+
+    def primeFailureWithErrors() {
       when(mockSwaggerParseResult.getOpenAPI).thenReturn(null)
-   
+
       when(mockSwaggerParseResult.getMessages).thenReturn(errors.asJava)
     }
   }
 
-  override def beforeEach(): Unit ={
+  override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockFileLoader, mockAdapterService, mockSwaggerParseResult)
   }
-  
+
   "OASParserService" should {
     "parse OpenApi object correctly" in new Setup {
       val publisherReference = "SOMEFILEREFERENCE"
 
       primeSuccessNoWarnings()
-      
+
       when(mockAdapterService.extractOpenApi(*, *, *, *, *)).thenReturn(Valid(apiDetail0))
 
-      val result:  ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(oasContactName))
-      
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(oasContactName))
+
       result match {
         case Valid(parsedObject) =>
           parsedObject shouldBe apiDetail0
           verify(mockAdapterService).extractOpenApi(eqTo(Some(publisherReference)), eqTo(PlatformType.CORE_IF), eqTo(OASSpecType), *, *)
-          
+
         case _: Invalid[NonEmptyList[List[String]]] => fail()
       }
     }
@@ -82,7 +83,6 @@ class OasParserServiceSpec extends AnyWordSpec with Matchers with  MockitoSugar 
     "handle when OAS version is not 3" in new Setup {
       val publisherReference = "SOMEFILEREFERENCE"
 
-      
       val openApi: OpenAPI = getOpenAPIObject(withExtensions = false)
       openApi.setOpenapi("2.0")
       when(mockSwaggerParseResult.getOpenAPI).thenReturn(openApi)
@@ -90,55 +90,54 @@ class OasParserServiceSpec extends AnyWordSpec with Matchers with  MockitoSugar 
 
       when(mockAdapterService.extractOpenApi(*, *, *, *, *)).thenReturn(Valid(apiDetail0))
 
-      val result:  ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(oasContactName))
-      
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(oasContactName))
+
       result match {
-        case Valid(parsedObject) =>  fail("parsed object shouold not be returned")
-        case errorMessage : Invalid[NonEmptyList[List[String]]] => {
+        case Valid(parsedObject)                               => fail("parsed object shouold not be returned")
+        case errorMessage: Invalid[NonEmptyList[List[String]]] => {
           errorMessage.e.head shouldBe List(s"Unhandled OAS specification version for platform ${PlatformType.CORE_IF} OAS")
         }
       }
     }
 
-      "handle when spec file is not present" in new Setup {
-        
-        primeFailureWithErrors()
-        val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF, OASSpecType, "{Unparseable}")
-        result match {
-          case _ : Valid[ApiDetail] =>  fail("should not return a parsed object")
-          case errorMessage : Invalid[NonEmptyList[List[String]]] => {
-             errorMessage.e.head shouldBe errors
-          }
-        }
-    
-    }
+    "handle when spec file is not present" in new Setup {
 
-      "handle when OasParser returns object with null info and no errors" in new Setup {
-        
-        when(mockSwaggerParseResult.getOpenAPI).thenReturn(null)
-
-        val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF,  OASSpecType, "{Unparseable}")
-        result match {
-          case _ : Valid[ApiDetail] =>  fail("should not return a parsed object")
-          case errorMessage : Invalid[NonEmptyList[List[String]]] => {
-            errorMessage.e.head shouldBe List("Error loading OAS specification for platform CORE_IF OAS")
-          }
+      primeFailureWithErrors()
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF, OASSpecType, "{Unparseable}")
+      result match {
+        case _: Valid[ApiDetail]                               => fail("should not return a parsed object")
+        case errorMessage: Invalid[NonEmptyList[List[String]]] => {
+          errorMessage.e.head shouldBe errors
         }
       }
-      
 
-        "handle when OasParser returns null" in new Setup {
-        
-        when(mockFileLoader.parseOasSpec(*)).thenReturn(null)
-        
-        val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF, OASSpecType, "{Unparseable}")
-        result match {
-          case _ : Valid[ApiDetail] =>  fail("should not return a parsed object")
-          case errorMessage : Invalid[NonEmptyList[List[String]]] => {
-            errorMessage.e.head shouldBe List("Oas Parser returned null")
-          }
+    }
+
+    "handle when OasParser returns object with null info and no errors" in new Setup {
+
+      when(mockSwaggerParseResult.getOpenAPI).thenReturn(null)
+
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF, OASSpecType, "{Unparseable}")
+      result match {
+        case _: Valid[ApiDetail]                               => fail("should not return a parsed object")
+        case errorMessage: Invalid[NonEmptyList[List[String]]] => {
+          errorMessage.e.head shouldBe List("Error loading OAS specification for platform CORE_IF OAS")
         }
-    
+      }
+    }
+
+    "handle when OasParser returns null" in new Setup {
+
+      when(mockFileLoader.parseOasSpec(*)).thenReturn(null)
+
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF, OASSpecType, "{Unparseable}")
+      result match {
+        case _: Valid[ApiDetail]                               => fail("should not return a parsed object")
+        case errorMessage: Invalid[NonEmptyList[List[String]]] => {
+          errorMessage.e.head shouldBe List("Oas Parser returned null")
+        }
+      }
+
     }
   }
 }

@@ -43,31 +43,29 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
   trait Setup {
 
     val uuid: UUID = UUID.fromString("28c0bd67-4176-42c7-be13-53be98a4db58")
-    val rawData = "rawOASData"
+    val rawData    = "rawOASData"
 
-
-    val inTest = new IntegrationService(mockIntegrationRepo)
+    val inTest       = new IntegrationService(mockIntegrationRepo)
     val expectedList = List(apiDetail1, apiDetail2)
 
   }
 
-
-"findWithFilters" should {
+  "findWithFilters" should {
     "return list of integration details" in new Setup {
 
       when(mockIntegrationRepo.findWithFilters(*)).thenReturn(Future.successful(IntegrationResponse(count = expectedList.size, results = expectedList)))
 
-     val response: IntegrationResponse =  await(inTest.findWithFilters(*))
-     response.results shouldBe expectedList
+      val response: IntegrationResponse = await(inTest.findWithFilters(*))
+      response.results shouldBe expectedList
 
       verify(mockIntegrationRepo).findWithFilters(*)
     }
   }
 
-    "deleteByPlatform" should {
+  "deleteByPlatform" should {
     "delete the integration if the platform matches" in new Setup {
       when(mockIntegrationRepo.deleteByPlatform(*)).thenReturn(Future.successful(1))
-      
+
       val result: Int = await(inTest.deleteByPlatform(PlatformType.CORE_IF))
       result shouldBe 1
 
@@ -104,7 +102,7 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
 
       when(mockIntegrationRepo.findById(eqTo(apiDetail1.id))).thenReturn(Future.successful(Some(apiDetail1)))
 
-     val result: Option[IntegrationDetail] = await(inTest.findById(apiDetail1.id))
+      val result: Option[IntegrationDetail] = await(inTest.findById(apiDetail1.id))
       result shouldBe Some(apiDetail1)
       verify(mockIntegrationRepo).findById(eqTo(apiDetail1.id))
     }

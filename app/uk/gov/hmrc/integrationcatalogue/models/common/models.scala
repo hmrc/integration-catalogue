@@ -33,16 +33,16 @@ object PlatformType extends Enum[PlatformType] with PlayJsonEnum[PlatformType] {
 
   val values = findValues
 
-  case object API_PLATFORM extends PlatformType
-  case object CDS_CLASSIC extends PlatformType
-  case object CMA extends PlatformType
-  case object CORE_IF extends PlatformType
-  case object DAPI extends PlatformType
-  case object DES extends PlatformType
-  case object DIGI extends PlatformType
-  case object SDES extends PlatformType
+  case object API_PLATFORM       extends PlatformType
+  case object CDS_CLASSIC        extends PlatformType
+  case object CMA                extends PlatformType
+  case object CORE_IF            extends PlatformType
+  case object DAPI               extends PlatformType
+  case object DES                extends PlatformType
+  case object DIGI               extends PlatformType
+  case object SDES               extends PlatformType
   case object TRANSACTION_ENGINE extends PlatformType
-  case object CIP extends PlatformType
+  case object CIP                extends PlatformType
 }
 
 sealed trait SpecificationType extends EnumEntry
@@ -76,9 +76,9 @@ object IntegrationType extends Enum[IntegrationType] with PlayJsonEnum[Integrati
 
   def fromIntegrationTypeString(typeAsString: String): IntegrationType = {
     typeAsString match {
-      case API.integrationType => API
+      case API.integrationType           => API
       case FILE_TRANSFER.integrationType => FILE_TRANSFER
-      case _ => throw new IllegalArgumentException(s"$typeAsString is not a valid integration Type")
+      case _                             => throw new IllegalArgumentException(s"$typeAsString is not a valid integration Type")
     }
   }
 }

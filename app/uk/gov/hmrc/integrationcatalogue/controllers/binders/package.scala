@@ -17,7 +17,7 @@
 package uk.gov.hmrc.integrationcatalogue.controllers
 
 import play.api.mvc.{PathBindable, QueryStringBindable}
-import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformType, IntegrationType}
+import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, IntegrationType, PlatformType}
 
 import java.util.UUID
 import scala.util.Try
@@ -32,6 +32,7 @@ package object binders {
   }
 
   implicit def integrationIdPathBinder(implicit textBinder: PathBindable[String]): PathBindable[IntegrationId] = new PathBindable[IntegrationId] {
+
     override def bind(key: String, value: String): Either[String, IntegrationId] = {
       textBinder.bind(key, value).flatMap(integrationIdFromString)
     }
@@ -55,10 +56,11 @@ package object binders {
 
   implicit def integrationTypeQueryStringBindable(implicit textBinder: QueryStringBindable[String]): QueryStringBindable[IntegrationType] =
     new QueryStringBindable[IntegrationType] {
+
       override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, IntegrationType]] = {
         textBinder.bind(key, params).map {
           case Right(integrationType) => handleStringToIntegrationType(integrationType)
-          case Left(_) => Left("Unable to bind an integrationType")
+          case Left(_)                => Left("Unable to bind an integrationType")
         }
       }
 
@@ -69,10 +71,11 @@ package object binders {
 
   implicit def platformTypeQueryStringBindable(implicit textBinder: QueryStringBindable[String]): QueryStringBindable[PlatformType] =
     new QueryStringBindable[PlatformType] {
+
       override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, PlatformType]] = {
         textBinder.bind(key, params).map {
           case Right(platform) => handleStringToPlatformType(platform)
-          case Left(_) => Left("Unable to bind an platform")
+          case Left(_)         => Left("Unable to bind an platform")
         }
       }
 

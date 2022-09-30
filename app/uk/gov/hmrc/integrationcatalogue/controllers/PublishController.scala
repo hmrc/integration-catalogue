@@ -28,13 +28,12 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-
 @Singleton
-class PublishController @Inject()(
+class PublishController @Inject() (
     cc: ControllerComponents,
     publishService: PublishService
-  )(implicit ec: ExecutionContext)
-    extends BackendController(cc)
+  )(implicit ec: ExecutionContext
+  ) extends BackendController(cc)
     with Logging {
 
   def publishFileTransfer(): Action[JsValue] = Action.async(parse.tolerantJson) { implicit request =>
@@ -45,21 +44,21 @@ class PublishController @Inject()(
       } yield Ok(Json.toJson(publishResult))
     } else {
       logger.warn("Invalid request body, must be a valid publish request")
-      Future.successful(BadRequest(Json.toJson(ErrorResponse(List( ErrorResponseMessage("Invalid request body"))))))
+      Future.successful(BadRequest(Json.toJson(ErrorResponse(List(ErrorResponseMessage("Invalid request body"))))))
     }
   }
 
   def publishApi(): Action[JsValue] = Action.async(parse.tolerantJson) { implicit request =>
-      if (validateJsonString[PublishRequest](request.body.toString())) {
-        val bodyVal = request.body.as[PublishRequest]
-        for {
-          publishResult <- publishService.publishApi(bodyVal)
-        } yield Ok(Json.toJson(publishResult))
-      } else {
-        logger.warn("Invalid request body, must be a valid publish request")
-        Future.successful(BadRequest(Json.toJson(ErrorResponse(List( ErrorResponseMessage("Invalid request body"))))))
-      }
+    if (validateJsonString[PublishRequest](request.body.toString())) {
+      val bodyVal = request.body.as[PublishRequest]
+      for {
+        publishResult <- publishService.publishApi(bodyVal)
+      } yield Ok(Json.toJson(publishResult))
+    } else {
+      logger.warn("Invalid request body, must be a valid publish request")
+      Future.successful(BadRequest(Json.toJson(ErrorResponse(List(ErrorResponseMessage("Invalid request body"))))))
     }
+  }
 
   private def validateJsonString[T](body: String)(implicit reads: Reads[T]) = {
     validateJson[T](body, body => Json.parse(body))

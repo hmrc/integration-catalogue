@@ -36,7 +36,7 @@ import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 class PlatformControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   implicit def mat: akka.stream.Materializer = app.injector.instanceOf[akka.stream.Materializer]
-  private val mockAppConfig = mock[AppConfig]
+  private val mockAppConfig                  = mock[AppConfig]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -44,17 +44,17 @@ class PlatformControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppP
   }
 
   trait Setup {
-    val apiPlatformContact = PlatformContactResponse(PlatformType.API_PLATFORM, Some(ContactInformation(Some("ApiPlatform"), Some("api.platform@email"))), true)
+    val apiPlatformContact   = PlatformContactResponse(PlatformType.API_PLATFORM, Some(ContactInformation(Some("ApiPlatform"), Some("api.platform@email"))), true)
     val coreIfWithoutContact = PlatformContactResponse(PlatformType.CORE_IF, None, false)
-    val controller = new PlatformController(Helpers.stubControllerComponents(), mockAppConfig)
-    val fakeRequest = FakeRequest("GET", s"/platform/contacts")
+    val controller           = new PlatformController(Helpers.stubControllerComponents(), mockAppConfig)
+    val fakeRequest          = FakeRequest("GET", s"/platform/contacts")
   }
 
   "PlatformController" should {
     "return platform with contacts" in new Setup {
       val expectedResponse = List(apiPlatformContact)
       when(mockAppConfig.platformContacts).thenReturn(expectedResponse)
-      val result = controller.getPlatformContacts()(fakeRequest)
+      val result           = controller.getPlatformContacts()(fakeRequest)
       contentAsString(result) shouldBe Json.toJson(expectedResponse).toString
       status(result) shouldBe OK
     }
@@ -62,7 +62,7 @@ class PlatformControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppP
     "return platform without contacts" in new Setup {
       val expectedResponse = List(coreIfWithoutContact)
       when(mockAppConfig.platformContacts).thenReturn(expectedResponse)
-      val result = controller.getPlatformContacts()(fakeRequest)
+      val result           = controller.getPlatformContacts()(fakeRequest)
       contentAsString(result) shouldBe Json.toJson(expectedResponse).toString
       status(result) shouldBe OK
     }

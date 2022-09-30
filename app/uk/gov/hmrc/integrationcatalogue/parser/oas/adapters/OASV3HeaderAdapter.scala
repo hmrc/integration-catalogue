@@ -25,7 +25,6 @@ import scala.collection.JavaConverters._
 
 trait OASV3HeaderAdapter extends OASV3SchemaAdapter {
 
-
   def extractComponentHeaders(openApi: OpenAPI): List[uk.gov.hmrc.integrationcatalogue.models.Header] = {
     nullSafeGetHeaders(openApi).map(headers => adaptHeaders(headers.asScala.toMap)).getOrElse(List.empty)
   }
@@ -34,24 +33,23 @@ trait OASV3HeaderAdapter extends OASV3SchemaAdapter {
     Option(openApi.getComponents).flatMap(components => Option(components.getHeaders))
   }
 
-
   def extractResponseHeaders(response: ApiResponse): List[uk.gov.hmrc.integrationcatalogue.models.Header] = {
     val headerMap = Option(response.getHeaders).getOrElse(new util.HashMap()).asScala.toMap
     adaptHeaders(headerMap)
 
   }
 
-  private def adaptHeaders(headerMap: Map[String, OasHeader])={
+  private def adaptHeaders(headerMap: Map[String, OasHeader]) = {
 
     headerMap.map {
       case (name: String, header: OasHeader) =>
         Option(header.get$ref())
           .map(value => uk.gov.hmrc.integrationcatalogue.models.Header(name, Some(value)))
           .getOrElse({
-            val description = Option(header.getDescription)
-            val isRequired = Option(Boolean.unbox(header.getRequired))
-            val deprecated = Option(Boolean.unbox(header.getDeprecated()))
-            val headerSchema = Option(header.getSchema)
+            val description          = Option(header.getDescription)
+            val isRequired           = Option(Boolean.unbox(header.getRequired))
+            val deprecated           = Option(Boolean.unbox(header.getDeprecated()))
+            val headerSchema         = Option(header.getSchema)
             val responseHeaderSchema = headerSchema.map(schema => extractOasSchema(Some(name), schema))
 
             uk.gov.hmrc.integrationcatalogue.models.Header(name, description = description, required = isRequired, deprecated = deprecated, schema = responseHeaderSchema)

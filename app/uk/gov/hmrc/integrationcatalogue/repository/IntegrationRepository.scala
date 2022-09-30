@@ -41,29 +41,29 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
-class IntegrationRepository @Inject()(config: AppConfig, mongo: MongoComponent)(implicit ec: ExecutionContext)
-  extends PlayMongoRepository[IntegrationDetail](
-    collectionName = "integrations",
-    mongoComponent = mongo,
-    domainFormat = integrationDetailFormats,
-    indexes = Seq(
-      IndexModel(ascending("id"), IndexOptions().name("id_index").background(true).unique(true)),
-      IndexModel(ascending("_type"), IndexOptions().name("type_index").background(true).unique(false)),
-      IndexModel(ascending("hods"), IndexOptions().name("hods_index").background(true).unique(false)),
-      IndexModel(ascending("sourceSystem"), IndexOptions().name("sourceSystem_index").background(true).unique(false)),
-      IndexModel(ascending("targetSystem"), IndexOptions().name("targetSystem_index").background(true).unique(false)),
-      IndexModel(ascending(List("platform", "publisherReference"): _*), IndexOptions().name("platform_pub_ref_idx").background(true).unique(true)),
-      IndexModel(
-        Indexes.text("$**"),
-        IndexOptions().weights(new BasicDBObject().append("title", 50).append("description", 25))
-          .name("text_index_1_1").background(true)
-      )
-    ),
-    replaceIndexes = false
-  )
+class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)(implicit ec: ExecutionContext)
+    extends PlayMongoRepository[IntegrationDetail](
+      collectionName = "integrations",
+      mongoComponent = mongo,
+      domainFormat = integrationDetailFormats,
+      indexes = Seq(
+        IndexModel(ascending("id"), IndexOptions().name("id_index").background(true).unique(true)),
+        IndexModel(ascending("_type"), IndexOptions().name("type_index").background(true).unique(false)),
+        IndexModel(ascending("hods"), IndexOptions().name("hods_index").background(true).unique(false)),
+        IndexModel(ascending("sourceSystem"), IndexOptions().name("sourceSystem_index").background(true).unique(false)),
+        IndexModel(ascending("targetSystem"), IndexOptions().name("targetSystem_index").background(true).unique(false)),
+        IndexModel(ascending(List("platform", "publisherReference"): _*), IndexOptions().name("platform_pub_ref_idx").background(true).unique(true)),
+        IndexModel(
+          Indexes.text("$**"),
+          IndexOptions().weights(new BasicDBObject().append("title", 50).append("description", 25))
+            .name("text_index_1_1").background(true)
+        )
+      ),
+      replaceIndexes = false
+    )
     with Logging {
 
-  //https://docs.mongodb.com/manual/core/index-text/#wildcard-text-indexes
+  // https://docs.mongodb.com/manual/core/index-text/#wildcard-text-indexes
 
   private def ensureLocalIndexes() = {
     Future.sequence(
@@ -74,7 +74,7 @@ class IntegrationRepository @Inject()(config: AppConfig, mongo: MongoComponent)(
             .map(_ => logger.info(s"dropping index $indexToDrop succeeded"))
             .recover {
               case NonFatal(e) => logger.info(s"dropping index $indexToDrop failed ${e.getMessage}")
-              case _ => logger.info(s"dropping index $indexToDrop failed")
+              case _           => logger.info(s"dropping index $indexToDrop failed")
             }
         })),
         collection.createIndexes(models = indexes)
@@ -91,7 +91,8 @@ class IntegrationRepository @Inject()(config: AppConfig, mongo: MongoComponent)(
 
   private def determineUpdateOp2(integrationDetail: IntegrationDetail) = {
     integrationDetail.integrationType match {
-      case IntegrationType.API => val apiDetail = integrationDetail.asInstanceOf[ApiDetail]
+      case IntegrationType.API           =>
+        val apiDetail = integrationDetail.asInstanceOf[ApiDetail]
         List(
           set("title", apiDetail.title),
           set("description", apiDetail.description),
@@ -108,7 +109,8 @@ class IntegrationRepository @Inject()(config: AppConfig, mongo: MongoComponent)(
           set("components", Codecs.toBson(apiDetail.components)),
           set("openApiSpecification", Codecs.toBson(apiDetail.openApiSpecification))
         )
-      case IntegrationType.FILE_TRANSFER => val fileTransferDetail: FileTransferDetail = integrationDetail.asInstanceOf[FileTransferDetail]
+      case IntegrationType.FILE_TRANSFER =>
+        val fileTransferDetail: FileTransferDetail = integrationDetail.asInstanceOf[FileTransferDetail]
         List(
           set("fileTransferSpecificationVersion", fileTransferDetail.fileTransferSpecificationVersion),
           set("title", fileTransferDetail.title),
@@ -129,8 +131,8 @@ class IntegrationRepository @Inject()(config: AppConfig, mongo: MongoComponent)(
   def findAndModify(integrationDetail: IntegrationDetail): Future[Either[Exception, (IntegrationDetail, IsUpdate)]] = {
     for {
       isUpdate <- collection.find(and(equal("publisherReference", integrationDetail.publisherReference), equal("platform", Codecs.toBson(integrationDetail.platform))))
-        .toFuture.map(results => results.nonEmpty)
-      result <- findAndModify2(integrationDetail, isUpdate)
+                    .toFuture.map(results => results.nonEmpty)
+      result   <- findAndModify2(integrationDetail, isUpdate)
     } yield result
   }
 
@@ -153,7 +155,7 @@ class IntegrationRepository @Inject()(config: AppConfig, mongo: MongoComponent)(
       update = Updates.combine(allOps: _*),
       options = FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
     ).toFuture
-      .map(x => Right(x, isUpsert)) //not sure how we get is upserted / updated now))
+      .map(x => Right(x, isUpsert)) // not sure how we get is upserted / updated now))
       .recover {
         case e: Exception =>
           logger.warn(s"IntegrationDetail find and modify error - ${e.getMessage}")
@@ -163,52 +165,52 @@ class IntegrationRepository @Inject()(config: AppConfig, mongo: MongoComponent)(
 
   def findWithFilters(filter: IntegrationFilter): Future[IntegrationResponse] = {
     // total count, per page, current page
-    //TODO handle / fix if we get multiple search terms
+    // TODO handle / fix if we get multiple search terms
     def sendPagedResults(results: List[IntegrationDetail], perPageFilter: Option[Int]) = {
       if (perPageFilter.isDefined) Some(results.size) else None
     }
 
     def buildFilters() = {
-      val integrationTypeFilter = filter.typeFilter.map(typeVal => Filters.equal("_type", typeVal.integrationType))
+      val integrationTypeFilter    = filter.typeFilter.map(typeVal => Filters.equal("_type", typeVal.integrationType))
       val textFilter: Option[Bson] = filter.searchText.headOption.map(searchText => Filters.text(searchText))
-      val platformFilter = if (filter.platforms.nonEmpty) Some(Filters.in("platform", filter.platforms.map(Codecs.toBson(_)): _*)) else None
-      val backendsFilter = if (filter.backends.nonEmpty) Some(Filters.in("hods", filter.backends: _*)) else None
-      val sourceFilter = if (filter.backends.nonEmpty) Some(Filters.in("sourceSystem", filter.backends: _*)) else None
-      val targetFilter = if (filter.backends.nonEmpty) Some(Filters.in("targetSystem", filter.backends: _*)) else None
-      val combinedHodsFilters = Seq(backendsFilter, sourceFilter, targetFilter).flatten
-      val hodsFilter = if (combinedHodsFilters.isEmpty) None else Some(Filters.or(combinedHodsFilters: _*))
+      val platformFilter           = if (filter.platforms.nonEmpty) Some(Filters.in("platform", filter.platforms.map(Codecs.toBson(_)): _*)) else None
+      val backendsFilter           = if (filter.backends.nonEmpty) Some(Filters.in("hods", filter.backends: _*)) else None
+      val sourceFilter             = if (filter.backends.nonEmpty) Some(Filters.in("sourceSystem", filter.backends: _*)) else None
+      val targetFilter             = if (filter.backends.nonEmpty) Some(Filters.in("targetSystem", filter.backends: _*)) else None
+      val combinedHodsFilters      = Seq(backendsFilter, sourceFilter, targetFilter).flatten
+      val hodsFilter               = if (combinedHodsFilters.isEmpty) None else Some(Filters.or(combinedHodsFilters: _*))
 
       Seq(integrationTypeFilter, textFilter, platformFilter, hodsFilter).flatten
     }
 
     val filters = buildFilters()
 
-    val sortByScore = Sorts.metaTextScore("score")
+    val sortByScore     = Sorts.metaTextScore("score")
     val scoreProjection = Projections.metaTextScore("score")
-    val sortOp = if (filter.searchText.headOption.isEmpty) ascending("title") else sortByScore
-    val perPage = filter.itemsPerPage.getOrElse(0)
-    val currentPage = filter.currentPage.getOrElse(1)
-    val skipAmount = if (currentPage > 1) (currentPage - 1) * perPage else 0
+    val sortOp          = if (filter.searchText.headOption.isEmpty) ascending("title") else sortByScore
+    val perPage         = filter.itemsPerPage.getOrElse(0)
+    val currentPage     = filter.currentPage.getOrElse(1)
+    val skipAmount      = if (currentPage > 1) (currentPage - 1) * perPage else 0
     if (filters.isEmpty) {
       for {
-        count <- collection.countDocuments.toFuture()
+        count   <- collection.countDocuments.toFuture()
         results <- collection.find()
-          .skip(skipAmount)
-          .limit(perPage)
-          .sort(ascending("title"))
-          .toFuture()
-          .map(_.toList)
+                     .skip(skipAmount)
+                     .limit(perPage)
+                     .sort(ascending("title"))
+                     .toFuture()
+                     .map(_.toList)
       } yield IntegrationResponse(count.toInt, sendPagedResults(results, filter.itemsPerPage), results)
     } else {
       for {
-        count <- collection.countDocuments(and(filters: _*)).toFuture()
+        count   <- collection.countDocuments(and(filters: _*)).toFuture()
         results <- collection.find(and(filters: _*))
-          .projection(scoreProjection)
-          .sort(sortOp)
-          .skip(skipAmount)
-          .limit(perPage)
-          .toFuture()
-          .map(_.toList)
+                     .projection(scoreProjection)
+                     .sort(sortOp)
+                     .skip(skipAmount)
+                     .limit(perPage)
+                     .toFuture()
+                     .map(_.toList)
       } yield IntegrationResponse(count.toInt, sendPagedResults(results, filter.itemsPerPage), results)
     }
   }
@@ -233,13 +235,14 @@ class IntegrationRepository @Inject()(config: AppConfig, mongo: MongoComponent)(
 
     val aggregatePipeline = (source, target) match {
       case (Some(s), Some(t)) => `match`(Document("sourceSystem" -> s, "targetSystem" -> t)) +: aggregatePipelineWithoutMatch
-      case _ => aggregatePipelineWithoutMatch
+      case _                  => aggregatePipelineWithoutMatch
     }
 
     collection.aggregate[BsonValue](aggregatePipeline).toFuture
       .map(_.toList.map(Codecs.fromBson[FileTransferTransportsResponse]))
-      .map(items => items.map(item => FileTransferTransportsForPlatform(item._id.platform, item.transports.sortWith(_ < _)))
-        .sortBy(x => x.platform.toString.replace("_", ""))
+      .map(items =>
+        items.map(item => FileTransferTransportsForPlatform(item._id.platform, item.transports.sortWith(_ < _)))
+          .sortBy(x => x.platform.toString.replace("_", ""))
       )
   }
 

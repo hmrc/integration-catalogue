@@ -17,10 +17,10 @@
 package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
 trait ExtensionKeys {
-  val EXTENSIONS_KEY = "x-integration-catalogue"
-  val BACKEND_EXTENSION_KEY = "backends"
+  val EXTENSIONS_KEY              = "x-integration-catalogue"
+  val BACKEND_EXTENSION_KEY       = "backends"
   val PUBLISHER_REF_EXTENSION_KEY = "publisher-reference"
-  val SHORT_DESC_EXTENSION_KEY = "short-description"
-  val STATUS_EXTENSION_KEY = "status"
+  val SHORT_DESC_EXTENSION_KEY    = "short-description"
+  val STATUS_EXTENSION_KEY        = "status"
   val REVIEWED_DATE_EXTENSION_KEY = "reviewed-date"
 }

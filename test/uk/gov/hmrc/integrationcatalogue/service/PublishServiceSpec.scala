@@ -34,38 +34,37 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class PublishServiceSpec extends AnyWordSpec with Matchers with  MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData {
+class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData {
 
   val mockOasParserService: OASParserService = mock[OASParserService]
-  val mockApiRepo: IntegrationRepository = mock[IntegrationRepository]
-  val mockUuidService = mock[UuidService]
+  val mockApiRepo: IntegrationRepository     = mock[IntegrationRepository]
+  val mockUuidService                        = mock[UuidService]
 
-
-  override def beforeEach(): Unit ={
+  override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockOasParserService, mockApiRepo)
   }
-  
+
   trait Setup {
 
     val rawData = "rawOASData"
 
-    val inTest = new PublishService(mockOasParserService, mockApiRepo,mockUuidService)
-    val publishRequest: PublishRequest = PublishRequest(publisherReference = Some(apiDetail0.publisherReference), platformType = apiDetail0.platform , specificationType = SpecificationType.OAS_V3, contents = rawData)
-    val parseSuccess : ValidatedNel[List[String], ApiDetail] = valid(apiDetail0)
-    val parseFailure : ValidatedNel[List[String], ApiDetail] = invalid(NonEmptyList[List[String]](List("Oas Parser returned null"), List()))
-    val apiUpsertSuccessInsert : Either[Exception, (ApiDetail, Types.IsUpdate)] = Right(apiDetail0, false)
-    val apiUpsertSuccessUpdate : Either[Exception, (ApiDetail, Types.IsUpdate)] = Right(apiDetail0, true)
-    val apiUpsertFailure : Either[Exception, (ApiDetail, Types.IsUpdate)] = Left(new Exception(s"ApiDetailParsed upsert error."))
+    val inTest                                                                 = new PublishService(mockOasParserService, mockApiRepo, mockUuidService)
+
+    val publishRequest: PublishRequest                                         =
+      PublishRequest(publisherReference = Some(apiDetail0.publisherReference), platformType = apiDetail0.platform, specificationType = SpecificationType.OAS_V3, contents = rawData)
+    val parseSuccess: ValidatedNel[List[String], ApiDetail]                    = valid(apiDetail0)
+    val parseFailure: ValidatedNel[List[String], ApiDetail]                    = invalid(NonEmptyList[List[String]](List("Oas Parser returned null"), List()))
+    val apiUpsertSuccessInsert: Either[Exception, (ApiDetail, Types.IsUpdate)] = Right(apiDetail0, false)
+    val apiUpsertSuccessUpdate: Either[Exception, (ApiDetail, Types.IsUpdate)] = Right(apiDetail0, true)
+    val apiUpsertFailure: Either[Exception, (ApiDetail, Types.IsUpdate)]       = Left(new Exception(s"ApiDetailParsed upsert error."))
   }
-  
-  
+
   "publish" should {
     "return successful publish result on insert" in new Setup {
 
-      when(mockOasParserService.parse(*, *, *,  *)).thenReturn(parseSuccess)
+      when(mockOasParserService.parse(*, *, *, *)).thenReturn(parseSuccess)
       when(mockApiRepo.findAndModify(*)).thenReturn(Future.successful(apiUpsertSuccessInsert))
-
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), 500 millis)
       result.isSuccess shouldBe true
@@ -74,13 +73,17 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with  MockitoSugar wi
       result.publishDetails.isDefined shouldBe true
       result.publishDetails.get shouldBe expectedPublisDetails
 
-      
-      verify(mockOasParserService).parse(eqTo(publishRequest.publisherReference), eqTo(publishRequest.platformType),  eqTo(publishRequest.specificationType), eqTo(publishRequest.contents))
+      verify(mockOasParserService).parse(
+        eqTo(publishRequest.publisherReference),
+        eqTo(publishRequest.platformType),
+        eqTo(publishRequest.specificationType),
+        eqTo(publishRequest.contents)
+      )
       verify(mockApiRepo).findAndModify(eqTo(apiDetail0))
 
     }
 
-        "return successful publish result on update" in new Setup {
+    "return successful publish result on update" in new Setup {
 
       when(mockOasParserService.parse(*, *, *, *)).thenReturn(parseSuccess)
       when(mockApiRepo.findAndModify(*)).thenReturn(Future.successful(apiUpsertSuccessUpdate))
@@ -91,19 +94,29 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with  MockitoSugar wi
       val expectedPublisDetails: PublishDetails = PublishDetails(true, apiDetail0.id, apiDetail0.publisherReference, apiDetail0.platform)
       result.publishDetails.isDefined shouldBe true
       result.publishDetails.get shouldBe expectedPublisDetails
-      
-      verify(mockOasParserService).parse(eqTo(publishRequest.publisherReference), eqTo(publishRequest.platformType),  eqTo(publishRequest.specificationType), eqTo(publishRequest.contents))
+
+      verify(mockOasParserService).parse(
+        eqTo(publishRequest.publisherReference),
+        eqTo(publishRequest.platformType),
+        eqTo(publishRequest.specificationType),
+        eqTo(publishRequest.contents)
+      )
       verify(mockApiRepo).findAndModify(eqTo(apiDetail0))
     }
 
     "return fail when oas parse fails" in new Setup {
 
-      when(mockOasParserService.parse(*, *, *,  *)).thenReturn(parseFailure)
-      
+      when(mockOasParserService.parse(*, *, *, *)).thenReturn(parseFailure)
+
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), 500 millis)
       result.isSuccess shouldBe false
-      
-      verify(mockOasParserService).parse(eqTo(publishRequest.publisherReference), eqTo(publishRequest.platformType), eqTo(publishRequest.specificationType), eqTo(publishRequest.contents))
+
+      verify(mockOasParserService).parse(
+        eqTo(publishRequest.publisherReference),
+        eqTo(publishRequest.platformType),
+        eqTo(publishRequest.specificationType),
+        eqTo(publishRequest.contents)
+      )
       verifyZeroInteractions(mockApiRepo)
     }
 
@@ -111,12 +124,17 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with  MockitoSugar wi
 
       when(mockOasParserService.parse(*, *, *, *)).thenReturn(parseSuccess)
       when(mockApiRepo.findAndModify(*)).thenReturn(Future.successful(apiUpsertFailure))
-      
+
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), 500 millis)
       result.isSuccess shouldBe false
       result.errors.head.code shouldBe API_UPSERT_ERROR
-      
-      verify(mockOasParserService).parse(eqTo(publishRequest.publisherReference), eqTo(publishRequest.platformType), eqTo(publishRequest.specificationType), eqTo(publishRequest.contents))
+
+      verify(mockOasParserService).parse(
+        eqTo(publishRequest.publisherReference),
+        eqTo(publishRequest.platformType),
+        eqTo(publishRequest.specificationType),
+        eqTo(publishRequest.contents)
+      )
       verify(mockApiRepo).findAndModify(eqTo(apiDetail0))
 
     }

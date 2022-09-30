@@ -18,5 +18,5 @@ package uk.gov.hmrc.integrationcatalogue.models
 
 object Types {
 
-      type IsUpdate = Boolean
+  type IsUpdate = Boolean
 }

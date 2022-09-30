@@ -29,77 +29,80 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType
+
 @Singleton
-class IntegrationController @Inject()(controllerComponents: ControllerComponents,
-                                      integrationService: IntegrationService,
-                                      validateQueryParamKeyAction: ValidateQueryParamKeyAction,
-                                      validateFileTransferWizardQueryParamKeyAction: ValidateFileTransferWizardQueryParamKeyAction)
-                                     (implicit val ec: ExecutionContext)
-    extends BackendController(controllerComponents)
+class IntegrationController @Inject() (
+    controllerComponents: ControllerComponents,
+    integrationService: IntegrationService,
+    validateQueryParamKeyAction: ValidateQueryParamKeyAction,
+    validateFileTransferWizardQueryParamKeyAction: ValidateFileTransferWizardQueryParamKeyAction
+  )(implicit val ec: ExecutionContext
+  ) extends BackendController(controllerComponents)
     with Logging {
 
   def findById(id: IntegrationId): Action[AnyContent] = Action.async {
-     integrationService.findById(id).map{
-       case Some(result) => Ok(Json.toJson(result))
-       case None =>
-       logger.info(s"Integration not found: $id")
-       NotFound
-     }
+    integrationService.findById(id).map {
+      case Some(result) => Ok(Json.toJson(result))
+      case None         =>
+        logger.info(s"Integration not found: $id")
+        NotFound
+    }
   }
 
-
-def findWithFilters(searchTerm: List[String],
-                     platformFilter: List[PlatformType],
-                     backendsFilter: List[String],
-                     itemsPerPage: Option[Int],
-                     currentPage: Option[Int],
-                     integrationType: Option[IntegrationType]) : Action[AnyContent] =
+  def findWithFilters(
+      searchTerm: List[String],
+      platformFilter: List[PlatformType],
+      backendsFilter: List[String],
+      itemsPerPage: Option[Int],
+      currentPage: Option[Int],
+      integrationType: Option[IntegrationType]
+    ): Action[AnyContent] =
     (Action andThen validateQueryParamKeyAction).async {
       integrationService.findWithFilters(IntegrationFilter(searchTerm, platformFilter, backendsFilter, itemsPerPage, currentPage, integrationType))
-      .map(result => {
-       logger.warn(s"FindWithFilter results: ${result.count} - SearchTerms: ${valuesOrNone(searchTerm)} PlatformFilters: ${valuesOrNone(platformFilter.map(_.toString))} itemsPerPage: ${itemsPerPage.map(_.toString).getOrElse("Value Not Set")} currentPage: ${currentPage.map(_.toString).getOrElse("Value Not Set")}" )
-        Ok(Json.toJson(result))
-      })
+        .map(result => {
+          logger.warn(s"FindWithFilter results: ${result.count} - SearchTerms: ${valuesOrNone(searchTerm)} PlatformFilters: ${valuesOrNone(platformFilter.map(_.toString))} itemsPerPage: ${itemsPerPage.map(_.toString).getOrElse("Value Not Set")} currentPage: ${currentPage.map(_.toString).getOrElse("Value Not Set")}")
+          Ok(Json.toJson(result))
+        })
     }
-  
 
-  private def valuesOrNone(listOfThings: List[String]) ={
-    listOfThings match{
+  private def valuesOrNone(listOfThings: List[String]) = {
+    listOfThings match {
       case Nil => "None"
-      case _ => listOfThings.mkString(" ")
+      case _   => listOfThings.mkString(" ")
     }
   }
 
   def deleteByIntegrationId(integrationId: IntegrationId): Action[AnyContent] = Action.async { implicit request =>
     integrationService.deleteByIntegrationId(integrationId).map {
-        case NoContentDeleteApiResult => NoContent
-        case _ => NotFound
-      }
+      case NoContentDeleteApiResult => NoContent
+      case _                        => NotFound
+    }
 
   }
 
-  def deleteWithFilters(platformFilter: List[PlatformType]) : Action[AnyContent] = Action.async {
-     if(platformFilter.size>1) {
+  def deleteWithFilters(platformFilter: List[PlatformType]): Action[AnyContent] = Action.async {
+    if (platformFilter.size > 1) {
       Future.successful(BadRequest(Json.toJson(ErrorResponse(List(ErrorResponseMessage("only one platform can be deleted at a time"))))))
-     } else {
-       platformFilter.headOption match {
+    } else {
+      platformFilter.headOption match {
         case Some(platform) => integrationService.deleteByPlatform(platform).map(numberDeleted => {
-              logger.warn(s"DeleteWithFilters numberDeleted is $numberDeleted PlatformFilters: ${valuesOrNone(platformFilter.map(_.toString))}")
-                Ok(Json.toJson(DeleteIntegrationsResponse(numberDeleted)))})
-        case None => Future.successful(BadRequest(Json.toJson(ErrorResponse(List(ErrorResponseMessage("DeleteWithFilters no platformtype passed as filter"))))))
-        
+            logger.warn(s"DeleteWithFilters numberDeleted is $numberDeleted PlatformFilters: ${valuesOrNone(platformFilter.map(_.toString))}")
+            Ok(Json.toJson(DeleteIntegrationsResponse(numberDeleted)))
+          })
+        case None           => Future.successful(BadRequest(Json.toJson(ErrorResponse(List(ErrorResponseMessage("DeleteWithFilters no platformtype passed as filter"))))))
+
       }
     }
   }
 
-  def getIntegrationCatalogueReport()  : Action[AnyContent] = Action.async{ implicit request =>
-   integrationService.getCatalogueReport()
-     .map( result =>   Ok(Json.toJson(result)))
+  def getIntegrationCatalogueReport(): Action[AnyContent] = Action.async { implicit request =>
+    integrationService.getCatalogueReport()
+      .map(result => Ok(Json.toJson(result)))
   }
 
-  def getFileTransferTransportsByPlatform(source: Option[String], target: Option[String])  : Action[AnyContent] =
-    (Action andThen validateFileTransferWizardQueryParamKeyAction).async{ implicit request =>
-   integrationService.getFileTransferTransportsByPlatform(source, target)
-     .map( result =>   Ok(Json.toJson(result)))
-  }
+  def getFileTransferTransportsByPlatform(source: Option[String], target: Option[String]): Action[AnyContent] =
+    (Action andThen validateFileTransferWizardQueryParamKeyAction).async { implicit request =>
+      integrationService.getFileTransferTransportsByPlatform(source, target)
+        .map(result => Ok(Json.toJson(result)))
+    }
 }

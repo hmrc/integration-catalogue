@@ -38,7 +38,6 @@ import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-
 class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with BeforeAndAfterEach with ApiTestData {
 
   implicit def mat: akka.stream.Materializer = app.injector.instanceOf[akka.stream.Materializer]
@@ -54,19 +53,18 @@ class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPe
 
   trait Setup {
 
-    val fileContents = "{}"
-    val uuid = UUID.fromString("28c0bd67-4176-42c7-be13-53be98a4db58")
-    val dateValue: DateTime = DateTime.parse("04/11/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
+    val fileContents           = "{}"
+    val uuid                   = UUID.fromString("28c0bd67-4176-42c7-be13-53be98a4db58")
+    val dateValue: DateTime    = DateTime.parse("04/11/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
     val reviewedDate: DateTime = DateTime.parse("25/12/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
 
     val apiPlatformMaintainer: Maintainer = Maintainer("API Platform Team", "#team-api-platform-sup")
-    val coreIfMaintainer: Maintainer = Maintainer("IF Team", "N/A", List.empty)
+    val coreIfMaintainer: Maintainer      = Maintainer("IF Team", "N/A", List.empty)
 
     val jsonMediaType = "application/json"
 
     val exampleRequest1name = "example request 1"
     val exampleRequest1Body = "{\"someValue\": \"abcdefg\"}"
-
 
     val publishRequestObj = PublishRequest(
       publisherReference = Some(apiDetail0.publisherReference),
@@ -75,7 +73,7 @@ class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPe
       specificationType = SpecificationType.OAS_V3
     )
 
-    val fileTransferPublishRequestObj = FileTransferPublishRequest(
+    val fileTransferPublishRequestObj  = FileTransferPublishRequest(
       fileTransferSpecificationVersion = "1.0",
       publisherReference = "BVD-DPS-PCPMonthly-pull",
       title = "BVD-DPS-PCPMonthly-pull",
@@ -89,15 +87,14 @@ class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPe
       transports = List("S3"),
       fileTransferPattern = "Corporate to corporate"
     )
-    val publishRequest = Json.toJson(publishRequestObj)
-    val fileTransferPublishRequest = Json.toJson(fileTransferPublishRequestObj)
-    val fakeApiPublishRequest = FakeRequest("PUT", s"/api/publish").withBody(publishRequest)
+    val publishRequest                 = Json.toJson(publishRequestObj)
+    val fileTransferPublishRequest     = Json.toJson(fileTransferPublishRequestObj)
+    val fakeApiPublishRequest          = FakeRequest("PUT", s"/api/publish").withBody(publishRequest)
     val fakeFileTransferPublishRequest = FakeRequest("PUT", s"/filetransfer/publish").withBody(fileTransferPublishRequest)
 
     val publishRequestInvalidPlatform = {
       """{"publisherReference":"API1689","platform":"RUBBISH","fileName":"API1689_Get_Known_Facts_1.1.0.yaml","contents":"{}", "specificationType":"OAS_V3"}"""
     }
-
 
     val fileTransferPublishRequestInvalidPlatform = """{
                                                       |    "publisherReference" : "BVD-DPS-PCPMonthly-pull",

@@ -24,21 +24,26 @@ import uk.gov.hmrc.integrationcatalogue.models.PlatformContactResponse
 import uk.gov.hmrc.integrationcatalogue.config.ContactInformationForPlatform._
 
 @Singleton
-class AppConfig @Inject()(config: Configuration) {
+class AppConfig @Inject() (config: Configuration) {
 
-  val defaultShortDescLength: Int = 180
+  val defaultShortDescLength: Int   = 180
   val oldIndexesToDrop: Seq[String] = config.getOptional[Seq[String]]("mongodb.oldIndexesToDrop").getOrElse(Seq.empty)
-  val shortDescLength: Int = config.getOptional[Int]("publish.shortDesc.maxLength").getOrElse(defaultShortDescLength)
+  val shortDescLength: Int          = config.getOptional[Int]("publish.shortDesc.maxLength").getOrElse(defaultShortDescLength)
 
   def platformContacts: Seq[PlatformContactResponse] = {
-    //TODO handle empty config values
+    // TODO handle empty config values
     PlatformType.values.toList
-      .map(platform => PlatformContactResponse(platform,
-        getContactInformationForPlatform(
+      .map(platform =>
+        PlatformContactResponse(
           platform,
-          config.getOptional[String](s"platforms.$platform.name"),
-          config.getOptional[String](s"platforms.$platform.email")),
-          config.getOptional[Boolean](s"platforms.$platform.overrideOasContacts").getOrElse(false)))
+          getContactInformationForPlatform(
+            platform,
+            config.getOptional[String](s"platforms.$platform.name"),
+            config.getOptional[String](s"platforms.$platform.email")
+          ),
+          config.getOptional[Boolean](s"platforms.$platform.overrideOasContacts").getOrElse(false)
+        )
+      )
   }
 
 }

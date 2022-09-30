@@ -29,7 +29,7 @@ import javax.inject.{Inject, Singleton}
 import scala.collection.JavaConverters._
 
 @Singleton
-class OASParserService @Inject()(oasParser: OASFileLoader, oasV3Service: OASV3Adapter) extends Logging {
+class OASParserService @Inject() (oasParser: OASFileLoader, oasV3Service: OASV3Adapter) extends Logging {
 
   def parse(
       publisherReference: Option[String],
@@ -40,7 +40,7 @@ class OASParserService @Inject()(oasParser: OASFileLoader, oasV3Service: OASV3Ad
 
     val maybeSwaggerParseResult = Option(oasParser.parseOasSpec(fileContents))
 
-    def getListSafe(list : java.util.List[String]) : List[String] = {
+    def getListSafe(list: java.util.List[String]): List[String] = {
       Option(list)
         .map(e => e.asScala.toList)
         .getOrElse(List.empty)
@@ -56,33 +56,35 @@ class OASParserService @Inject()(oasParser: OASFileLoader, oasV3Service: OASV3Ad
 
     val oasSpecification = maybeSwaggerParseResult
       .map(swaggerParseResult => {
-        val eitherOpenApi : ValidatedNel[List[String], OpenAPI] =
-         (Option(swaggerParseResult.getOpenAPI), getListSafe(swaggerParseResult.getMessages)) match {
-             case (Some(openApi), messages) =>
-               logAnyWarnings(messages)
-               Validated.valid(openApi)
-             case (None, errors) if errors.nonEmpty => Invalid(NonEmptyList.of(errors))
-             case _ => List(s"Error loading OAS specification for platform $platformType OAS").invalidNel[OpenAPI]
-         }
+        val eitherOpenApi: ValidatedNel[List[String], OpenAPI] =
+          (Option(swaggerParseResult.getOpenAPI), getListSafe(swaggerParseResult.getMessages)) match {
+            case (Some(openApi), messages)         =>
+              logAnyWarnings(messages)
+              Validated.valid(openApi)
+            case (None, errors) if errors.nonEmpty => Invalid(NonEmptyList.of(errors))
+            case _                                 => List(s"Error loading OAS specification for platform $platformType OAS").invalidNel[OpenAPI]
+          }
         eitherOpenApi
       }).getOrElse(List(s"Oas Parser returned null").invalidNel[OpenAPI])
 
-      oasSpecification match {
-        case Valid(openApi) => handleOpenApi(publisherReference, platformType,  specificationType, openApi, fileContents)
-        case e : Invalid[NonEmptyList[List[String]]] => e
-      }
-      
+    oasSpecification match {
+      case Valid(openApi)                         => handleOpenApi(publisherReference, platformType, specificationType, openApi, fileContents)
+      case e: Invalid[NonEmptyList[List[String]]] => e
+    }
+
   }
 
-  private def handleOpenApi( publisherReference: Option[String],
+  private def handleOpenApi(
+      publisherReference: Option[String],
       platformType: PlatformType,
       specificationType: SpecificationType,
-      openApi: OpenAPI, 
-      fileContents: String) : ValidatedNel[List[String], ApiDetail] ={
+      openApi: OpenAPI,
+      fileContents: String
+    ): ValidatedNel[List[String], ApiDetail] = {
 
-     openApi.getOpenapi.headOption match {
-       case Some('3') => oasV3Service.extractOpenApi(publisherReference, platformType,  specificationType, openApi, fileContents)
-       case _ => List(s"Unhandled OAS specification version for platform $platformType OAS").invalidNel[ApiDetail]
+    openApi.getOpenapi.headOption match {
+      case Some('3') => oasV3Service.extractOpenApi(publisherReference, platformType, specificationType, openApi, fileContents)
+      case _         => List(s"Unhandled OAS specification version for platform $platformType OAS").invalidNel[ApiDetail]
     }
   }
 }
