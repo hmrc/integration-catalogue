@@ -163,9 +163,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
   }
 
   private def parseRequestBody(requestBody: RequestBody): uk.gov.hmrc.integrationcatalogue.models.Request = {
-    extractRequest(Option(requestBody.getDescription),
-      Option(requestBody.getContent).getOrElse(new util.LinkedHashMap()).asScala.toMap
-    )
+    extractRequest(Option(requestBody.getDescription), Option(requestBody.getContent).getOrElse(new util.LinkedHashMap()).asScala.toMap)
   }
 
   private def extractRequest(description: Option[String], contentMap: Map[String, MediaType], descriptionPrefix: Option[String] = None) = {

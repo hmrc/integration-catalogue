@@ -70,10 +70,12 @@ trait OasTestData extends ExtensionKeys {
     openAPIInfo
   }
 
-  def getOpenAPIObject(withExtensions: Boolean,
-                       backendsExtension: List[String] = List.empty,
-                       reviewedDateExtension: Option[String] = None,
-                       hasEmptyReqRespContent: Boolean  = false): OpenAPI = {
+  def getOpenAPIObject(
+      withExtensions: Boolean,
+      backendsExtension: List[String] = List.empty,
+      reviewedDateExtension: Option[String] = None,
+      hasEmptyReqRespContent: Boolean = false
+    ): OpenAPI = {
 
     val openAPIInfo = getOpenApiInfo()
 
@@ -99,7 +101,7 @@ trait OasTestData extends ExtensionKeys {
 
     }
 
-    val pathItem1 = new PathItem()
+    val pathItem1    = new PathItem()
     val getOperation = new Operation()
     getOperation.setDescription(oasGetEndpointDesc)
     getOperation.setSummary(oasGetEndpointSummary)
@@ -123,35 +125,35 @@ trait OasTestData extends ExtensionKeys {
   }
 
   def buildRequestBody(hasEmptyContent: Boolean = false): RequestBody = {
-    val requestBody1 = new RequestBody()
-    val rbContent1 = new Content
+    val requestBody1      = new RequestBody()
+    val rbContent1        = new Content
     val content1MediaType = new MediaType()
-    val content1Example = new io.swagger.v3.oas.models.examples.Example()
+    val content1Example   = new io.swagger.v3.oas.models.examples.Example()
 
-    val mapper = new ObjectMapper()
+    val mapper      = new ObjectMapper()
     val jsonNodeVal = mapper.readTree("{\"SomeValue\": \"theValue\"}")
     content1Example.setValue(jsonNodeVal)
 
     content1MediaType.addExamples("some description", content1Example)
-    if(!hasEmptyContent) {
+    if (!hasEmptyContent) {
       rbContent1.put("application/json", content1MediaType)
     }
     requestBody1.setContent(rbContent1)
     requestBody1
   }
 
-  def buildResponseBodies(hasEmptyContent: Boolean = false)= {
-    val responseBodies = new ApiResponses()
-    val apiResponse = new ApiResponse()
+  def buildResponseBodies(hasEmptyContent: Boolean = false) = {
+    val responseBodies       = new ApiResponses()
+    val apiResponse          = new ApiResponse()
     apiResponse.setDescription("response description")
-    val apiResponseContent1 = new Content()
+    val apiResponseContent1  = new Content()
     val apiResponseMediaType = new MediaType()
-    val apiResponseExample = new io.swagger.v3.oas.models.examples.Example()
+    val apiResponseExample   = new io.swagger.v3.oas.models.examples.Example()
     apiResponseExample.setValue("{\"SomeRequestValue\" : \"theValue\"}")
     apiResponseExample.setSummary("response summary")
     apiResponseMediaType.addExamples("some example response description", apiResponseExample)
     apiResponseContent1.put("application/json", apiResponseMediaType)
-    if(!hasEmptyContent) {
+    if (!hasEmptyContent) {
       apiResponse.setContent(apiResponseContent1)
     }
     responseBodies.addApiResponse("200", apiResponse)

@@ -100,12 +100,18 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
 
     "do happy path with extensions but empty content in response and requests" in new Setup {
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
-      val hods = List("ITMP", "NPS")
-      val expectedReviewedDate = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser());
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = true, backendsExtension = hods, reviewedDateExtension = Some("2021-07-24"), hasEmptyReqRespContent = true), openApiSpecificationContent = apiDetail0.openApiSpecification)
+      val hods                                          = List("ITMP", "NPS")
+      val expectedReviewedDate                          = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser());
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(
+        Some(apiDetail0.publisherReference),
+        apiDetail0.platform,
+        apiDetail0.specificationType,
+        getOpenAPIObject(withExtensions = true, backendsExtension = hods, reviewedDateExtension = Some("2021-07-24"), hasEmptyReqRespContent = true),
+        openApiSpecificationContent = apiDetail0.openApiSpecification
+      )
 
       result match {
-        case Valid(parsedObject)                    =>
+        case Valid(parsedObject) =>
           parsedObject.id shouldBe IntegrationId(generatedUuid)
           parsedObject.publisherReference shouldBe apiDetail0.publisherReference
           parsedObject.title shouldBe oasApiName

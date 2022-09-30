@@ -180,9 +180,9 @@ trait OASV3SchemaAdapter {
     Option(contentMap)
       .flatMap {
         case m: Map[String, MediaType] if m.isEmpty => None
-        case m: Map[String, MediaType] => m.map(mediaTypeKeyValue => {
-          extractSchemaValue(Option(mediaTypeKeyValue._2))
-        }).toList.head
+        case m: Map[String, MediaType]              => m.map(mediaTypeKeyValue => {
+            extractSchemaValue(Option(mediaTypeKeyValue._2))
+          }).toList.head
       }
   }
 
