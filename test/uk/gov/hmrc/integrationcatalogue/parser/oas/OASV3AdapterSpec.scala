@@ -55,7 +55,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
       invalid(NonEmptyList[List[String]](messages, List()))
     }
 
-    val parseFailure: ValidatedNel[List[String], ApiDetail]                                          =
+    val parseFailure: ValidatedNel[List[String], ApiDetail] =
       invalid(NonEmptyList[List[String]](List("Invalid OAS, info item missing from OAS specification"), List()))
 
     val reviewedDate = DateTime.parse("25/12/20", DateTimeFormat.forPattern("dd/MM/yy"));

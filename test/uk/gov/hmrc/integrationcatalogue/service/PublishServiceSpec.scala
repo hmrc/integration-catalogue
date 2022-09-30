@@ -49,7 +49,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
 
     val rawData = "rawOASData"
 
-    val inTest                                                                 = new PublishService(mockOasParserService, mockApiRepo, mockUuidService)
+    val inTest = new PublishService(mockOasParserService, mockApiRepo, mockUuidService)
 
     val publishRequest: PublishRequest                                         =
       PublishRequest(publisherReference = Some(apiDetail0.publisherReference), platformType = apiDetail0.platform, specificationType = SpecificationType.OAS_V3, contents = rawData)
