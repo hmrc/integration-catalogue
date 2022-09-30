@@ -34,6 +34,7 @@ import uk.gov.hmrc.integrationcatalogue.models.common._
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASV3Validation
 import uk.gov.hmrc.integrationcatalogue.service.{AcronymHelper, UuidService}
 
+import java.util
 import javax.inject.{Inject, Singleton}
 import scala.collection.JavaConverters._
 import scala.collection.mutable.LinkedHashSet
@@ -162,7 +163,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
   }
 
   private def parseRequestBody(requestBody: RequestBody): uk.gov.hmrc.integrationcatalogue.models.Request = {
-    extractRequest(Option(requestBody.getDescription), requestBody.getContent.asScala.toMap)
+    extractRequest(Option(requestBody.getDescription), Option(requestBody.getContent).getOrElse(new util.LinkedHashMap()).asScala.toMap)
   }
 
   private def extractRequest(description: Option[String], contentMap: Map[String, MediaType], descriptionPrefix: Option[String] = None) = {
@@ -211,7 +212,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
   }
 
   private def extractRequestMediaType(contentMap: Map[String, MediaType]) = {
-    contentMap.flatMap(mediaTypeKeyValue => mediaTypeKeyValue._1.split(';').head.split('-')).head
+    contentMap.flatMap(mediaTypeKeyValue => mediaTypeKeyValue._1.split(';').head.split('-')).headOption.getOrElse("")
   }
 
 }
