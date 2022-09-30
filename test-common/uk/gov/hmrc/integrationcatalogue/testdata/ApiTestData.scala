@@ -26,17 +26,17 @@ import java.util.UUID
 
 trait ApiTestData {
 
-  val dateValue = DateTime.parse("04/11/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
+  val dateValue    = DateTime.parse("04/11/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
   val reviewedDate = DateTime.parse("25/12/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
 
   val coreIfPlatform = PlatformType.CORE_IF
-  val apiPlatform = PlatformType.API_PLATFORM
+  val apiPlatform    = PlatformType.API_PLATFORM
 
-  val jsonMediaType = "application/json"
+  val jsonMediaType       = "application/json"
   val exampleRequest1name = "example request 1"
   val exampleRequest1Body = "{\"someValue\": \"abcdefg\"}"
-  val exampleRequest1 = Example(exampleRequest1name, exampleRequest1Body)
-  val exampleResponse1 = Example("example response name", "example response body")
+  val exampleRequest1     = Example(exampleRequest1name, exampleRequest1Body)
+  val exampleResponse1    = Example("example response name", "example response body")
 
   val schema1 = DefaultSchema(
     name = Some("agentReferenceNumber"),
@@ -76,17 +76,17 @@ trait ApiTestData {
     example = None
   )
 
-  val request = Request(description = Some("request"), schema = Some(schema1), mediaType = Some(jsonMediaType), examples = List(exampleRequest1))
+  val request  = Request(description = Some("request"), schema = Some(schema1), mediaType = Some(jsonMediaType), examples = List(exampleRequest1))
   val response = Response(statusCode = "200", description = Some("response"), schema = Some(schema2), mediaType = Some("application/json"), examples = List(exampleResponse1))
 
   val apiPlatformMaintainer = Maintainer("Api Platform Team", "#team-api-platform-sup")
-  val coreIfMaintainer = Maintainer("Core IF Team", "**core-if-slack-channel**")
+  val coreIfMaintainer      = Maintainer("Core IF Team", "**core-if-slack-channel**")
 
   val selfassessmentApiId = IntegrationId(UUID.fromString("b7c649e6-e10b-4815-8a2c-706317ec484d"))
 
   val endpointGetMethod = EndpointMethod("GET", Some("operationId"), Some("some summary"), Some("some description"), None, List(response))
   val endpointPutMethod = EndpointMethod("PUT", Some("operationId2"), Some("some summary"), Some("some description"), Some(request), List.empty)
-  val endpoint1 = Endpoint("/some/url", List(endpointGetMethod, endpointPutMethod))
+  val endpoint1         = Endpoint("/some/url", List(endpointGetMethod, endpointPutMethod))
 
   val endpoints = List(endpoint1, Endpoint("/some/url", List.empty))
 

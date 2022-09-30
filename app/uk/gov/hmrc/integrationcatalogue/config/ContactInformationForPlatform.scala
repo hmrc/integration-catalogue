@@ -20,10 +20,11 @@ import uk.gov.hmrc.integrationcatalogue.models.common.ContactInformation
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
 
 object ContactInformationForPlatform {
-  def getContactInformationForPlatform(platform: PlatformType, platformContactName: Option[String], platformContactEmail: Option[String]) ={
+
+  def getContactInformationForPlatform(platform: PlatformType, platformContactName: Option[String], platformContactEmail: Option[String]) = {
     (platformContactName, platformContactEmail) match {
       case (Some(name), Some(email)) => Some(ContactInformation(Some(name), Some(email)))
-      case _ => None
+      case _                         => None
     }
-}
+  }
 }

@@ -21,39 +21,38 @@
 
 package uk.gov.hmrc.integrationcatalogue.service
 
-  trait AcronymHelper {
+trait AcronymHelper {
 
-    val acronymLookupMap = Map(
-      "BBSI" -> "Bank and Building Society Interest",
-      "BVD" -> "Birth Verification Data",
-      "CASEFLOW" -> "Caseflow",
-      "CESA" -> "Computerised Environment for Self-Assessment",
-      "CID" -> "Citizen Information Database",
-      "CISR" -> "Common Ingestion Service Reform",
-      "COBRA2" -> "Cash Operational Banking Reconciliation Activity",
-      "CompaniesHouse" -> "Companies House",
-      "DMS" -> "Digital Mail Service",
-      "DPS" -> "Data Provisioning Systems",
-      "DS" -> "Decision Service",
-      "DTR" -> "Database of Trader Registration",
-      "EDH" -> "Enterprise Data Hub",
-      "EDM" -> "EDM Group – Scanning supplier",
-      "ETMP" -> "Enterprise Tax Management Platform",
-      "FIM" -> "Forefront Identity Management",
-      "FWKS" -> "The Frameworks System",
-      "INTDS" -> "Barclays ",
-      "ITMP" -> "Individual Tax Management Platform",
-      "ITSD" -> "Income Tax Sub Domain",
-      "MDTP" -> "Multi-channel Digital Tax Platform",
-      "NPS" -> "National Insurance and PAYE System",
-      "RDCO" -> "Registered Dealers of Controlled Oil",
-      "RTI" -> "Realtime Information",
-      "ServiceNow" -> "Service Now",
-      "SWORD" -> "Suspect Warehouse of Risk Data",
-      "VDB" -> "VAT Database",
-      "VIES" -> "VAT Information Exchange System",
-      "VMF" -> "VAT Mainframe")
+  val acronymLookupMap = Map(
+    "BBSI"           -> "Bank and Building Society Interest",
+    "BVD"            -> "Birth Verification Data",
+    "CASEFLOW"       -> "Caseflow",
+    "CESA"           -> "Computerised Environment for Self-Assessment",
+    "CID"            -> "Citizen Information Database",
+    "CISR"           -> "Common Ingestion Service Reform",
+    "COBRA2"         -> "Cash Operational Banking Reconciliation Activity",
+    "CompaniesHouse" -> "Companies House",
+    "DMS"            -> "Digital Mail Service",
+    "DPS"            -> "Data Provisioning Systems",
+    "DS"             -> "Decision Service",
+    "DTR"            -> "Database of Trader Registration",
+    "EDH"            -> "Enterprise Data Hub",
+    "EDM"            -> "EDM Group – Scanning supplier",
+    "ETMP"           -> "Enterprise Tax Management Platform",
+    "FIM"            -> "Forefront Identity Management",
+    "FWKS"           -> "The Frameworks System",
+    "INTDS"          -> "Barclays ",
+    "ITMP"           -> "Individual Tax Management Platform",
+    "ITSD"           -> "Income Tax Sub Domain",
+    "MDTP"           -> "Multi-channel Digital Tax Platform",
+    "NPS"            -> "National Insurance and PAYE System",
+    "RDCO"           -> "Registered Dealers of Controlled Oil",
+    "RTI"            -> "Realtime Information",
+    "ServiceNow"     -> "Service Now",
+    "SWORD"          -> "Suspect Warehouse of Risk Data",
+    "VDB"            -> "VAT Database",
+    "VIES"           -> "VAT Information Exchange System",
+    "VMF"            -> "VAT Mainframe"
+  )
 
-  }
-  
-  
+}

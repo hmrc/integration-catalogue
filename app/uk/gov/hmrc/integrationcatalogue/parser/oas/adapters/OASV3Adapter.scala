@@ -40,21 +40,23 @@ import scala.collection.mutable.LinkedHashSet
 
 @Singleton
 class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
-  extends Logging with AcronymHelper with OASV3Validation with OASExtensionsAdapter with OASV3SchemaAdapter with OASV3HeaderAdapter with OASV3ParameterAdapter {
+    extends Logging with AcronymHelper with OASV3Validation with OASExtensionsAdapter with OASV3SchemaAdapter with OASV3HeaderAdapter with OASV3ParameterAdapter {
 
-  def extractOpenApi(publisherRef: Option[String],
-                     platformType: PlatformType,
-                     specType: SpecificationType,
-                     openApi: OpenAPI,
-                     openApiSpecificationContent: String): ValidatedNel[List[String], ApiDetail] = {
+  def extractOpenApi(
+      publisherRef: Option[String],
+      platformType: PlatformType,
+      specType: SpecificationType,
+      openApi: OpenAPI,
+      openApiSpecificationContent: String
+    ): ValidatedNel[List[String], ApiDetail] = {
 
     Option(openApi.getInfo) match {
       case Some(info) =>
         validateInfo(info) match {
           case Invalid(errors) => errors.toList.invalidNel[ApiDetail]
           case Valid(_)        =>
-            val mayBePaths = Option(openApi.getPaths)
-            val pathNames = mayBePaths.map(_.keySet().asScala.to[LinkedHashSet].toList).getOrElse(List.empty)
+            val mayBePaths   = Option(openApi.getPaths)
+            val pathNames    = mayBePaths.map(_.keySet().asScala.to[LinkedHashSet].toList).getOrElse(List.empty)
             val allEndpoints = pathNames.flatMap(pathName => {
               mayBePaths.map(path => {
                 val pathItem = path.get(pathName)
@@ -62,14 +64,14 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
               }).getOrElse(List.empty)
             })
 
-            //What to do about errors parsing extensions????
+            // What to do about errors parsing extensions????
             parseExtensions(info, publisherRef, appConfig) match {
               case Right(extensions: IntegrationCatalogueExtensions) =>
-                val hods = extensions.backends
-                val status = extensions.status
-                val componentSchemas = extractComponentSchemas(openApi)
-                val componentHeaders = extractComponentHeaders(openApi)
-                val componentParameters = extractComponentParameters(openApi)
+                val hods                  = extensions.backends
+                val status                = extensions.status
+                val componentSchemas      = extractComponentSchemas(openApi)
+                val componentHeaders      = extractComponentHeaders(openApi)
+                val componentParameters   = extractComponentParameters(openApi)
                 val extensionReviewedDate = extensions.reviewedDate
 
                 Valid(ApiDetail(
@@ -89,7 +91,6 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
                   openApiSpecification = openApiSpecificationContent,
                   apiStatus = status,
                   reviewedDate = extensionReviewedDate
-
                 ))
               case Left(x)                                           => x.toList.invalidNel[ApiDetail]
             }
@@ -99,52 +100,48 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
 
   }
 
-
-
-
-
   private def getStringSafe(value: java.lang.String): String = {
     Option(value).getOrElse("")
   }
 
-  private def extractMaintainer(contact: Contact) = 
+  private def extractMaintainer(contact: Contact) =
     Maintainer(name = "", slackChannel = "", contactInfo = extractContact(contact).map(List(_)).getOrElse(List.empty))
-
 
   private def extractContact(contact: Contact): Option[ContactInformation] = {
     Option(contact).map(x => ContactInformation(handleNullAsString(Option(x.getName)), handleNullAsString(Option(x.getEmail))))
   }
-  
-  private def handleNullAsString(value: Option[String]) ={
+
+  private def handleNullAsString(value: Option[String]) = {
     value match {
       case Some("null") => None
-      case _ => value
+      case _            => value
     }
   }
 
   private def extractEndpoints(path: String, item: PathItem): List[Endpoint] = {
     val endpointMethods = item.readOperationsMap().asScala.toMap
-      .map{ case (m: HttpMethod, operation: Operation) => {
-        val method = Option(m).map(_.toString).getOrElse("")
-        val extractedRequest: Option[uk.gov.hmrc.integrationcatalogue.models.Request] = Option(operation.getRequestBody).map(parseRequestBody)
-        val extractedResponses: List[uk.gov.hmrc.integrationcatalogue.models.Response] = Option(operation.getResponses).map(parseResponseBody).getOrElse(List.empty)
-        val extractedParameters = extractEndpointMethodParameters(operation)
-        EndpointMethod(
-          httpMethod = method,
-          operationId = Option(operation.getOperationId),
-          summary = Option(operation).flatMap(x => Option(x.getSummary)),
-          description = Option(operation.getDescription),
-          request = extractedRequest,
-          responses = extractedResponses,
-          parameters = extractedParameters
-        )
-      }
-    }.toList
+      .map {
+        case (m: HttpMethod, operation: Operation) => {
+          val method                                                                     = Option(m).map(_.toString).getOrElse("")
+          val extractedRequest: Option[uk.gov.hmrc.integrationcatalogue.models.Request]  = Option(operation.getRequestBody).map(parseRequestBody)
+          val extractedResponses: List[uk.gov.hmrc.integrationcatalogue.models.Response] = Option(operation.getResponses).map(parseResponseBody).getOrElse(List.empty)
+          val extractedParameters                                                        = extractEndpointMethodParameters(operation)
+          EndpointMethod(
+            httpMethod = method,
+            operationId = Option(operation.getOperationId),
+            summary = Option(operation).flatMap(x => Option(x.getSummary)),
+            description = Option(operation.getDescription),
+            request = extractedRequest,
+            responses = extractedResponses,
+            parameters = extractedParameters
+          )
+        }
+      }.toList
     List(Endpoint(path, endpointMethods))
   }
 
   private def parseResponseBody(apiResponses: ApiResponses): List[uk.gov.hmrc.integrationcatalogue.models.Response] = {
-  apiResponses.getDefault
+    apiResponses.getDefault
     apiResponses.asScala.seq
       .map {
         case (statusCode, apiResponse: ApiResponse) =>
@@ -194,8 +191,6 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
 
   }
 
-
-
   private def extractExamples(contentMap: Map[String, MediaType], descriptionPrefix: Option[String]): List[Example] = {
     contentMap.flatMap(mediaTypeKeyValue => {
       Option(mediaTypeKeyValue._2.getExamples.asScala) match {
@@ -203,8 +198,8 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
           oasExamples.toMap.map(er => {
             Option(er._2).map(exampleObj => {
               val exampleText = getExampleText(Option(exampleObj.getValue))
-              val summary = Option(er._2.getSummary)
-              val name = List(descriptionPrefix, Some(er._1), summary).flatten.mkString(" - ")
+              val summary     = Option(er._2.getSummary)
+              val name        = List(descriptionPrefix, Some(er._1), summary).flatten.mkString(" - ")
               Example(name = name, jsonBody = exampleText)
             })
           }).filterNot(_.isEmpty).flatten
@@ -218,10 +213,5 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
   private def extractRequestMediaType(contentMap: Map[String, MediaType]) = {
     contentMap.flatMap(mediaTypeKeyValue => mediaTypeKeyValue._1.split(';').head.split('-')).head
   }
-
-
-
-
-
 
 }

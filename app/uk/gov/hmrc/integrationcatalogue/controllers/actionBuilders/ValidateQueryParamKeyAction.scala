@@ -30,12 +30,12 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 
 @Singleton
-class ValidateQueryParamKeyAction @Inject()()(implicit ec: ExecutionContext)
-  extends ActionFilter[Request] with HttpErrorFunctions with Logging {
+class ValidateQueryParamKeyAction @Inject() ()(implicit ec: ExecutionContext)
+    extends ActionFilter[Request] with HttpErrorFunctions with Logging {
   override def executionContext: ExecutionContext = ec
 
   override protected def filter[A](request: Request[A]): Future[Option[Result]] = {
-    val validKeys = List("platformFilter", "searchTerm", "itemsPerPage", "currentPage", "backendsFilter", "integrationType")
+    val validKeys      = List("platformFilter", "searchTerm", "itemsPerPage", "currentPage", "backendsFilter", "integrationType")
     val queryParamKeys = request.queryString.keys
 
     Future.successful(validateQueryParamKey(validKeys, queryParamKeys))
@@ -45,8 +45,7 @@ class ValidateQueryParamKeyAction @Inject()()(implicit ec: ExecutionContext)
     if (!queryParamKeys.forall(validKeys.contains(_))) {
       logger.info("Invalid query parameter key provided. It is case sensitive")
       Some(BadRequest(Json.toJson(ErrorResponse(List(ErrorResponseMessage("Invalid query parameter key provided. It is case sensitive"))))))
-    }
-    else None
+    } else None
   }
 
 }

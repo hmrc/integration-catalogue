@@ -42,8 +42,8 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
 
   private val fakeRequest = FakeRequest("GET", "/apis")
 
-  private val mockApiService = mock[IntegrationService]
-  private val validateQueryParamKeyAction = app.injector.instanceOf[ValidateQueryParamKeyAction]
+  private val mockApiService                                = mock[IntegrationService]
+  private val validateQueryParamKeyAction                   = app.injector.instanceOf[ValidateQueryParamKeyAction]
   private val validateFileTransferWizardQueryParamKeyAction = app.injector.instanceOf[ValidateFileTransferWizardQueryParamKeyAction]
 
   private val controller = new IntegrationController(
@@ -98,28 +98,28 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
       example = None
     )
 
-    val filename = "API1689_Get_Known_Facts_1.1.0.yaml"
-    val fileContents = "{}"
-    val uuid = UUID.fromString("28c0bd67-4176-42c7-be13-53be98a4db58")
+    val filename            = "API1689_Get_Known_Facts_1.1.0.yaml"
+    val fileContents        = "{}"
+    val uuid                = UUID.fromString("28c0bd67-4176-42c7-be13-53be98a4db58")
     val dateValue: DateTime = DateTime.parse("04/11/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
-    val reviewedDate = DateTime.parse("25/12/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
+    val reviewedDate        = DateTime.parse("25/12/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
 
     val apiPlatformMaintainer: Maintainer = Maintainer("API Platform Team", "#team-api-platform-sup")
-    val coreIfMaintainer: Maintainer = Maintainer("IF Team", "N/A", List.empty)
+    val coreIfMaintainer: Maintainer      = Maintainer("IF Team", "N/A", List.empty)
 
     val jsonMediaType = "application/json"
 
-    val exampleRequest1name = "example request 1"
-    val exampleRequest1Body = "{\"someValue\": \"abcdefg\"}"
+    val exampleRequest1name      = "example request 1"
+    val exampleRequest1Body      = "{\"someValue\": \"abcdefg\"}"
     val exampleRequest1: Example = Example(exampleRequest1name, exampleRequest1Body)
 
     val exampleResponse1 = new Example("example response name", "example response body")
 
-    val request = Request(description = Some("request"), schema = Some(schema1), mediaType = Some(jsonMediaType), examples = List(exampleRequest1))
-    val response = Response(statusCode = "200", description = Some("response"), schema = Some(schema2), mediaType = Some("application/json"), examples = List(exampleResponse1))
+    val request           = Request(description = Some("request"), schema = Some(schema1), mediaType = Some(jsonMediaType), examples = List(exampleRequest1))
+    val response          = Response(statusCode = "200", description = Some("response"), schema = Some(schema2), mediaType = Some("application/json"), examples = List(exampleResponse1))
     val endpointGetMethod = EndpointMethod("GET", Some("operationId"), Some("some summary"), Some("some description"), None, List(response))
     val endpointPutMethod = EndpointMethod("PUT", Some("operationId2"), Some("some summary"), Some("some description"), Some(request), List.empty)
-    val endpoint1 = Endpoint("/some/url", List(endpointGetMethod, endpointPutMethod))
+    val endpoint1         = Endpoint("/some/url", List(endpointGetMethod, endpointPutMethod))
 
     val endpoints = List(endpoint1, Endpoint("/some/url", List.empty))
 

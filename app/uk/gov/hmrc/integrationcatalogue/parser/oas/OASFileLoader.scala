@@ -23,9 +23,10 @@ import io.swagger.v3.parser.core.models.ParseOptions
 // ours. However if this ever expands in future, tests will be needed and scoverage ignore removed.
 // $COVERAGE-OFF$
 class OASFileLoader {
+
   def parseOasSpec(fileContents: String) = {
 
-    val options : ParseOptions = new ParseOptions()
+    val options: ParseOptions = new ParseOptions()
 
     options.setResolve(false)
     new OpenAPIV3Parser().readContents(fileContents, null, options)

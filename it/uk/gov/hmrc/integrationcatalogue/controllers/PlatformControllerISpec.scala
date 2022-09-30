@@ -11,17 +11,17 @@ class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
   protected override def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
-        "microservice.services.auth.port" -> wireMockPort,
-        "metrics.enabled" -> true,
-        "auditing.enabled" -> false,
-        "mongodb.uri" -> s"mongodb://127.0.0.1:27017/test-${this.getClass.getSimpleName}",
-        "auditing.consumer.baseUri.host" -> wireMockHost,
-        "auditing.consumer.baseUri.port" -> wireMockPort,
-        "platforms.DES.email" -> "des@mail.com",
-        "platforms.DES.name" -> "DES Platform support hot line",
+        "microservice.services.auth.port"   -> wireMockPort,
+        "metrics.enabled"                   -> true,
+        "auditing.enabled"                  -> false,
+        "mongodb.uri"                       -> s"mongodb://127.0.0.1:27017/test-${this.getClass.getSimpleName}",
+        "auditing.consumer.baseUri.host"    -> wireMockHost,
+        "auditing.consumer.baseUri.port"    -> wireMockPort,
+        "platforms.DES.email"               -> "des@mail.com",
+        "platforms.DES.name"                -> "DES Platform support hot line",
         "platforms.DES.overrideOasContacts" -> true,
-        "platforms.SOMENEW.email" -> "des@mail.com",
-        "platforms.SOMENEW.name" -> "DES Platform support hot line"
+        "platforms.SOMENEW.email"           -> "des@mail.com",
+        "platforms.SOMENEW.name"            -> "DES Platform support hot line"
       )
 
   val url = s"http://localhost:$port/integration-catalogue"

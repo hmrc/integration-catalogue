@@ -32,31 +32,31 @@ trait OASV3ParameterAdapter extends OASV3SchemaAdapter {
 
   private def adaptParameter(parameter: OasParameter): Parameter = {
 
-    Option(parameter.get$ref()).map(value => Parameter( Option(parameter.getName()), Option(value)))
-    .getOrElse({
-      val parameterSchema = Option(parameter.getSchema())
-      val schema = parameterSchema.map(schema => extractOasSchema(Option(parameter.getName), schema))
-      Parameter(
-        name = Option(parameter.getName()),
-        description = Option(parameter.getDescription()),
-        in = Option(parameter.getIn()),
-        ref = Option(parameter.get$ref()),
-        required = Option(Boolean.unbox(parameter.getRequired)),
-        deprecated = Option(Boolean.unbox(parameter.getDeprecated())),
-        schema = schema,
-        allowEmptyValue = Option(Boolean.unbox(parameter.getAllowEmptyValue()))
-      )
-    })
+    Option(parameter.get$ref()).map(value => Parameter(Option(parameter.getName()), Option(value)))
+      .getOrElse({
+        val parameterSchema = Option(parameter.getSchema())
+        val schema          = parameterSchema.map(schema => extractOasSchema(Option(parameter.getName), schema))
+        Parameter(
+          name = Option(parameter.getName()),
+          description = Option(parameter.getDescription()),
+          in = Option(parameter.getIn()),
+          ref = Option(parameter.get$ref()),
+          required = Option(Boolean.unbox(parameter.getRequired)),
+          deprecated = Option(Boolean.unbox(parameter.getDeprecated())),
+          schema = schema,
+          allowEmptyValue = Option(Boolean.unbox(parameter.getAllowEmptyValue()))
+        )
+      })
   }
 
   def extractComponentParameters(openApi: OpenAPI): List[Parameter] = {
-      Option(openApi.getComponents())
+    Option(openApi.getComponents())
       .flatMap(components => Option(components.getParameters()))
       .map(_.asScala.toList).getOrElse(List.empty)
       .map {
-          case(_: String, parameter: OasParameter) => {
-            adaptParameter(parameter)
-          }
+        case (_: String, parameter: OasParameter) => {
+          adaptParameter(parameter)
+        }
       }
   }
 

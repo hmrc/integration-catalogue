@@ -28,12 +28,12 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ValidateFileTransferWizardQueryParamKeyAction @Inject()()(implicit ec: ExecutionContext)
-  extends ActionFilter[Request] with HttpErrorFunctions with Logging {
+class ValidateFileTransferWizardQueryParamKeyAction @Inject() ()(implicit ec: ExecutionContext)
+    extends ActionFilter[Request] with HttpErrorFunctions with Logging {
   override def executionContext: ExecutionContext = ec
 
   override protected def filter[A](request: Request[A]): Future[Option[Result]] = {
-    val validKeys = List("source", "target")
+    val validKeys      = List("source", "target")
     val queryParamKeys = request.queryString.keys
 
     Future.successful(validateQueryParamKey(validKeys, queryParamKeys))
@@ -43,10 +43,9 @@ class ValidateFileTransferWizardQueryParamKeyAction @Inject()()(implicit ec: Exe
     if (!queryParamKeys.forall(validKeys.contains(_))) {
       logger.info("Invalid query parameter key provided. It is case sensitive")
       Some(BadRequest(Json.toJson(ErrorResponse(List(ErrorResponseMessage("Invalid query parameter key provided. It is case sensitive"))))))
-    }
-    else {
+    } else {
       val queryParamsSeq = queryParamKeys.toSeq
-      if(queryParamsSeq.isEmpty || (queryParamsSeq.contains("source") && queryParamsSeq.contains("target"))) None
+      if (queryParamsSeq.isEmpty || (queryParamsSeq.contains("source") && queryParamsSeq.contains("target"))) None
       else Some(BadRequest(Json.toJson(ErrorResponse(List(ErrorResponseMessage("You must either provide both source and target or no query parameters"))))))
     }
   }

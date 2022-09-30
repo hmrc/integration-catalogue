@@ -40,12 +40,12 @@ import org.scalatest.wordspec.AnyWordSpec
 class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach {
 
   trait Setup {
-    val publisherRef = "publisherRef"
+    val publisherRef                        = "publisherRef"
     val platform: PlatformType.CORE_IF.type = PlatformType.CORE_IF
-    val specType: SpecificationType = SpecificationType.OAS_V3
-    val generatedUuid: UUID = UUID.fromString("f26babbb-c9b1-4b79-b99a-9f99cf741f78")
-    val mockUuidService: UuidService = mock[UuidService]
-    val mockAppConfig = mock[AppConfig]
+    val specType: SpecificationType         = SpecificationType.OAS_V3
+    val generatedUuid: UUID                 = UUID.fromString("f26babbb-c9b1-4b79-b99a-9f99cf741f78")
+    val mockUuidService: UuidService        = mock[UuidService]
+    val mockAppConfig                       = mock[AppConfig]
 
     val objInTest = new OASV3Adapter(mockUuidService, mockAppConfig)
 
@@ -54,6 +54,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
     def createInvalidMessage(messages: List[String]): Validated[NonEmptyList[List[String]], Nothing] = {
       invalid(NonEmptyList[List[String]](messages, List()))
     }
+
     val parseFailure: ValidatedNel[List[String], ApiDetail] =
       invalid(NonEmptyList[List[String]](List("Invalid OAS, info item missing from OAS specification"), List()))
 
@@ -63,12 +64,18 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
   "extractOpenApi" should {
     "do happy path with extensions" in new Setup {
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
-      val hods = List("ITMP", "NPS")
-      val expectedReviewedDate = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser());
+      val hods                                          = List("ITMP", "NPS")
+      val expectedReviewedDate                          = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser());
       val result: ValidatedNel[List[String], ApiDetail] =
-        objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = true, hods, reviewedDateExtension = Some("2021-07-24")), openApiSpecificationContent = apiDetail0.openApiSpecification)
+        objInTest.extractOpenApi(
+          Some(apiDetail0.publisherReference),
+          apiDetail0.platform,
+          apiDetail0.specificationType,
+          getOpenAPIObject(withExtensions = true, hods, reviewedDateExtension = Some("2021-07-24")),
+          openApiSpecificationContent = apiDetail0.openApiSpecification
+        )
       result match {
-        case Valid(parsedObject)                    =>
+        case Valid(parsedObject) =>
           parsedObject.id shouldBe IntegrationId(generatedUuid)
           parsedObject.title shouldBe oasApiName
           parsedObject.description shouldBe oasApiDescription
@@ -84,18 +91,25 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           parsedObject.hods shouldBe hods
 
         case errors: Invalid[NonEmptyList[List[String]]] => {
-         errors.e.head.foreach(println)
-          fail()}
+          errors.e.head.foreach(println)
+          fail()
+        }
       }
 
     }
 
     "do happy path with reviewedDate but without backends and publisherRef extensions" in new Setup {
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
-      val expectedReviewedDate = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser());
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = false, reviewedDateExtension = Some("2021-07-24")), openApiSpecificationContent = apiDetail0.openApiSpecification)
+      val expectedReviewedDate                          = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser());
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(
+        Some(apiDetail0.publisherReference),
+        apiDetail0.platform,
+        apiDetail0.specificationType,
+        getOpenAPIObject(withExtensions = false, reviewedDateExtension = Some("2021-07-24")),
+        openApiSpecificationContent = apiDetail0.openApiSpecification
+      )
       result match {
-        case Valid(parsedObject)                    =>
+        case Valid(parsedObject) =>
           parsedObject.id shouldBe IntegrationId(generatedUuid)
           parsedObject.publisherReference shouldBe apiDetail0.publisherReference
           parsedObject.title shouldBe oasApiName
@@ -117,7 +131,13 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
     }
 
     "fail with no extensions" in new Setup {
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(withExtensions = false, reviewedDateExtension = None), openApiSpecificationContent = apiDetail0.openApiSpecification)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(
+        Some(apiDetail0.publisherReference),
+        apiDetail0.platform,
+        apiDetail0.specificationType,
+        getOpenAPIObject(withExtensions = false, reviewedDateExtension = None),
+        openApiSpecificationContent = apiDetail0.openApiSpecification
+      )
       result match {
         case Valid(parsedObject)                    => fail()
         case _: Invalid[NonEmptyList[List[String]]] => succeed
@@ -126,26 +146,44 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
     }
 
     "parse extensions returns error(s)" in new Setup {
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, getOpenAPIObject(true, null), openApiSpecificationContent = apiDetail0.openApiSpecification)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(
+        Some(apiDetail0.publisherReference),
+        apiDetail0.platform,
+        apiDetail0.specificationType,
+        getOpenAPIObject(true, null),
+        openApiSpecificationContent = apiDetail0.openApiSpecification
+      )
       result match {
         case _: Invalid[NonEmptyList[List[String]]] => succeed
         case Valid(parsedObject)                    => fail
-        
+
       }
 
     }
 
     "return failure with correct message when empty openApi object is passed in" in new Setup {
       val parseResult: ValidatedNel[List[String], ApiDetail] =
-        objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, new OpenAPI(), openApiSpecificationContent =apiDetail0.openApiSpecification)
+        objInTest.extractOpenApi(
+          Some(apiDetail0.publisherReference),
+          apiDetail0.platform,
+          apiDetail0.specificationType,
+          new OpenAPI(),
+          openApiSpecificationContent = apiDetail0.openApiSpecification
+        )
       parseResult shouldBe createInvalidMessage(List("Invalid OAS, info item missing from OAS specification"))
     }
 
     "return failure with all three error messages when openApi object missing title, version " in new Setup {
-      val openApi = new OpenAPI()
+      val openApi                                            = new OpenAPI()
       openApi.setInfo(new Info())
       val parseResult: ValidatedNel[List[String], ApiDetail] =
-        objInTest.extractOpenApi(Some(apiDetail0.publisherReference), apiDetail0.platform, apiDetail0.specificationType, openApi, openApiSpecificationContent = apiDetail0.openApiSpecification)
+        objInTest.extractOpenApi(
+          Some(apiDetail0.publisherReference),
+          apiDetail0.platform,
+          apiDetail0.specificationType,
+          openApi,
+          openApiSpecificationContent = apiDetail0.openApiSpecification
+        )
       parseResult shouldBe createInvalidMessage(List("Invalid OAS, title missing from OAS specification", "Invalid OAS, version missing from OAS specification"))
     }
 

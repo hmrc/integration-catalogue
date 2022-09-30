@@ -26,14 +26,14 @@ import java.util.UUID
 
 trait OasParsedItTestData {
 
-  val filename = "API10000_Get_Data_1.1.0.yaml"
-  val fileContents = "{}"
-  val uuid: UUID = UUID.fromString("28c0bd67-4176-42c7-be13-53be98a4db58")
+  val filename            = "API10000_Get_Data_1.1.0.yaml"
+  val fileContents        = "{}"
+  val uuid: UUID          = UUID.fromString("28c0bd67-4176-42c7-be13-53be98a4db58")
   val dateValue: DateTime = DateTime.parse("04/11/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"))
-  val reviewedDate = DateTime.parse("25/12/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
+  val reviewedDate        = DateTime.parse("25/12/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
 
   val apiPlatformMaintainer: Maintainer = Maintainer("API Platform Team", "#team-api-platform-sup")
-  val coreIfMaintainer: Maintainer = Maintainer("IF Team", "N/A", List.empty)
+  val coreIfMaintainer: Maintainer      = Maintainer("IF Team", "N/A", List.empty)
 
   val jsonMediaType = "application/json"
 
@@ -75,26 +75,25 @@ trait OasParsedItTestData {
     example = None
   )
 
-  val exampleRequest1name = "example request 1"
-  val exampleRequest1Body = "{\"someValue\": \"abcdefg\"}"
+  val exampleRequest1name      = "example request 1"
+  val exampleRequest1Body      = "{\"someValue\": \"abcdefg\"}"
   val exampleRequest1: Example = Example(exampleRequest1name, exampleRequest1Body)
 
   val exampleResponse1 = new Example("example response name", "example response body")
 
-  val request = Request(description = Some("request"), schema = Some(schema1), mediaType = Some(jsonMediaType), examples = List(exampleRequest1))
+  val request  = Request(description = Some("request"), schema = Some(schema1), mediaType = Some(jsonMediaType), examples = List(exampleRequest1))
   val response = Response(statusCode = "200", description = Some("response"), schema = Some(schema2), mediaType = Some("application/json"), examples = List(exampleResponse1))
 
   val putEndpoint1: EndpointMethod = EndpointMethod("PUT", Some("operationId"), Some("some summary"), Some("some description"), Some(request), List(response))
   val getEndpoint1: EndpointMethod = EndpointMethod("GET", Some("operationId"), Some("some summary"), Some("some description"), None, List(response))
 
-  val endpoint1 = Endpoint("/some/url", List(putEndpoint1, getEndpoint1))
+  val endpoint1                    = Endpoint("/some/url", List(putEndpoint1, getEndpoint1))
   val getEndpoint2: EndpointMethod = EndpointMethod("GET", Some("operationId"), Some("some BOOP summary"), Some("some  DEEPSEARCH description"), None, List(response))
   val putEndpoint2: EndpointMethod = EndpointMethod("PUT", Some("operationId"), Some("some DEEPSEARCH summary"), Some("some DEEPSEARCH description"), Some(request), List(response))
-  val endpoint2 = Endpoint("/someOther/Newurl", List(putEndpoint2, getEndpoint2))
+  val endpoint2                    = Endpoint("/someOther/Newurl", List(putEndpoint2, getEndpoint2))
 
-  val endpoints = List(endpoint1)
+  val endpoints  = List(endpoint1)
   val endpoints2 = List(endpoint2)
-
 
   val endpointsNoDeepSearch = List(Endpoint("/some/url", List(getEndpoint1, putEndpoint1)))
 
@@ -118,7 +117,8 @@ trait OasParsedItTestData {
   )
 
   val exampleFileTransfer: FileTransferDetail =
-    FileTransferDetail(IntegrationId(UUID.fromString("e2e4ce48-29b0-11eb-adc1-0242ac120002")),
+    FileTransferDetail(
+      IntegrationId(UUID.fromString("e2e4ce48-29b0-11eb-adc1-0242ac120002")),
       fileTransferSpecificationVersion = "0.1",
       publisherReference = "API1002",
       title = "getKnownFactsName ETMP",
@@ -130,10 +130,12 @@ trait OasParsedItTestData {
       sourceSystem = List("source"),
       targetSystem = List("target"),
       transports = List("UTM"),
-      fileTransferPattern = "pattern1")
+      fileTransferPattern = "pattern1"
+    )
 
   val exampleFileTransfer2: FileTransferDetail =
-    FileTransferDetail(IntegrationId(UUID.fromString("8f8190dc-d992-11eb-b8bc-0242ac130003")),
+    FileTransferDetail(
+      IntegrationId(UUID.fromString("8f8190dc-d992-11eb-b8bc-0242ac130003")),
       fileTransferSpecificationVersion = "0.1",
       publisherReference = "API1007",
       title = "filetransfer 2",
@@ -145,10 +147,12 @@ trait OasParsedItTestData {
       sourceSystem = List("someSource"),
       targetSystem = List("target"),
       transports = List("AB"),
-      fileTransferPattern = "pattern3")
+      fileTransferPattern = "pattern3"
+    )
 
   val exampleFileTransfer3: FileTransferDetail =
-    FileTransferDetail(IntegrationId(UUID.fromString("8f8190dc-d992-11eb-b8bc-0242ac130003")),
+    FileTransferDetail(
+      IntegrationId(UUID.fromString("8f8190dc-d992-11eb-b8bc-0242ac130003")),
       fileTransferSpecificationVersion = "0.1",
       publisherReference = "API1007",
       title = "filetransfer 2",
@@ -159,8 +163,9 @@ trait OasParsedItTestData {
       maintainer = apiPlatformMaintainer,
       sourceSystem = List("someSource"),
       targetSystem = List("target"),
-      transports = List("WTM", "AB","S3"),
-      fileTransferPattern = "pattern3")
+      transports = List("WTM", "AB", "S3"),
+      fileTransferPattern = "pattern3"
+    )
 
   val exampleApiDetailForSearch1: ApiDetail = ApiDetail(
     IntegrationId(UUID.fromString("fab1868e-9b88-11eb-a8b3-0242ac130003")),

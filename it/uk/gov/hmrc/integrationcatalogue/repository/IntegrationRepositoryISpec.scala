@@ -25,7 +25,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.Await
 
 class IntegrationRepositoryISpec
-  extends AnyWordSpec
+    extends AnyWordSpec
     with Matchers
     with MongoApp
     with GuiceOneAppPerSuite
@@ -41,7 +41,7 @@ class IntegrationRepositoryISpec
   protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
-        "mongodb.uri" -> s"mongodb://127.0.0.1:27017/test-${this.getClass.getSimpleName}",
+        "mongodb.uri"              -> s"mongodb://127.0.0.1:27017/test-${this.getClass.getSimpleName}",
         "mongodb.oldIndexesToDrop" -> Seq(indexNameToDrop, "text_index_1_0")
       )
 
@@ -97,21 +97,22 @@ class IntegrationRepositoryISpec
   trait FilterSetup {
 
     def createTestData(): Unit = {
-      val combinedFuture = for {
-        matchInTitle <- repo.findAndModify(exampleApiDetail)
-        matchInDescription <- repo.findAndModify(exampleApiDetail2)
-        matchInHods <- repo.findAndModify(exampleApiDetailForSearch1)
-        matchOnDesPlatform <- repo.findAndModify(exampleApiDetailForSearch2)
-        matchOnFileTransferPlatformOne <- repo.findAndModify(exampleFileTransfer)
-        matchOnFileTransferPlatformTwo <- repo.findAndModify(exampleFileTransfer2)
-      } yield (
-        matchInTitle,
-        matchInDescription,
-        matchInHods,
-        matchOnDesPlatform,
-        matchOnFileTransferPlatformOne,
-        matchOnFileTransferPlatformTwo
-      )
+      val combinedFuture =
+        for {
+          matchInTitle                   <- repo.findAndModify(exampleApiDetail)
+          matchInDescription             <- repo.findAndModify(exampleApiDetail2)
+          matchInHods                    <- repo.findAndModify(exampleApiDetailForSearch1)
+          matchOnDesPlatform             <- repo.findAndModify(exampleApiDetailForSearch2)
+          matchOnFileTransferPlatformOne <- repo.findAndModify(exampleFileTransfer)
+          matchOnFileTransferPlatformTwo <- repo.findAndModify(exampleFileTransfer2)
+        } yield (
+          matchInTitle,
+          matchInDescription,
+          matchInHods,
+          matchOnDesPlatform,
+          matchOnFileTransferPlatformOne,
+          matchOnFileTransferPlatformTwo
+        )
       Await.result(combinedFuture, Duration.Inf)
     }
 
@@ -141,7 +142,7 @@ class IntegrationRepositoryISpec
     "dropIndexes on Startup" should {
 
       def checkIndexExists(indexName: String) = {
-        val indexes = await(repo.collection.listIndexes().toFuture()).toList
+        val indexes    = await(repo.collection.listIndexes().toFuture()).toList
         val indexNames = indexes.flatMap((idx: Document) => {
           idx
             .toList
@@ -176,7 +177,7 @@ class IntegrationRepositoryISpec
             val result2 = await(repo.findById(integration.id))
             validateApi(result2.get, exampleApiDetail)
           }
-          case Left(_) => fail()
+          case Left(_)                 => fail()
         }
 
       }
@@ -226,8 +227,8 @@ class IntegrationRepositoryISpec
           case Right((apiDetail: IntegrationDetail, isUpdate)) =>
             isUpdate shouldBe false
             validateApi(apiDetail, exampleApiDetail)
-          case Right(_) => fail()
-          case Left(_) => fail()
+          case Right(_)                                        => fail()
+          case Left(_)                                         => fail()
         }
 
         getAll.size shouldBe 1
@@ -243,8 +244,8 @@ class IntegrationRepositoryISpec
           case Right((details: FileTransferDetail, isUpdate)) =>
             isUpdate shouldBe false
             validateFileTransfer(details, exampleFileTransfer)
-          case Right(_) => fail()
-          case Left(_) => fail()
+          case Right(_)                                       => fail()
+          case Left(_)                                        => fail()
         }
 
         getAll.size shouldBe 1
@@ -280,8 +281,8 @@ class IntegrationRepositoryISpec
             apiDetail.specificationType shouldBe exampleApiDetail2.specificationType
             apiDetail.hods shouldBe exampleApiDetail2.hods
             apiDetail.openApiSpecification shouldBe exampleApiDetail2.openApiSpecification
-          case Right(_) => fail()
-          case Left(_) => fail()
+          case Right(_)                                => fail()
+          case Left(_)                                 => fail()
         }
 
         getAll.size shouldBe 1
@@ -333,7 +334,7 @@ class IntegrationRepositoryISpec
         await(repo.findAndModify(exampleApiDetail2))
         val result = await(repo.findAndModify(exampleApiDetail))
         result match {
-          case Left(_) => fail()
+          case Left(_)                                    => fail()
           case Right((integration: IntegrationDetail, _)) =>
             val result2 = getAll
             result2.size shouldBe 2
@@ -370,13 +371,19 @@ class IntegrationRepositoryISpec
         setUpTest()
         validatePagedResults(
           findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(1), itemsPerPage = Some(2))),
-          List("API1007", "API1003"), 6)
+          List("API1007", "API1003"),
+          6
+        )
         validatePagedResults(
           findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(2), itemsPerPage = Some(2))),
-          List("API1004", "API1001"), 6)
+          List("API1004", "API1001"),
+          6
+        )
         validatePagedResults(
           findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(3), itemsPerPage = Some(2))),
-          List("API1002", "API1005"), 6)
+          List("API1002", "API1005"),
+          6
+        )
       }
 
       "find 3 results when searching for text that exists in title, endpoint summary with no platform filters" in new FilterSetup {
@@ -458,11 +465,11 @@ class IntegrationRepositoryISpec
     "getCatalogueReport" should {
       "return List of results when entries exist in the database" in new FilterSetup {
         setUpTest()
-        val expectedList = List(
+        val expectedList                            = List(
           IntegrationPlatformReport(API_PLATFORM, FILE_TRANSFER, 1),
           IntegrationPlatformReport(CORE_IF, API, 3),
           IntegrationPlatformReport(CORE_IF, FILE_TRANSFER, 1),
-          IntegrationPlatformReport(DES, API, 1),
+          IntegrationPlatformReport(DES, API, 1)
         )
         val result: List[IntegrationPlatformReport] = await(repo.getCatalogueReport())
         result.sortBy(_.integrationType.toString).sortBy(_.platformType.toString) shouldBe expectedList
@@ -476,14 +483,14 @@ class IntegrationRepositoryISpec
 
     "getFileTransferTransportsByPlatform" should {
       def setupFileTransfers() = {
-        await(repo.findAndModify(exampleFileTransfer)) // CORE_IF | source -> target | transports = UTM
+        await(repo.findAndModify(exampleFileTransfer))  // CORE_IF | source -> target | transports = UTM
         await(repo.findAndModify(exampleFileTransfer2)) // API_PLATFORM | someSource -> target | transports = S3
         await(repo.findAndModify(exampleFileTransfer3)) // API_PLATFORM | someSource -> target | transports = S3, WTM
       }
 
       "return all transports when no source and target are provided" in {
         setupFileTransfers()
-        val expectedResults = List(
+        val expectedResults                                 = List(
           FileTransferTransportsForPlatform(API_PLATFORM, List("AB", "S3", "WTM")),
           FileTransferTransportsForPlatform(CORE_IF, List("UTM"))
         )
@@ -493,7 +500,7 @@ class IntegrationRepositoryISpec
 
       "return all transports when only source is provided" in {
         setupFileTransfers()
-        val expectedResults = List(
+        val expectedResults                                 = List(
           FileTransferTransportsForPlatform(API_PLATFORM, List("AB", "S3", "WTM")),
           FileTransferTransportsForPlatform(CORE_IF, List("UTM"))
         )
@@ -503,7 +510,7 @@ class IntegrationRepositoryISpec
 
       "return all transports when only target is provided" in {
         setupFileTransfers()
-        val expectedResults = List(
+        val expectedResults                                 = List(
           FileTransferTransportsForPlatform(API_PLATFORM, List("AB", "S3", "WTM")),
           FileTransferTransportsForPlatform(CORE_IF, List("UTM"))
         )
@@ -513,7 +520,7 @@ class IntegrationRepositoryISpec
 
       "return CORE_IF transports when source=source and target=target" in {
         setupFileTransfers()
-        val expectedResults = List(
+        val expectedResults                                 = List(
           FileTransferTransportsForPlatform(CORE_IF, List("UTM"))
         )
         val result: List[FileTransferTransportsForPlatform] = await(repo.getFileTransferTransportsByPlatform(Some("source"), Some("target")))

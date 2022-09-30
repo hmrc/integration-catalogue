@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas
 
-
-
 import cats.implicits._
 import cats.data.Validated.Valid
 import cats.data.ValidatedNel
@@ -27,17 +25,16 @@ trait OASV3Validation {
 
   def validateInfo(info: Info): ValidatedNel[String, List[Info]] = {
 
-    def validateStringItem(info: Info, validationFunc: Info => String, errorMessage : String): ValidatedNel[String, Info] ={
+    def validateStringItem(info: Info, validationFunc: Info => String, errorMessage: String): ValidatedNel[String, Info] = {
       Option(validationFunc.apply(info)) match {
         case None => errorMessage.invalidNel[Info]
-        case _ => Valid(info)
+        case _    => Valid(info)
       }
     }
 
-    val titleValidation = validateStringItem(info, x => x.getTitle, "Invalid OAS, title missing from OAS specification")
+    val titleValidation   = validateStringItem(info, x => x.getTitle, "Invalid OAS, title missing from OAS specification")
     val versionValidation = validateStringItem(info, x => x.getVersion, "Invalid OAS, version missing from OAS specification")
     List(titleValidation, versionValidation).sequence
   }
-
 
 }

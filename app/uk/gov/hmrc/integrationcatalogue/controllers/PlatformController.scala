@@ -27,12 +27,10 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 
 @Singleton
-class PlatformController @Inject()(controllerComponents: ControllerComponents, appConfig: AppConfig)
-                                    (implicit val ec: ExecutionContext)
-                                     extends BackendController(controllerComponents){
+class PlatformController @Inject() (controllerComponents: ControllerComponents, appConfig: AppConfig)(implicit val ec: ExecutionContext)
+    extends BackendController(controllerComponents) {
 
-                                    
-  def getPlatformContacts() : Action[AnyContent] = Action.async { request =>
-        Future.successful(Ok(Json.toJson(appConfig.platformContacts)))
-  }                                  
+  def getPlatformContacts(): Action[AnyContent] = Action.async { request =>
+    Future.successful(Ok(Json.toJson(appConfig.platformContacts)))
+  }
 }

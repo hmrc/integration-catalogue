@@ -20,6 +20,7 @@ import com.google.inject.AbstractModule
 import uk.gov.hmrc.integrationcatalogue.scheduled.MetricsScheduler
 
 class CustomModule extends AbstractModule {
+
   override def configure(): Unit = {
     bind(classOf[MetricsScheduler]).asEagerSingleton()
   }

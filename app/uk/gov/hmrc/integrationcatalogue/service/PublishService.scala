@@ -29,9 +29,9 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PublishService  @Inject()(oasParser: OASParserService, integrationRepository: IntegrationRepository, uuidService: UuidService) extends Logging{
+class PublishService @Inject() (oasParser: OASParserService, integrationRepository: IntegrationRepository, uuidService: UuidService) extends Logging {
 
-  def publishFileTransfer(request: FileTransferPublishRequest)(implicit ec: ExecutionContext) : Future[PublishResult] = {
+  def publishFileTransfer(request: FileTransferPublishRequest)(implicit ec: ExecutionContext): Future[PublishResult] = {
     val integrationId = IntegrationId(uuidService.newUuid())
 
     val fileTransferDetail = FileTransferDetail.fromFileTransferPublishRequest(request, integrationId)
@@ -39,33 +39,32 @@ class PublishService  @Inject()(oasParser: OASParserService, integrationReposito
     integrationRepository.findAndModify(fileTransferDetail).flatMap {
       case Right((fileTransfer, isUpdate)) =>
         Future.successful(PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, fileTransfer.id, fileTransfer.publisherReference, fileTransfer.platform))))
-      case Left(error) =>
+      case Left(error)                     =>
         Future.successful(PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert file transfer"))))
     }
   }
 
-    def publishApi(request: PublishRequest)(implicit ec: ExecutionContext) : Future[PublishResult] = {
+  def publishApi(request: PublishRequest)(implicit ec: ExecutionContext): Future[PublishResult] = {
 
-        val parseResult: ValidatedNel[List[String], ApiDetail] =
-          oasParser.parse(request.publisherReference, request.platformType, request.specificationType, request.contents)
+    val parseResult: ValidatedNel[List[String], ApiDetail] =
+      oasParser.parse(request.publisherReference, request.platformType, request.specificationType, request.contents)
 
-
-        parseResult match {
-          case x : Invalid[NonEmptyList[List[String]]] => mapErrorsToPublishResult(x)
-          case Valid(apiDetailParsed) =>
-          //TODO: validate parsed api model
-            integrationRepository.findAndModify(apiDetailParsed).flatMap {
-              case Right((api, isUpdate)) =>
-                Future.successful(PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, api.id, api.publisherReference, api.platform))))
-              case Left(error) =>
-                Future.successful(PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert api"))))
-            }
+    parseResult match {
+      case x: Invalid[NonEmptyList[List[String]]] => mapErrorsToPublishResult(x)
+      case Valid(apiDetailParsed)                 =>
+        // TODO: validate parsed api model
+        integrationRepository.findAndModify(apiDetailParsed).flatMap {
+          case Right((api, isUpdate)) =>
+            Future.successful(PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, api.id, api.publisherReference, api.platform))))
+          case Left(error)            =>
+            Future.successful(PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert api"))))
         }
     }
+  }
 
-    def mapErrorsToPublishResult(invalidNel: Invalid[NonEmptyList[List[String]]]): Future[PublishResult] = {
-      val flatList = invalidNel.e.toList.flatten
-      Future.successful(PublishResult(isSuccess = false, None, flatList.map(err => PublishError(OAS_PARSE_ERROR, err))))
-    }
-  
+  def mapErrorsToPublishResult(invalidNel: Invalid[NonEmptyList[List[String]]]): Future[PublishResult] = {
+    val flatList = invalidNel.e.toList.flatten
+    Future.successful(PublishResult(isSuccess = false, None, flatList.map(err => PublishError(OAS_PARSE_ERROR, err))))
+  }
+
 }

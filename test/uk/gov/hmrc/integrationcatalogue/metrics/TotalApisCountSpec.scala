@@ -28,7 +28,7 @@ import scala.concurrent.Future
 class TotalApisCountSpec extends AnyWordSpec with Matchers {
 
   val mockIntegrationRepository: IntegrationRepository = mock[IntegrationRepository]
-  val underTest = new TotalApisCount(mockIntegrationRepository)
+  val underTest                                        = new TotalApisCount(mockIntegrationRepository)
 
   "metric refresh" should {
 

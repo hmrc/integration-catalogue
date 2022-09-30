@@ -19,7 +19,7 @@ import java.util.UUID
 class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with MongoApp with OasParsedItTestData with AwaitTestSupport {
 
   override protected def repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
-  val apiRepo: IntegrationRepository = repository.asInstanceOf[IntegrationRepository]
+  val apiRepo: IntegrationRepository                                        = repository.asInstanceOf[IntegrationRepository]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -31,11 +31,11 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
     new GuiceApplicationBuilder()
       .configure(
         "microservice.services.auth.port" -> wireMockPort,
-        "metrics.enabled" -> true,
-        "auditing.enabled" -> false,
-        "mongodb.uri" -> s"mongodb://127.0.0.1:27017/test-${this.getClass.getSimpleName}",
-        "auditing.consumer.baseUri.host" -> wireMockHost,
-        "auditing.consumer.baseUri.port" -> wireMockPort
+        "metrics.enabled"                 -> true,
+        "auditing.enabled"                -> false,
+        "mongodb.uri"                     -> s"mongodb://127.0.0.1:27017/test-${this.getClass.getSimpleName}",
+        "auditing.consumer.baseUri.host"  -> wireMockHost,
+        "auditing.consumer.baseUri.port"  -> wireMockPort
       )
 
   val url = s"http://localhost:$port/integration-catalogue"
@@ -236,12 +236,12 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
     "GET  /report " should {
 
       "respond with correct report when integrations exist" in {
-        await(apiRepo.findAndModify(exampleApiDetail)) // CORE_IF - API
+        await(apiRepo.findAndModify(exampleApiDetail))           // CORE_IF - API
         await(apiRepo.findAndModify(exampleApiDetailForSearch1)) // CORE_IF - API
-        await(apiRepo.findAndModify(exampleApiDetailForSearch2)) //DES - API
-        await(apiRepo.findAndModify(exampleApiDetail3)) // CDS_CLASSIC - API
-        await(apiRepo.findAndModify(exampleFileTransfer)) // CORE_IF - FILE_TRANSFER
-        await(apiRepo.findAndModify(exampleFileTransfer2)) // API_PLATFORM - FILE_TRANSFER
+        await(apiRepo.findAndModify(exampleApiDetailForSearch2)) // DES - API
+        await(apiRepo.findAndModify(exampleApiDetail3))          // CDS_CLASSIC - API
+        await(apiRepo.findAndModify(exampleFileTransfer))        // CORE_IF - FILE_TRANSFER
+        await(apiRepo.findAndModify(exampleFileTransfer2))       // API_PLATFORM - FILE_TRANSFER
 
         val expectedResults = List(
           IntegrationPlatformReport(API_PLATFORM, FILE_TRANSFER, 1),
@@ -259,7 +259,7 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
     "GET /filetransfers/platform/transports" should {
       def setupFileTransfers() {
 
-        await(apiRepo.findAndModify(exampleFileTransfer)) // CORE_IF | source -> target | transports = UTM
+        await(apiRepo.findAndModify(exampleFileTransfer))  // CORE_IF | source -> target | transports = UTM
         await(apiRepo.findAndModify(exampleFileTransfer2)) // API_PLATFORM | someSource -> target | transports = S3
         await(apiRepo.findAndModify(exampleFileTransfer3)) // API_PLATFORM | someSource -> target | transports = S3, WTM
       }

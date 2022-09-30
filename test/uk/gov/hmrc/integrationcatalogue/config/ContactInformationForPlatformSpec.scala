@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.integrationcatalogue.config
 
-
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType

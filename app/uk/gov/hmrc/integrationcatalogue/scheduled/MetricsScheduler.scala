@@ -27,18 +27,19 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
-class MetricsScheduler @Inject()(actorSystem: ActorSystem,
-                                 configuration: Configuration,
-                                 metrics: Metrics,
-                                 totalApiCount: TotalApisCount,
-                                 totalEndpointsCount: TotalEndpointsCount,
-                                 lockRepository: LockRepository,
-                                 metricRepository: MetricRepository
-                                )(implicit ec: ExecutionContext)
-                                 extends Logging {
+class MetricsScheduler @Inject() (
+    actorSystem: ActorSystem,
+    configuration: Configuration,
+    metrics: Metrics,
+    totalApiCount: TotalApisCount,
+    totalEndpointsCount: TotalEndpointsCount,
+    lockRepository: LockRepository,
+    metricRepository: MetricRepository
+  )(implicit ec: ExecutionContext
+  ) extends Logging {
 
   lazy val refreshInterval: FiniteDuration = configuration.get[FiniteDuration]("queue.metricsGauges.interval")
-  lazy val initialDelay: FiniteDuration = configuration.get[FiniteDuration]("queue.initialDelay")
+  lazy val initialDelay: FiniteDuration    = configuration.get[FiniteDuration]("queue.initialDelay")
 
   val lockService: LockService = LockService(lockRepository = lockRepository, lockId = "queue", ttl = refreshInterval)
 

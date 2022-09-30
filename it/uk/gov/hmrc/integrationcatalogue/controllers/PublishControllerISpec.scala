@@ -21,10 +21,9 @@ import scala.concurrent.duration._
 
 class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with MongoApp with OasTestData with OasParsedItTestData with AwaitTestSupport {
 
-  override protected def repository: PlayMongoRepository[IntegrationDetail] =   app.injector.instanceOf[IntegrationRepository]
+  override protected def repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
 
   val apiRepo = repository.asInstanceOf[IntegrationRepository]
-
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -36,11 +35,11 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
     new GuiceApplicationBuilder()
       .configure(
         "microservice.services.auth.port" -> wireMockPort,
-        "metrics.enabled" -> true,
-        "auditing.enabled" -> false,
-        "mongodb.uri" -> s"mongodb://127.0.0.1:27017/test-${this.getClass.getSimpleName}",
-        "auditing.consumer.baseUri.host" -> wireMockHost,
-        "auditing.consumer.baseUri.port" -> wireMockPort
+        "metrics.enabled"                 -> true,
+        "auditing.enabled"                -> false,
+        "mongodb.uri"                     -> s"mongodb://127.0.0.1:27017/test-${this.getClass.getSimpleName}",
+        "auditing.consumer.baseUri.host"  -> wireMockHost,
+        "auditing.consumer.baseUri.port"  -> wireMockPort
       )
 
   val url = s"http://localhost:$port/integration-catalogue"
@@ -106,12 +105,11 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
     "PUT /" should {
       "respond with 200 when content field is parseable by the OAS parser" in new Setup {
 
-        val result: WSResponse = callApiPublishEndpoint()
+        val result: WSResponse           = callApiPublishEndpoint()
         result.status mustBe OK
         val publishResult: PublishResult = Json.parse(result.body).as[PublishResult]
         publishResult.isSuccess mustBe true
         publishResult.errors.size mustBe 0
-
 
         val apis: Seq[IntegrationDetail] = Await.result(apiRepo.findWithFilters(IntegrationFilter()), 500 millis).results
         apis.size mustBe 1
@@ -121,7 +119,7 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
 
       "respond with 200 when content field is not parseable by the OAS parser" in new Setup {
 
-        val result: WSResponse = callPutEndpoint(s"$url/apis/publish", Json.toJson(publishRequest).toString, validHeaders)
+        val result: WSResponse           = callPutEndpoint(s"$url/apis/publish", Json.toJson(publishRequest).toString, validHeaders)
         result.status mustBe OK
         val publishResult: PublishResult = Json.parse(result.body).as[PublishResult]
         publishResult.isSuccess mustBe false
@@ -150,7 +148,7 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
 
     "PUT /filetransfer/publish" should {
       "respond with 200 when body is valid" in new Setup {
-        val result: WSResponse = callFileTransferPublishEndpoint()
+        val result: WSResponse           = callFileTransferPublishEndpoint()
         result.status mustBe OK
         val publishResult: PublishResult = Json.parse(result.body).as[PublishResult]
         publishResult.isSuccess mustBe true
@@ -158,11 +156,12 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
 
         val apis: immutable.Seq[IntegrationDetail] = Await.result(apiRepo.findWithFilters(IntegrationFilter()), 500 millis).results
         apis.size mustBe 1
-        
-        apis.head match{
-            case ft: FileTransferDetail => ft.publisherReference mustBe fileTransferPublishRequestObj.publisherReference
-                                          ft.transports mustBe List("S3")
-            case _ => fail()
+
+        apis.head match {
+          case ft: FileTransferDetail =>
+            ft.publisherReference mustBe fileTransferPublishRequestObj.publisherReference
+            ft.transports mustBe List("S3")
+          case _                      => fail()
         }
       }
     }
@@ -171,8 +170,8 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
       "find and remove the integration with passed in id" in new Setup {
 
         val publishResponse = callApiPublishEndpoint()
-        val result = Json.parse(publishResponse.body).as[PublishResult]
-        result.isSuccess mustBe  true
+        val result          = Json.parse(publishResponse.body).as[PublishResult]
+        result.isSuccess mustBe true
 
         val savedId: IntegrationId = Await.result(apiRepo.findWithFilters(IntegrationFilter()), 500 millis).results.map(_.id).head
         Await.result(apiRepo.findById(savedId), 500 millis).size mustBe 1
@@ -182,6 +181,5 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
       }
     }
   }
-
 
 }

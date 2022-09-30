@@ -20,19 +20,18 @@ import uk.gov.hmrc.integrationcatalogue.testdata._
 import scala.io.BufferedSource
 import scala.io.Source.fromURL
 
-
 class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTestData with OasTestData with GuiceOneAppPerSuite {
 
   trait Setup {
 
-    val adapterService: OASV3Adapter = app.injector.instanceOf[OASV3Adapter]
-    val fileLoader: OASFileLoader = new OASFileLoader
+    val adapterService: OASV3Adapter   = app.injector.instanceOf[OASV3Adapter]
+    val fileLoader: OASFileLoader      = new OASFileLoader
     val OASSpecType: SpecificationType = SpecificationType.OAS_V3
-    val objInTest = new OASParserService(fileLoader, adapterService)
+    val objInTest                      = new OASParserService(fileLoader, adapterService)
 
     def parseFileToString(filename: String): String = {
       val x: BufferedSource = fromURL(url = getClass.getResource(filename))
-      val fileContents = x.mkString
+      val fileContents      = x.mkString
       x.close()
       fileContents
     }
@@ -45,7 +44,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       header.description shouldBe None
     }
 
-    def validateHeader(header: Header, expectedName: String, expectedDescription  : String): Assertion = {
+    def validateHeader(header: Header, expectedName: String, expectedDescription: String): Assertion = {
       header.name shouldBe expectedName
       header.ref shouldBe None
       header.deprecated shouldBe None
@@ -55,7 +54,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
 
     def testValidationFailureMessage(filePath: String, expectedErrorMessage: String, setHeaderPublisherRef: Boolean = true) = {
 
-      val publisherReference = if(setHeaderPublisherRef) Some("SOMEFILEREFERENCE") else None
+      val publisherReference      = if (setHeaderPublisherRef) Some("SOMEFILEREFERENCE") else None
       val oasFileContents: String = parseFileToString(filePath)
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(publisherReference, PlatformType.CORE_IF, OASSpecType, oasFileContents)
@@ -63,7 +62,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
         case Invalid(errors: NonEmptyList[List[String]]) =>
           println(s"*****${errors.head.mkString}")
           errors.head.contains(expectedErrorMessage) shouldBe true
-        case _ => fail()
+        case _                                           => fail()
       }
 
     }
@@ -72,22 +71,22 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
 
   "OASParserService" should {
     "parse oas file correctly with schema" in new Setup {
-      val publisherReference = "SOMEFILEREFERENCE"
+      val publisherReference      = "SOMEFILEREFERENCE"
       val oasFileContents: String = parseFileToString("/API1000.yaml")
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
-        case Valid(parsedObject)                    =>
+        case Valid(parsedObject) =>
           parsedObject.title shouldBe "API1000 Get Data"
-          val componentHeaders = parsedObject.components.headers
-          val componentSchemas = parsedObject.components.schemas
+          val componentHeaders    = parsedObject.components.headers
+          val componentSchemas    = parsedObject.components.schemas
           val componentParameters = parsedObject.components.parameters
 
           componentHeaders.size shouldBe 1
-          validateHeader(componentHeaders.head, "CorrelationId","A UUID format string for the transaction used for traceability purposes")
+          validateHeader(componentHeaders.head, "CorrelationId", "A UUID format string for the transaction used for traceability purposes")
           componentHeaders.head.schema should not be None
 
-           val headerSchemas = componentHeaders.head.schema.head
+          val headerSchemas = componentHeaders.head.schema.head
           headerSchemas.ref shouldBe None
           headerSchemas.`type` shouldBe Some("string")
           headerSchemas.pattern shouldBe Some("^[0-9a-fA-F]{8}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{12}$")
@@ -126,7 +125,6 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
           environment.schema.flatMap(_.`type`) shouldBe Some("string")
           environment.schema.map(_.`enum`) shouldBe Some(List("stuff", "stuf1", "stuff3"))
 
-
           parsedObject.endpoints.size shouldBe 1
           parsedObject.endpoints.head.methods.size shouldBe 1
           parsedObject.publisherReference shouldBe publisherReference
@@ -153,7 +151,6 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
           inlineParameter.schema.flatMap(_.`type`) shouldBe Some("string")
           inlineParameter.schema.flatMap(_.pattern) shouldBe Some("^[0-9a-fA-F]{8}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{12}$")
 
-          
           getMethod.responses.size shouldBe 8
           val response200: Response = getMethod.responses.filter(_.statusCode.toInt == 200).head
           response200.mediaType shouldBe Some("application/json")
@@ -166,7 +163,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
           response401.schema.isDefined shouldBe true
           response401.schema.head.not.isDefined shouldBe true
           response401.schema.head.not.head.isInstanceOf[ComposedSchema] shouldBe true
-          val anyOf401Schemas = response401.schema.head.not.head.asInstanceOf[ComposedSchema].anyOf
+          val anyOf401Schemas       = response401.schema.head.not.head.asInstanceOf[ComposedSchema].anyOf
           anyOf401Schemas.map(_.ref.getOrElse("")) should contain only ("#/components/schemas/orgName56String", "#/components/schemas/utrType")
 
           response401.headers.size shouldBe 1
@@ -179,7 +176,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
 
           response204.headers.size shouldBe 1
           response204.headers.nonEmpty shouldBe true
-          val header204 = response204.headers.head
+          val header204    = response204.headers.head
           header204.name shouldBe "Location"
           header204.ref shouldBe None
           header204.deprecated shouldBe Some(false)
@@ -190,13 +187,11 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
           headerSchema.description shouldBe Some("Location of the authorisation request.")
           headerSchema.`type` shouldBe Some("string")
 
-
-
         case _: Invalid[NonEmptyList[List[String]]] => fail()
       }
     }
     "parse oas file correctly with default response" in new Setup {
-      val publisherReference = "SOMEFILEREFERENCE"
+      val publisherReference      = "SOMEFILEREFERENCE"
       val oasFileContents: String = parseFileToString("/API1000_withDefaultResponse.yaml")
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
@@ -211,13 +206,13 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
           getMethod.responses.size shouldBe 9
           val responseDefault: Response = getMethod.responses.filter(_.statusCode == "default").head
           responseDefault.description shouldBe Some("Test default response")
-        case _ => fail()
+        case _                   => fail()
       }
     }
 
     "parse oas file correctly with null enum value" in new Setup {
       val publisherReference = "SOMEFILEREFERENCE"
-      
+
       val oasFileContents: String = parseFileToString("/API1000_withEnumWithNullValue.yaml")
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
@@ -225,12 +220,12 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
         case Valid(parsedObject) =>
           val actualEnumValues = parsedObject.endpoints.head.methods.head.responses.head.schema.get.properties.head.enum
           actualEnumValues shouldBe List("M", "F", "null")
-        case _ => fail()
+        case _                   => fail()
       }
     }
 
     "parse oas file and return endpoints in the order specified in the oas spec" in new Setup {
-      val publisherReference = "SOMEFILEREFERENCE"
+      val publisherReference      = "SOMEFILEREFERENCE"
       val oasFileContents: String = parseFileToString("/API1000_multipleEndpoints.yaml")
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
@@ -248,14 +243,13 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       }
     }
 
-
     "parse OpenApi object correctly with extensions" in new Setup {
       val publisherReference = "SOMEFILEREFERENCE"
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASDataWithExtensions)
 
       result match {
-        case Valid(parsedObject)                    =>
+        case Valid(parsedObject) =>
           parsedObject.title shouldBe oasApiName
           parsedObject.description shouldBe oasApiDescription
           parsedObject.version shouldBe oasVersion
@@ -279,7 +273,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(""))
 
       result match {
-        case Valid(parsedObject)                    =>
+        case Valid(parsedObject) =>
           parsedObject.title shouldBe oasApiName
           parsedObject.description shouldBe oasApiDescription
           parsedObject.version shouldBe oasVersion
@@ -295,27 +289,27 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
     }
 
     "parse oas file correctly with valid short description" in new Setup {
-      val publisherReference = "SOMEFILEREFERENCE"
+      val publisherReference      = "SOMEFILEREFERENCE"
       val oasFileContents: String = parseFileToString("/API1000_withValidShortDesc.yaml")
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case Valid(parsedObject) =>
           parsedObject.shortDescription.getOrElse("") shouldBe "Hello Im a sensible short description, you wont find me getting too long and breaking any tests. No sireee!!"
-        case _ => fail()
+        case _                   => fail()
       }
 
     }
 
     "parse oas file correctly with valid status" in new Setup {
-      val publisherReference = "SOMEFILEREFERENCE"
+      val publisherReference      = "SOMEFILEREFERENCE"
       val oasFileContents: String = parseFileToString("/API1000_withValidStatus.yaml")
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case Valid(parsedObject) =>
           parsedObject.apiStatus shouldBe ApiStatus.BETA
-        case _ => fail()
+        case _                   => fail()
       }
 
     }
@@ -338,7 +332,11 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
     }
 
     "catch error in oas file with extension publisher-reference type is not a string, double or integer" in new Setup {
-      testValidationFailureMessage("/API1000_withInvalidPublisherRef-isWrongType.yaml", "Invalid value. Expected a string, integer or double but found value: true of type class java.lang.Boolean", setHeaderPublisherRef = false)
+      testValidationFailureMessage(
+        "/API1000_withInvalidPublisherRef-isWrongType.yaml",
+        "Invalid value. Expected a string, integer or double but found value: true of type class java.lang.Boolean",
+        setHeaderPublisherRef = false
+      )
     }
 
     "catch error in oas file with missing extension publisher-reference" in new Setup {
@@ -378,14 +376,15 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
     }
 
     "catch error when publisher ref in oas file does not match the one in the request" in new Setup {
-      val publisherReference = "SOMEFILEREFERENCE"
+      val publisherReference      = "SOMEFILEREFERENCE"
       val oasFileContents: String = parseFileToString("/API1000_withValidPublisherRef-String.yaml")
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case errors: Invalid[NonEmptyList[List[String]]] =>
           errors.e.head.contains("Publisher reference provided twice but they do not match") shouldBe true
-        case _ => fail()      }
+        case _                                           => fail()
+      }
 
     }
 
@@ -396,7 +395,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       result match {
         case Valid(parsedObject) =>
           parsedObject.publisherReference shouldBe "API 1001"
-        case _ => fail()
+        case _                   => fail()
       }
 
     }
@@ -408,7 +407,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       result match {
         case Valid(parsedObject) =>
           parsedObject.publisherReference shouldBe "1.5"
-        case _ => fail()
+        case _                   => fail()
       }
 
     }
@@ -420,18 +419,18 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       result match {
         case Valid(parsedObject) =>
           parsedObject.publisherReference shouldBe "1001"
-        case _ => fail()
+        case _                   => fail()
       }
 
     }
 
-      "parse OpenApi object correctly without extensions" in new Setup {
+    "parse OpenApi object correctly without extensions" in new Setup {
       val publisherReference = "SOMEFILEREFERENCE"
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(oasContactName))
 
       result match {
-        case Valid(parsedObject)                    =>
+        case Valid(parsedObject) =>
           parsedObject.title shouldBe oasApiName
           parsedObject.description shouldBe oasApiDescription
           parsedObject.version shouldBe oasVersion
