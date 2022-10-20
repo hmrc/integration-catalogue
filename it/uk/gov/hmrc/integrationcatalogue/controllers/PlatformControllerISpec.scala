@@ -42,7 +42,7 @@ class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
         val result = callGetEndpoint(s"$url/platform/contacts")
 
         result.status mustBe OK
-        result.body mustBe """[{"platformType":"API_PLATFORM","overrideOasContacts":false},{"platformType":"CDS_CLASSIC","overrideOasContacts":false},{"platformType":"CMA","overrideOasContacts":false},{"platformType":"CORE_IF","overrideOasContacts":false},{"platformType":"DAPI","overrideOasContacts":false},{"platformType":"DES","contactInfo":{"name":"DES Platform support hot line","emailAddress":"des@mail.com"},"overrideOasContacts":true},{"platformType":"DIGI","overrideOasContacts":false},{"platformType":"SDES","overrideOasContacts":false},{"platformType":"TRANSACTION_ENGINE","overrideOasContacts":false},{"platformType":"CIP","overrideOasContacts":false}]"""
+        result.body mustBe """[{"platformType":"API_PLATFORM","overrideOasContacts":false},{"platformType":"CDS_CLASSIC","overrideOasContacts":false},{"platformType":"CMA","overrideOasContacts":false},{"platformType":"CORE_IF","overrideOasContacts":false},{"platformType":"DAPI","overrideOasContacts":false},{"platformType":"DES","contactInfo":{"name":"DES Platform support hot line","emailAddress":"des@mail.com"},"overrideOasContacts":true},{"platformType":"DIGI","overrideOasContacts":false},{"platformType":"SDES","overrideOasContacts":false},{"platformType":"TRANSACTION_ENGINE","overrideOasContacts":false},{"platformType":"CIP","overrideOasContacts":false},{"platformType":"HIP","overrideOasContacts":false}]"""
       }
 
     }
