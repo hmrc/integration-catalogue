@@ -96,7 +96,7 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
     }
 
     def callFileTransferPublishEndpoint(): WSResponse = {
-      callPutEndpoint(s"$url/filetransfer/publish", Json.toJson(fileTransferPublishRequestObj).toString, validHeaders)
+      callPutEndpoint(s"$url/filetransfers/publish", Json.toJson(fileTransferPublishRequestObj).toString, validHeaders)
     }
   }
 
