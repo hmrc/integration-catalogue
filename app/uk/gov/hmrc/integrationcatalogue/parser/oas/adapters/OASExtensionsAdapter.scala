@@ -112,9 +112,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
           DateTime.parse(x, ISODateTimeFormat.dateOptionalTimeParser())
         } match {
           case Success(dateTime) => Validated.valid(dateTime)
-          case Failure(e)        =>
-            println(e.getMessage())
-            "Reviewed date is not a valid date".invalidNel[DateTime]
+          case Failure(e)        => "Reviewed date is not a valid date".invalidNel[DateTime]
         }
       case Some(_)         => "Reviewed date is not a valid date".invalidNel[DateTime]
     }
