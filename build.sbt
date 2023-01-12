@@ -1,6 +1,7 @@
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import bloop.integrations.sbt.BloopDefaults
+import uk.gov.hmrc.DefaultBuildSettings
 
 val appName = "integration-catalogue"
 
@@ -31,6 +32,7 @@ lazy val microservice = Project(appName, file("."))
   .configs(IntegrationTest)
   .settings(integrationTestSettings(): _*)
   .settings(inConfig(IntegrationTest)(BloopDefaults.configSettings))
+  .settings(DefaultBuildSettings.integrationTestSettings())
   .settings(
     Defaults.itSettings,
     IntegrationTest / Keys.fork := false,
