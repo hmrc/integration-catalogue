@@ -150,7 +150,7 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
       if (perPageFilter.isDefined) Some(results.size) else None
     }
 
-    def buildFilters() = {
+    def buildFilters(): Seq[Bson] = {
       val integrationTypeFilter    = filter.typeFilter.map(typeVal => Filters.equal("_type", typeVal.integrationType))
       val textFilter: Option[Bson] = filter.searchText.headOption.map(searchText => Filters.text(searchText))
       val platformFilter           = if (filter.platforms.nonEmpty) Some(Filters.in("platform", filter.platforms.map(Codecs.toBson(_)): _*)) else None
@@ -165,12 +165,12 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
 
     val filters = buildFilters()
 
-    val sortByScore     = Sorts.metaTextScore("score")
-    val scoreProjection = Projections.metaTextScore("score")
-    val sortOp          = if (filter.searchText.headOption.isEmpty) ascending("title") else sortByScore
-    val perPage         = filter.itemsPerPage.getOrElse(0)
-    val currentPage     = filter.currentPage.getOrElse(1)
-    val skipAmount      = if (currentPage > 1) (currentPage - 1) * perPage else 0
+    val sortByScore          = Sorts.metaTextScore("score")
+    val mayBeScoreProjection = filter.searchText.headOption.map(_ => Projections.metaTextScore("score"))
+    val sortOp               = if (filter.searchText.headOption.isEmpty) ascending("title") else sortByScore
+    val perPage              = filter.itemsPerPage.getOrElse(0)
+    val currentPage          = filter.currentPage.getOrElse(1)
+    val skipAmount           = if (currentPage > 1) (currentPage - 1) * perPage else 0
     if (filters.isEmpty) {
       for {
         count   <- collection.countDocuments.toFuture()
@@ -184,13 +184,15 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
     } else {
       for {
         count   <- collection.countDocuments(and(filters: _*)).toFuture()
-        results <- collection.find(and(filters: _*))
-                     .projection(scoreProjection)
-                     .sort(sortOp)
-                     .skip(skipAmount)
-                     .limit(perPage)
-                     .toFuture()
-                     .map(_.toList)
+        results <-
+          (mayBeScoreProjection match {
+            case None          => collection.find(and(filters: _*))
+            case Some(x: Bson) => collection.find(and(filters: _*)).projection(x)
+          }).sort(sortOp)
+            .skip(skipAmount)
+            .limit(perPage)
+            .toFuture()
+            .map(_.toList)
       } yield IntegrationResponse(count.toInt, sendPagedResults(results, filter.itemsPerPage), results)
     }
   }
