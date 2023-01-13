@@ -52,7 +52,11 @@ trait OASV3HeaderAdapter extends OASV3SchemaAdapter {
             val headerSchema         = Option(header.getSchema)
             val responseHeaderSchema = headerSchema.map(schema => extractOasSchema(Some(name), schema))
 
-            uk.gov.hmrc.integrationcatalogue.models.Header(name, description = description, required = isRequired, deprecated = deprecated, schema = responseHeaderSchema)
+            uk.gov.hmrc.integrationcatalogue.models.Header(name,
+              description = description,
+              required = isRequired,
+              deprecated = deprecated,
+              schema = responseHeaderSchema)
           })
     }.toList
   }

@@ -60,13 +60,13 @@ trait OASExtensionsAdapter extends ExtensionKeys {
 
   private def getIntegrationCatalogueExtensionsMap(extensions: Map[String, AnyRef]): ValidatedNel[String, Map[String, AnyRef]] =
     extensions.get(EXTENSIONS_KEY) match {
-      case None                                                     => Validated.valid(Map.empty)
+      case None    => Validated.valid(Map.empty)
       case Some(e) if e.isInstanceOf[java.util.Map[String, AnyRef]] =>
         Validated.valid(e.asInstanceOf[java.util.Map[String, AnyRef]]
           .asScala
           .toMap
           .filter { case (k, _) => k != null })
-      case Some(_)                                                  => "attribute x-integration-catalogue is not of type `object`".invalidNel[Map[String, AnyRef]]
+      case Some(_)  => "attribute x-integration-catalogue is not of type `object`".invalidNel[Map[String, AnyRef]]
     }
 
   private def getBackends(extensions: Map[String, AnyRef]): ValidatedNel[String, Seq[String]] = {
@@ -136,7 +136,8 @@ trait OASExtensionsAdapter extends ExtensionKeys {
       case Some(x: String)           => handleMultiplePublisherReferences(publisherReference, x)
       case Some(x: Integer)          => handleMultiplePublisherReferences(publisherReference, x.toString)
       case Some(x: java.lang.Double) => handleMultiplePublisherReferences(publisherReference, x.toString)
-      case Some(o)                   => s"Invalid value. Expected a string, integer or double but found value: $o of type ${o.getClass.toString}".invalidNel[String]
+      case Some(o)                   =>
+        s"Invalid value. Expected a string, integer or double but found value: $o of type ${o.getClass.toString}".invalidNel[String]
     }
   }
 }

@@ -40,7 +40,9 @@ class PublishService @Inject() (oasParser: OASParserService, integrationReposito
 
     integrationRepository.findAndModify(fileTransferDetail).flatMap {
       case Right((fileTransfer, isUpdate)) =>
-        Future.successful(PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, fileTransfer.id, fileTransfer.publisherReference, fileTransfer.platform))))
+        Future.successful(PublishResult(
+          isSuccess = true,
+          Some(PublishDetails(isUpdate, fileTransfer.id, fileTransfer.publisherReference, fileTransfer.platform))))
       case Left(error)                     =>
         Future.successful(PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert file transfer"))))
     }
