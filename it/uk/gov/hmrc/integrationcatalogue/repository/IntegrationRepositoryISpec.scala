@@ -139,31 +139,6 @@ class IntegrationRepositoryISpec
 
   "IntegrationRepository" when {
 
-    "dropIndexes on Startup" should {
-
-      def checkIndexExists(indexName: String) = {
-        val indexes    = await(repo.collection.listIndexes().toFuture()).toList
-        val indexNames = indexes.flatMap((idx: Document) => {
-          idx
-            .toList
-            .filter(_._1 == "name")
-            .map(_._2.asInstanceOf[BsonString])
-            .map(_.getValue)
-        })
-        indexNames.contains(indexName)
-      }
-
-      "create index that repo should delete when ensuring indexes " in {
-        val createIndexResult = await(repo.collection.createIndex(ascending("version"), IndexOptions().name(indexNameToDrop).background(true).unique(true)).toFuture())
-        createIndexResult shouldBe indexNameToDrop
-        checkIndexExists(indexNameToDrop) shouldBe true
-
-        await(repo.ensureIndexes)
-
-        checkIndexExists(indexNameToDrop) shouldBe false
-      }
-    }
-
     "findByPublisherReference" should {
 
       "return an api when it has been created" in {

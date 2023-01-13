@@ -19,7 +19,6 @@ package uk.gov.hmrc.integrationcatalogue.repository
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NonFatal
 
 import com.mongodb.BasicDBObject
 import org.bson.BsonValue
@@ -66,30 +65,6 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
     with Logging {
 
   // https://docs.mongodb.com/manual/core/index-text/#wildcard-text-indexes
-
-  private def ensureLocalIndexes() = {
-    Future.sequence(
-      List(
-        Future.successful(config.oldIndexesToDrop.map(indexToDrop => {
-          collection.dropIndex(indexToDrop)
-            .toFuture
-            .map(_ => logger.info(s"dropping index $indexToDrop succeeded"))
-            .recover {
-              case NonFatal(e) => logger.info(s"dropping index $indexToDrop failed ${e.getMessage}")
-              case _           => logger.info(s"dropping index $indexToDrop failed")
-            }
-        })),
-        collection.createIndexes(models = indexes)
-          .toFuture().map(results => results.map(i => logger.info(s"created Index $i")))
-      )
-    )
-
-  }
-
-  override def ensureIndexes: Future[Seq[String]] = {
-    ensureLocalIndexes()
-    super.ensureIndexes
-  }
 
   private def determineUpdateOp2(integrationDetail: IntegrationDetail) = {
     integrationDetail.integrationType match {
