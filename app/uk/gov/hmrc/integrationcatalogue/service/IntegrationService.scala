@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.integrationcatalogue.service
 
-import play.api.Logging
-import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId
-import uk.gov.hmrc.integrationcatalogue.models._
-import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
-
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
+
+import play.api.Logging
+
+import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformType}
+import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 
 @Singleton
 class IntegrationService @Inject() (integrationRepository: IntegrationRepository) extends Logging {

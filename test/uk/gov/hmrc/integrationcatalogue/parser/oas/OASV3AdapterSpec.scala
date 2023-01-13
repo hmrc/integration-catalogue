@@ -16,26 +16,26 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas
 
+import java.util.UUID
+
 import cats.data.Validated._
 import cats.data._
 import cats.implicits._
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.info.Info
 import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.{DateTimeFormat, ISODateTimeFormat}
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+
+import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiDetail
 import uk.gov.hmrc.integrationcatalogue.models.common.{ContactInformation, IntegrationId, PlatformType, SpecificationType}
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.OASV3Adapter
 import uk.gov.hmrc.integrationcatalogue.service.UuidService
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
-
-import java.util.UUID
-import uk.gov.hmrc.integrationcatalogue.config.AppConfig
-import org.joda.time.format.ISODateTimeFormat
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
 class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach {
 

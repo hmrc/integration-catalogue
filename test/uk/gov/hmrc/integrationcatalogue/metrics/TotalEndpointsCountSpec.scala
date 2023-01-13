@@ -16,14 +16,16 @@
 
 package uk.gov.hmrc.integrationcatalogue.metrics
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 import org.mockito.MockitoSugar.{mock, verify, when}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
+
+import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 
 class TotalEndpointsCountSpec extends AnyWordSpec with Matchers {
 

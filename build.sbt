@@ -7,6 +7,16 @@ val appName = "integration-catalogue"
 
 val silencerVersion = "1.7.0"
 
+ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
+
+inThisBuild(
+  List(
+    scalaVersion := "2.12.15",
+    semanticdbEnabled := true,
+    semanticdbVersion := scalafixSemanticdb.revision
+  )
+)
+
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
   .settings(

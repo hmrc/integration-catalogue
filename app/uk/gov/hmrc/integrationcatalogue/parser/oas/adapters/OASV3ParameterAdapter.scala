@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
-import io.swagger.v3.oas.models.Operation
-import io.swagger.v3.oas.models.parameters.{Parameter => OasParameter}
 import scala.collection.JavaConverters._
+
+import io.swagger.v3.oas.models.parameters.{Parameter => OasParameter}
+import io.swagger.v3.oas.models.{OpenAPI, Operation}
+
 import uk.gov.hmrc.integrationcatalogue.models.Parameter
-import io.swagger.v3.oas.models.OpenAPI
 
 trait OASV3ParameterAdapter extends OASV3SchemaAdapter {
 

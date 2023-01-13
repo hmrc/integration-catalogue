@@ -16,6 +16,10 @@
 
 package uk.gov.hmrc.integrationcatalogue.controllers
 
+import java.util.UUID
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.mockito.scalatest.MockitoSugar
@@ -23,20 +27,18 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers}
+
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
-import uk.gov.hmrc.integrationcatalogue.models.common._
 import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.common._
 import uk.gov.hmrc.integrationcatalogue.service.PublishService
 import uk.gov.hmrc.integrationcatalogue.testdata.ApiTestData
-
-import java.util.UUID
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with BeforeAndAfterEach with ApiTestData {
 

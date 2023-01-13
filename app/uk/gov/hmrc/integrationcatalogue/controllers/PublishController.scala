@@ -16,17 +16,18 @@
 
 package uk.gov.hmrc.integrationcatalogue.controllers
 
-import play.api.Logging
-import play.api.libs.json.{JsValue, Json, Reads}
-import play.api.mvc._
-import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
-import uk.gov.hmrc.integrationcatalogue.models.{ErrorResponse, ErrorResponseMessage, FileTransferPublishRequest, PublishRequest}
-import uk.gov.hmrc.integrationcatalogue.service.PublishService
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
+
+import play.api.Logging
+import play.api.libs.json.{JsValue, Json, Reads}
+import play.api.mvc._
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+
+import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
+import uk.gov.hmrc.integrationcatalogue.models.{ErrorResponse, ErrorResponseMessage, FileTransferPublishRequest, PublishRequest}
+import uk.gov.hmrc.integrationcatalogue.service.PublishService
 
 @Singleton
 class PublishController @Inject() (

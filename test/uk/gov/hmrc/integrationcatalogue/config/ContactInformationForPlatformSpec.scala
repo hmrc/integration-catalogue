@@ -18,8 +18,8 @@ package uk.gov.hmrc.integrationcatalogue.config
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
-import uk.gov.hmrc.integrationcatalogue.models.common.ContactInformation
+
+import uk.gov.hmrc.integrationcatalogue.models.common.{ContactInformation, PlatformType}
 
 class ContactInformationForPlatformSpec extends AnyWordSpec with Matchers {
 

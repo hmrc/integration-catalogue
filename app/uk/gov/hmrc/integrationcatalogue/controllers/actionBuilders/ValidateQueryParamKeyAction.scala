@@ -20,14 +20,14 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 import _root_.uk.gov.hmrc.http.HttpErrorFunctions
-import play.api.mvc.{ActionFilter, Request, Result}
 
-import play.api.mvc.Results.BadRequest
-import uk.gov.hmrc.integrationcatalogue.models.ErrorResponse
-import uk.gov.hmrc.integrationcatalogue.models.ErrorResponseMessage
 import play.api.Logging
 import play.api.libs.json.Json
+import play.api.mvc.Results.BadRequest
+import play.api.mvc.{ActionFilter, Request, Result}
+
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
+import uk.gov.hmrc.integrationcatalogue.models.{ErrorResponse, ErrorResponseMessage}
 
 @Singleton
 class ValidateQueryParamKeyAction @Inject() ()(implicit ec: ExecutionContext)

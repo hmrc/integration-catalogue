@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
-import io.swagger.v3.oas.models.OpenAPI
-import io.swagger.v3.oas.models.media.MediaType
-import io.swagger.v3.oas.models.media.{ArraySchema => OasArraySchema, ComposedSchema => OasComposedSchema, Schema => OasSchema}
-import uk.gov.hmrc.integrationcatalogue.models._
-
 import java.util
 import scala.collection.JavaConverters._
+
+import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.media.{ArraySchema => OasArraySchema, ComposedSchema => OasComposedSchema, MediaType, Schema => OasSchema}
+
+import uk.gov.hmrc.integrationcatalogue.models._
 
 trait OASV3SchemaAdapter {
 

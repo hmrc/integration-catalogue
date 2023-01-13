@@ -17,13 +17,13 @@
 package uk.gov.hmrc.integrationcatalogue.controllers
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
-import play.api.mvc.ControllerComponents
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.integrationcatalogue.config.AppConfig
-import play.api.mvc.{Action, AnyContent}
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
+
 import play.api.libs.json.Json
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+
+import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 
 @Singleton

@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
-import io.swagger.v3.oas.models.OpenAPI
-import io.swagger.v3.oas.models.responses.ApiResponse
-import io.swagger.v3.oas.models.headers.{Header => OasHeader}
-
 import java.util
 import scala.collection.JavaConverters._
+
+import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.headers.{Header => OasHeader}
+import io.swagger.v3.oas.models.responses.ApiResponse
 
 trait OASV3HeaderAdapter extends OASV3SchemaAdapter {
 

@@ -16,19 +16,19 @@
 
 package uk.gov.hmrc.integrationcatalogue.controllers
 
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.{Action, _}
-import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
-import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformType}
-import uk.gov.hmrc.integrationcatalogue.models._
-import uk.gov.hmrc.integrationcatalogue.service.IntegrationService
-import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType
+import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders._
+import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
+import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, IntegrationType, PlatformType}
+import uk.gov.hmrc.integrationcatalogue.service.IntegrationService
 
 @Singleton
 class IntegrationController @Inject() (

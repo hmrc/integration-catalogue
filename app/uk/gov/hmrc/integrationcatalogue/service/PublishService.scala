@@ -16,17 +16,19 @@
 
 package uk.gov.hmrc.integrationcatalogue.service
 
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 import cats.data.Validated._
 import cats.data._
+
 import play.api.Logging
+
 import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes._
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASParserService
 import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
-
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class PublishService @Inject() (oasParser: OASParserService, integrationRepository: IntegrationRepository, uuidService: UuidService) extends Logging {

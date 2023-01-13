@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.integrationcatalogue.config
 
-import uk.gov.hmrc.integrationcatalogue.models.common.ContactInformation
-import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
+import uk.gov.hmrc.integrationcatalogue.models.common.{ContactInformation, PlatformType}
 
 object ContactInformationForPlatform {
 

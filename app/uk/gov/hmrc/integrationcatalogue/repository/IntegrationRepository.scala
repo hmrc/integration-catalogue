@@ -16,6 +16,11 @@
 
 package uk.gov.hmrc.integrationcatalogue.repository
 
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
+
 import com.mongodb.BasicDBObject
 import org.bson.BsonValue
 import org.mongodb.scala.bson.collection.immutable.Document
@@ -26,19 +31,16 @@ import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Indexes._
 import org.mongodb.scala.model.Updates.{set, setOnInsert}
 import org.mongodb.scala.model._
+
 import play.api.Logging
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
+
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.Types.IsUpdate
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, IntegrationType, PlatformType}
 import uk.gov.hmrc.integrationcatalogue.repository.MongoFormatters._
-import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
-
-import java.util.UUID
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NonFatal
 
 @Singleton
 class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)(implicit ec: ExecutionContext)

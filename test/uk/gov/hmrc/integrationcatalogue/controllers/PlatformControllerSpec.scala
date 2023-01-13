@@ -16,22 +16,22 @@
 
 package uk.gov.hmrc.integrationcatalogue.controllers
 
-import org.scalatest.BeforeAndAfterEach
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import uk.gov.hmrc.integrationcatalogue.config.AppConfig
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import org.mockito.scalatest.MockitoSugar
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import play.api.test.Helpers
-import play.api.test.Helpers._
-import uk.gov.hmrc.integrationcatalogue.models.PlatformContactResponse
-import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
-import uk.gov.hmrc.integrationcatalogue.models.common.ContactInformation
-import play.api.test.FakeRequest
 import play.api.libs.json.Json
+import play.api.test.Helpers._
+import play.api.test.{FakeRequest, Helpers}
+
+import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
+import uk.gov.hmrc.integrationcatalogue.models.PlatformContactResponse
+import uk.gov.hmrc.integrationcatalogue.models.common.{ContactInformation, PlatformType}
 
 class PlatformControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with BeforeAndAfterEach {
 

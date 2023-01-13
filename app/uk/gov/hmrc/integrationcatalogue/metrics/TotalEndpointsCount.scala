@@ -16,13 +16,15 @@
 
 package uk.gov.hmrc.integrationcatalogue.metrics
 
-import com.google.inject.Singleton
-import play.api.Logging
-import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
-import uk.gov.hmrc.mongo.metrix.MetricSource
-
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+
+import com.google.inject.Singleton
+
+import play.api.Logging
+import uk.gov.hmrc.mongo.metrix.MetricSource
+
+import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 
 @Singleton
 class TotalEndpointsCount @Inject() (val integrationRepository: IntegrationRepository) extends MetricSource with Logging {

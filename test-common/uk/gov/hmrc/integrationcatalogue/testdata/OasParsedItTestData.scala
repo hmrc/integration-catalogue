@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.integrationcatalogue.testdata
 
+import java.util.UUID
+
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, Maintainer, PlatformType, SpecificationType}
-import uk.gov.hmrc.integrationcatalogue.models._
-import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
 
-import java.util.UUID
+import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
+import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, Maintainer, PlatformType, SpecificationType}
 
 trait OasParsedItTestData {
 

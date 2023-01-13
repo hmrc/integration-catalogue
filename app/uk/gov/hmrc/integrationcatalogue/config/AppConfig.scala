@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.integrationcatalogue.config
 
+import javax.inject.{Inject, Singleton}
+
 import play.api.Configuration
 
-import javax.inject.{Inject, Singleton}
-import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
-import uk.gov.hmrc.integrationcatalogue.models.PlatformContactResponse
 import uk.gov.hmrc.integrationcatalogue.config.ContactInformationForPlatform._
+import uk.gov.hmrc.integrationcatalogue.models.PlatformContactResponse
+import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
 
 @Singleton
 class AppConfig @Inject() (config: Configuration) {

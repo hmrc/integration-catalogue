@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.integrationcatalogue.repository
 
-import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
 import play.api.libs.json._
+import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
+
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common._
 
