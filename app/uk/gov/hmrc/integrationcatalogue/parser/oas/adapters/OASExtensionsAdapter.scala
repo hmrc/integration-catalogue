@@ -60,13 +60,13 @@ trait OASExtensionsAdapter extends ExtensionKeys {
 
   private def getIntegrationCatalogueExtensionsMap(extensions: Map[String, AnyRef]): ValidatedNel[String, Map[String, AnyRef]] =
     extensions.get(EXTENSIONS_KEY) match {
-      case None    => Validated.valid(Map.empty)
+      case None                                                     => Validated.valid(Map.empty)
       case Some(e) if e.isInstanceOf[java.util.Map[String, AnyRef]] =>
         Validated.valid(e.asInstanceOf[java.util.Map[String, AnyRef]]
           .asScala
           .toMap
           .filter { case (k, _) => k != null })
-      case Some(_)  => "attribute x-integration-catalogue is not of type `object`".invalidNel[Map[String, AnyRef]]
+      case Some(_)                                                  => "attribute x-integration-catalogue is not of type `object`".invalidNel[Map[String, AnyRef]]
     }
 
   private def getBackends(extensions: Map[String, AnyRef]): ValidatedNel[String, Seq[String]] = {

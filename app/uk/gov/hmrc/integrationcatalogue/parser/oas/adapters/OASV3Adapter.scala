@@ -44,7 +44,7 @@ import uk.gov.hmrc.integrationcatalogue.service.{AcronymHelper, UuidService}
 @Singleton
 class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
     extends Logging with AcronymHelper with OASV3Validation with OASExtensionsAdapter
-      with OASV3SchemaAdapter with OASV3HeaderAdapter with OASV3ParameterAdapter {
+    with OASV3SchemaAdapter with OASV3HeaderAdapter with OASV3ParameterAdapter {
 
   def extractOpenApi(
       publisherRef: Option[String],

@@ -90,7 +90,8 @@ class IntegrationController @Inject() (
             Ok(Json.toJson(DeleteIntegrationsResponse(numberDeleted)))
           })
         case None           => Future.successful(BadRequest(
-          Json.toJson(ErrorResponse(List(ErrorResponseMessage("DeleteWithFilters no platformtype passed as filter"))))))
+            Json.toJson(ErrorResponse(List(ErrorResponseMessage("DeleteWithFilters no platformtype passed as filter"))))
+          ))
 
       }
     }

@@ -133,9 +133,9 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
   def findAndModify(integrationDetail: IntegrationDetail): Future[Either[Exception, (IntegrationDetail, IsUpdate)]] = {
     for {
       isUpdate <- collection.find(and(
-        equal("publisherReference", integrationDetail.publisherReference),
-        equal("platform", Codecs.toBson(integrationDetail.platform))
-      ))
+                    equal("publisherReference", integrationDetail.publisherReference),
+                    equal("platform", Codecs.toBson(integrationDetail.platform))
+                  ))
                     .toFuture.map(results => results.nonEmpty)
       result   <- findAndModify2(integrationDetail, isUpdate)
     } yield result
