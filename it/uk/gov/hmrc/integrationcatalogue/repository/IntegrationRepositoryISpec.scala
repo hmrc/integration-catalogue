@@ -99,12 +99,12 @@ class IntegrationRepositoryISpec
     def createTestData(): Unit = {
       val combinedFuture =
         for {
-          matchInTitle                   <- repo.findAndModify(exampleApiDetail)
-          matchInDescription             <- repo.findAndModify(exampleApiDetail2)
-          matchInHods                    <- repo.findAndModify(exampleApiDetailForSearch1)
-          matchOnDesPlatform             <- repo.findAndModify(exampleApiDetailForSearch2)
-          matchOnFileTransferPlatformOne <- repo.findAndModify(exampleFileTransfer)
-          matchOnFileTransferPlatformTwo <- repo.findAndModify(exampleFileTransfer2)
+          matchInTitle                   <- repo.findAndModify(apiDetail1)
+          matchInDescription             <- repo.findAndModify(apiDetail5)
+          matchInHods                    <- repo.findAndModify(apiDetail3)
+          matchOnDesPlatform             <- repo.findAndModify(apiDetail4)
+          matchOnFileTransferPlatformOne <- repo.findAndModify(fileTransfer2)
+          matchOnFileTransferPlatformTwo <- repo.findAndModify(fileTransfer7)
         } yield (
           matchInTitle,
           matchInDescription,
@@ -121,12 +121,13 @@ class IntegrationRepositoryISpec
       result shouldBe List.empty
 
       createTestData()
-      findWithFilters(IntegrationFilter(List.empty, List.empty)).results.size shouldBe 6
+      val x = findWithFilters(IntegrationFilter(List.empty, List.empty))
+      x.results.size shouldBe 6
     }
 
     def validateResults(results: Seq[IntegrationDetail], expectedReferences: List[String]) {
       results.size shouldBe expectedReferences.size
-      results.map(_.publisherReference) shouldBe expectedReferences
+      results.map(_.publisherReference) shouldBe (expectedReferences)
     }
 
     def validatePagedResults(integrationResponse: IntegrationResponse, expectedReferences: List[String], expectedCount: Int) {
@@ -145,12 +146,12 @@ class IntegrationRepositoryISpec
         val result = getAll
         result shouldBe List.empty
 
-        val modifyResult = await(repo.findAndModify(exampleApiDetail))
+        val modifyResult = await(repo.findAndModify(apiDetail1))
 
         modifyResult match {
           case Right((integration, _)) => {
             val result2 = await(repo.findById(integration.id))
-            validateApi(result2.get, exampleApiDetail)
+            validateApi(result2.get, apiDetail1)
           }
           case Left(_)                 => fail()
         }
@@ -165,13 +166,13 @@ class IntegrationRepositoryISpec
         val result = getAll
         result shouldBe List.empty
 
-        val modifyResult = await(repo.findAndModify(exampleApiDetail))
-        await(repo.findAndModify(exampleApiDetail2))
+        val modifyResult = await(repo.findAndModify(apiDetail1))
+        await(repo.findAndModify(apiDetail5))
         modifyResult match {
           case Right((integration, _)) => {
 
             val result2 = await(repo.findById(integration.id))
-            validateApi(result2.get, exampleApiDetail)
+            validateApi(result2.get, apiDetail1)
           }
           case Left(_) => fail()
         }
@@ -182,8 +183,8 @@ class IntegrationRepositoryISpec
         val result = getAll
         result shouldBe List.empty
 
-        await(repo.findAndModify(exampleApiDetail))
-        await(repo.findAndModify(exampleApiDetail2))
+        await(repo.findAndModify(apiDetail1))
+        await(repo.findAndModify(apiDetail5))
 
         val result2 = await(repo.findById(IntegrationId(UUID.randomUUID())))
         result2 shouldBe None
@@ -197,11 +198,11 @@ class IntegrationRepositoryISpec
         val result = getAll
         result shouldBe List.empty
 
-        val insertResult: Either[Throwable, (IntegrationDetail, Types.IsUpdate)] = await(repo.findAndModify(exampleApiDetail))
+        val insertResult: Either[Throwable, (IntegrationDetail, Types.IsUpdate)] = await(repo.findAndModify(apiDetail1))
         insertResult match {
           case Right((apiDetail: IntegrationDetail, isUpdate)) =>
             isUpdate shouldBe false
-            validateApi(apiDetail, exampleApiDetail)
+            validateApi(apiDetail, apiDetail1)
           case Right(_)                                        => fail()
           case Left(_)                                         => fail()
         }
@@ -214,11 +215,11 @@ class IntegrationRepositoryISpec
         val result = getAll
         result shouldBe List.empty
 
-        val insertResult: Either[Throwable, (IntegrationDetail, Types.IsUpdate)] = await(repo.findAndModify(exampleFileTransfer))
+        val insertResult: Either[Throwable, (IntegrationDetail, Types.IsUpdate)] = await(repo.findAndModify(fileTransfer2))
         insertResult match {
           case Right((details: FileTransferDetail, isUpdate)) =>
             isUpdate shouldBe false
-            validateFileTransfer(details, exampleFileTransfer)
+            validateFileTransfer(details, fileTransfer2)
           case Right(_)                                       => fail()
           case Left(_)                                        => fail()
         }
@@ -231,31 +232,31 @@ class IntegrationRepositoryISpec
         val result = getAll
         result shouldBe List.empty
 
-        await(repo.findAndModify(exampleApiDetail))
+        await(repo.findAndModify(apiDetail1))
 
         getAll.size shouldBe 1
 
         val savedValue = getAll.head
-        savedValue.publisherReference shouldBe exampleApiDetail.publisherReference
+        savedValue.publisherReference shouldBe apiDetail1.publisherReference
 
-        val duplicateApi = exampleApiDetail2.copy(publisherReference = exampleApiDetail.publisherReference)
+        val duplicateApi = apiDetail5.copy(publisherReference = apiDetail1.publisherReference)
 
         val updateResult = await(repo.findAndModify(duplicateApi))
         updateResult match {
           case Right((apiDetail: ApiDetail, isUpdate)) =>
             isUpdate shouldBe true
             apiDetail.id shouldBe savedValue.id
-            apiDetail.publisherReference shouldBe exampleApiDetail.publisherReference
-            apiDetail.title shouldBe exampleApiDetail2.title
-            apiDetail.description shouldBe exampleApiDetail2.description
-            apiDetail.shortDescription shouldBe exampleApiDetail2.shortDescription
-            apiDetail.lastUpdated.toString shouldBe exampleApiDetail2.lastUpdated.toString
-            apiDetail.platform shouldBe exampleApiDetail2.platform
-            apiDetail.maintainer shouldBe exampleApiDetail2.maintainer
-            apiDetail.version shouldBe exampleApiDetail2.version
-            apiDetail.specificationType shouldBe exampleApiDetail2.specificationType
-            apiDetail.hods shouldBe exampleApiDetail2.hods
-            apiDetail.openApiSpecification shouldBe exampleApiDetail2.openApiSpecification
+            apiDetail.publisherReference shouldBe apiDetail1.publisherReference
+            apiDetail.title shouldBe apiDetail5.title
+            apiDetail.description shouldBe apiDetail5.description
+            apiDetail.shortDescription shouldBe apiDetail5.shortDescription
+            apiDetail.lastUpdated.toString shouldBe apiDetail5.lastUpdated.toString
+            apiDetail.platform shouldBe apiDetail5.platform
+            apiDetail.maintainer shouldBe apiDetail5.maintainer
+            apiDetail.version shouldBe apiDetail5.version
+            apiDetail.specificationType shouldBe apiDetail5.specificationType
+            apiDetail.hods shouldBe apiDetail5.hods
+            apiDetail.openApiSpecification shouldBe apiDetail5.openApiSpecification
           case Right(_)                                => fail()
           case Left(_)                                 => fail()
         }
@@ -268,10 +269,10 @@ class IntegrationRepositoryISpec
     "deleteByPlatformType" should {
       "return 2 when delete by platformType called against collection with 2 matching apis" in {
 
-        await(repo.findAndModify(exampleApiDetail))
-        await(repo.findAndModify(exampleFileTransfer))
-        await(repo.findAndModify(exampleApiDetailForSearch1))
-        await(repo.findAndModify(exampleApiDetailForSearch2))
+        await(repo.findAndModify(apiDetail1))
+        await(repo.findAndModify(fileTransfer2))
+        await(repo.findAndModify(apiDetail3))
+        await(repo.findAndModify(apiDetail4))
 
         val result2 = getAll
         result2.size shouldBe 4
@@ -286,9 +287,9 @@ class IntegrationRepositoryISpec
       }
 
       "return 0 when delete by platformType called against collection with zero matching apis" in {
-        await(repo.findAndModify(exampleApiDetail))
-        await(repo.findAndModify(exampleApiDetailForSearch1))
-        await(repo.findAndModify(exampleApiDetailForSearch2))
+        await(repo.findAndModify(apiDetail1))
+        await(repo.findAndModify(apiDetail3))
+        await(repo.findAndModify(apiDetail4))
 
         val result2 = getAll
         result2.size shouldBe 3
@@ -306,8 +307,8 @@ class IntegrationRepositoryISpec
 
       "delete the api with the given integrationId if it exists" in {
 
-        await(repo.findAndModify(exampleApiDetail2))
-        val result = await(repo.findAndModify(exampleApiDetail))
+        await(repo.findAndModify(apiDetail5))
+        val result = await(repo.findAndModify(apiDetail1))
         result match {
           case Left(_)                                    => fail()
           case Right((integration: IntegrationDetail, _)) =>
@@ -318,7 +319,7 @@ class IntegrationRepositoryISpec
 
             val result3 = getAll
             result3.size shouldBe 1
-            validateApi(result3.head, exampleApiDetail2)
+            validateApi(result3.head, apiDetail5)
         }
 
       }
@@ -327,8 +328,8 @@ class IntegrationRepositoryISpec
         val result = getAll
         result shouldBe List.empty
 
-        await(repo.findAndModify(exampleApiDetail))
-        await(repo.findAndModify(exampleApiDetail2))
+        await(repo.findAndModify(apiDetail1))
+        await(repo.findAndModify(apiDetail5))
 
         val result2 = getAll
         result2.size shouldBe 2
@@ -347,94 +348,94 @@ class IntegrationRepositoryISpec
 
         validatePagedResults(
           findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(1), itemsPerPage = Some(2))),
-          List("API1007", "API1002"),
+          List("API1002", "API1007"),
           6
         )
         validatePagedResults(
           findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(2), itemsPerPage = Some(2))),
-          List("API1003", "API1004"),
+          List("API1001", "API1003"),
           6
         )
         validatePagedResults(
           findWithFilters(IntegrationFilter(List.empty, List.empty, currentPage = Some(3), itemsPerPage = Some(2))),
-          List("API1001", "API1005"),
+          List("API1004", "API1005"),
           6
         )
       }
 
-//      "find 3 results when searching for text that exists in title, endpoint summary with no platform filters" in new FilterSetup {
-//        setUpTest()
-//        validateResults(findWithFilters(IntegrationFilter(List("BOOP"), List.empty)).results, List("API1005", "API1003", "API1004"))
-//      }
-//
-//      "find 2 results when searching for text that existing in endpoint description with no platform filters" in new FilterSetup {
-//        setUpTest()
-//        validateResults(findWithFilters(IntegrationFilter(List("DEEPSEARCH"), List.empty)).results, List("API1003", "API1004"))
-//
-//      }
-//
-//      "find 2 results when searching for text that existing in endpoint description but uses stemming with no platform filters" in new FilterSetup {
-//        setUpTest()
-//        validateResults(findWithFilters(IntegrationFilter(List("DEEPSEARCHES"), List.empty)).results, List("API1003", "API1004"))
-//      }
-//
-//      "find 5 results when searching for text that exists in all records with no platform filters" in new FilterSetup {
-//        setUpTest()
-//        validateResults(findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List.empty)).results, List("API1001", "API1005", "API1002", "API1003", "API1004"))
-//      }
-//
-//      "find 1 result when searching for for text that exists in all records & DES platform" in new FilterSetup {
-//        setUpTest()
-//        validateResults(findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List(DES))).results, List("API1004"))
-//      }
-//
-//      "find 5 results when searching for text that exists in all records & DES or CORE_IF platforms" in new FilterSetup {
-//        setUpTest()
-//        validateResults(
-//          findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List(DES, CORE_IF))).results,
-//          List("API1001", "API1005", "API1002", "API1003", "API1004")
-//        )
-//      }
-//
-//      "find 2 results when searching for backend CUSTOMS" in new FilterSetup {
-//        setUpTest()
-//        validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS"))).results, List("API1003", "API1004"))
-//      }
-//
-//      "find 3 result when searching for backend CUSTOMS and ETMP" in new FilterSetup {
-//        setUpTest()
-//        validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP"))).results, List("API1003", "API1004", "API1005"))
-//      }
-//
-//      "find 1 result when searching for backend source " in new FilterSetup {
-//        setUpTest()
-//        validateResults(findWithFilters(IntegrationFilter(backends = List("source"))).results, List("API1002"))
-//      }
-//
-//      "find 1 result when searching for backend target " in new FilterSetup {
-//        setUpTest()
-//        validateResults(findWithFilters(IntegrationFilter(backends = List("target"))).results, List("API1007", "API1002"))
-//      }
-//
-//      "find 2 result when searching for backend source and target " in new FilterSetup {
-//        setUpTest()
-//        validateResults(findWithFilters(IntegrationFilter(backends = List("source", "target"))).results, List("API1007", "API1002"))
-//      }
-//
-//      "find 4 result when searching for backend CUSTOMS, ETMP and source" in new FilterSetup {
-//        setUpTest()
-//        validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP", "source"))).results, List("API1003", "API1004", "API1002", "API1005"))
-//      }
-//
-//      "find 2 file transfers when searching for type File Transfer" in new FilterSetup {
-//        setUpTest()
-//        validateResults(findWithFilters(IntegrationFilter(typeFilter = Some(FILE_TRANSFER))).results, List("API1007", "API1002"))
-//      }
-//
-//      "find 4 apis when searching for type API" in new FilterSetup {
-//        setUpTest()
-//        validateResults(findWithFilters(IntegrationFilter(typeFilter = Some(API))).results, List("API1003", "API1004", "API1001", "API1005"))
-//      }
+      "find 3 results when searching for text that exists in title, endpoint summary with no platform filters" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(List("BOOP"), List.empty)).results, List("API1005", "API1003", "API1004"))
+      }
+
+      "find 1 result when searching for text that exists in endpoint description with no platform filters" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(List("DEEPSEARCH"), List.empty)).results, List("API1003"))
+
+      }
+
+      "find 1 result when searching for text that exists in endpoint description but uses stemming with no platform filters" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(List("DEEPSEARCHES"), List.empty)).results, List("API1003"))
+      }
+
+      "find 2 results when searching for text getKnownFactsDesc with no platform filters" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List.empty)).results, List("API1001", "API1004"))
+      }
+
+      "find 1 result when searching for for text that exists in all records & DES platform" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List(DES))).results, List("API1004"))
+      }
+
+      "find 2 results when searching for text getKnownFactsDesc & DES or CORE_IF platforms" in new FilterSetup {
+        setUpTest()
+        validateResults(
+          findWithFilters(IntegrationFilter(List("getKnownFactsDesc"), List(DES, CORE_IF))).results,
+          List("API1001", "API1004")
+        )
+      }
+
+      "find 2 results when searching for backend CUSTOMS" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS"))).results, List("API1003", "API1004"))
+      }
+
+      "find 3 result when searching for backend CUSTOMS and ETMP" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP"))).results, List("API1003", "API1004", "API1005"))
+      }
+
+      "find 1 result when searching for backend source " in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(backends = List("source"))).results, List("API1002"))
+      }
+
+      "find 1 result when searching for backend target " in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(backends = List("target"))).results, List("API1002", "API1007"))
+      }
+
+      "find 2 result when searching for backend source and target " in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(backends = List("source", "target"))).results, List("API1002", "API1007"))
+      }
+
+      "find 4 result when searching for backend CUSTOMS, ETMP and source" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP", "source"))).results, List("API1002", "API1003", "API1004", "API1005"))
+      }
+
+      "find 2 file transfers when searching for type File Transfer" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(typeFilter = Some(FILE_TRANSFER))).results, List("API1002", "API1007"))
+      }
+
+      "find 4 apis when searching for type API" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(typeFilter = Some(API))).results, List("API1001", "API1003", "API1004", "API1005"))
+      }
 
     }
 
@@ -459,9 +460,9 @@ class IntegrationRepositoryISpec
 
     "getFileTransferTransportsByPlatform" should {
       def setupFileTransfers() = {
-        await(repo.findAndModify(exampleFileTransfer))  // CORE_IF | source -> target | transports = UTM
-        await(repo.findAndModify(exampleFileTransfer2)) // API_PLATFORM | someSource -> target | transports = S3
-        await(repo.findAndModify(exampleFileTransfer3)) // API_PLATFORM | someSource -> target | transports = S3, WTM
+        await(repo.findAndModify(fileTransfer2)) // CORE_IF | source -> target | transports = UTM
+        await(repo.findAndModify(fileTransfer7)) // API_PLATFORM | someSource -> target | transports = S3
+        await(repo.findAndModify(fileTransfer8)) // API_PLATFORM | someSource -> target | transports = S3, WTM
       }
 
       "return all transports when no source and target are provided" in {
@@ -523,7 +524,7 @@ class IntegrationRepositoryISpec
       }
 
       "return 0 when there are none APIs in the DB" in new FilterSetup {
-        await(repo.findAndModify(exampleFileTransfer))
+        await(repo.findAndModify(fileTransfer2))
 
         await(repo.getTotalEndpointsCount()) shouldBe 0
       }

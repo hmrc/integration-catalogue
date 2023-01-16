@@ -60,7 +60,6 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(publisherReference, PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case Invalid(errors: NonEmptyList[List[String]]) =>
-          println(s"*****${errors.head.mkString}")
           errors.head.contains(expectedErrorMessage) shouldBe true
         case _                                           => fail()
       }

@@ -66,8 +66,8 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
   trait Setup {
 
     val publishRequest: PublishRequest = PublishRequest(
-      publisherReference = Some(exampleApiDetail.publisherReference),
-      platformType = exampleApiDetail.platform,
+      publisherReference = Some(apiDetail1.publisherReference),
+      platformType = apiDetail1.platform,
       specificationType = SpecificationType.OAS_V3,
       contents = fileContents
     )
