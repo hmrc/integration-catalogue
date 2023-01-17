@@ -5,7 +5,7 @@ import uk.gov.hmrc.DefaultBuildSettings
 
 val appName = "integration-catalogue"
 
-val silencerVersion = "1.7.0"
+val silencerVersion = "1.7.6"
 
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
 
@@ -21,7 +21,7 @@ lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
   .settings(
     majorVersion                     := 0,
-    scalaVersion                     := "2.12.12",
+    scalaVersion                     := "2.12.15",
     routesImport                     += "uk.gov.hmrc.integrationcatalogue.controllers.binders._",
     libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test,
     Test / unmanagedSourceDirectories += baseDirectory(_ / "test-common").value,
