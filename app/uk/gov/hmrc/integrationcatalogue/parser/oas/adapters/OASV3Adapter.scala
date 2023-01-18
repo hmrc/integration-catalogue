@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,11 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
+import java.util
+import javax.inject.{Inject, Singleton}
+import scala.collection.JavaConverters._
+import scala.collection.mutable.LinkedHashSet
+
 import cats.data.Validated._
 import cats.data._
 import cats.implicits._
@@ -27,21 +32,19 @@ import io.swagger.v3.oas.models.parameters.RequestBody
 import io.swagger.v3.oas.models.responses.{ApiResponse, ApiResponses}
 import io.swagger.v3.oas.models.{OpenAPI, Operation, PathItem}
 import org.joda.time.DateTime
+
 import play.api.Logging
+
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common._
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASV3Validation
 import uk.gov.hmrc.integrationcatalogue.service.{AcronymHelper, UuidService}
 
-import java.util
-import javax.inject.{Inject, Singleton}
-import scala.collection.JavaConverters._
-import scala.collection.mutable.LinkedHashSet
-
 @Singleton
 class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
-    extends Logging with AcronymHelper with OASV3Validation with OASExtensionsAdapter with OASV3SchemaAdapter with OASV3HeaderAdapter with OASV3ParameterAdapter {
+    extends Logging with AcronymHelper with OASV3Validation with OASExtensionsAdapter
+    with OASV3SchemaAdapter with OASV3HeaderAdapter with OASV3ParameterAdapter {
 
   def extractOpenApi(
       publisherRef: Option[String],

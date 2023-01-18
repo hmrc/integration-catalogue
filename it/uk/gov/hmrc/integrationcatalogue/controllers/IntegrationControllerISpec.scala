@@ -61,10 +61,10 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
     "GET /integrations" should {
 
       def setupFilterTestDataAndRunTest(searchTerm: String, expectedResult: Int, expectedReferences: List[String], expectedCount: Option[Int] = None) {
-        await(apiRepo.findAndModify(exampleApiDetail))
-        await(apiRepo.findAndModify(exampleApiDetail2))
-        await(apiRepo.findAndModify(exampleApiDetailForSearch2))
-        await(apiRepo.findAndModify(exampleFileTransfer))
+        await(apiRepo.findAndModify(apiDetail1))
+        await(apiRepo.findAndModify(apiDetail5))
+        await(apiRepo.findAndModify(apiDetail4))
+        await(apiRepo.findAndModify(fileTransfer2))
 
         val result = callGetEndpoint(s"$url/integrations?$searchTerm")
         result.status mustBe expectedResult
@@ -86,11 +86,11 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       }
 
       "respond with 200 and return 2 Apis for the first page when using no search term or filter" in {
-        setupFilterTestDataAndRunTest("itemsPerPage=2&currentPage=1", OK, List(exampleApiDetailForSearch2.publisherReference, exampleApiDetail.publisherReference), Some(4))
+        setupFilterTestDataAndRunTest("itemsPerPage=2&currentPage=1", OK, List(fileTransfer2.publisherReference, apiDetail1.publisherReference), Some(4))
       }
 
       "respond with 200 and return 2 Apis for the second page when using no search term or filter" in {
-        setupFilterTestDataAndRunTest("itemsPerPage=2&currentPage=2", OK, List(exampleFileTransfer.publisherReference, exampleApiDetail2.publisherReference), Some(4))
+        setupFilterTestDataAndRunTest("itemsPerPage=2&currentPage=2", OK, List(apiDetail4.publisherReference, apiDetail5.publisherReference), Some(4))
       }
 
       "respond with 200 and return 0 Apis for the third page when using no search term or filter" in {
@@ -98,7 +98,7 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       }
 
       "respond with 200 and return 2 Apis for the first page when no currentPage is passed in with no search term or filter" in {
-        setupFilterTestDataAndRunTest("itemsPerPage=2", OK, List(exampleApiDetailForSearch2.publisherReference, exampleApiDetail.publisherReference), Some(4))
+        setupFilterTestDataAndRunTest("itemsPerPage=2", OK, List(fileTransfer2.publisherReference, apiDetail1.publisherReference), Some(4))
       }
 
       "respond with 200 and return all 4 Apis and ignore paging when passing in currentPage=1 with no search term or filter" in {
@@ -106,17 +106,17 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
           "currentPage=1",
           OK,
           List(
-            exampleApiDetailForSearch2.publisherReference,
-            exampleApiDetail.publisherReference,
-            exampleFileTransfer.publisherReference,
-            exampleApiDetail2.publisherReference
+            fileTransfer2.publisherReference,
+            apiDetail1.publisherReference,
+            apiDetail4.publisherReference,
+            apiDetail5.publisherReference
           ),
           Some(4)
         )
       }
 
       "respond with 200 and return matching Api when searching by searchTerm" in {
-        setupFilterTestDataAndRunTest("searchTerm=API1001", OK, List(exampleApiDetail.publisherReference))
+        setupFilterTestDataAndRunTest("searchTerm=API1001", OK, List(apiDetail1.publisherReference))
       }
 
       "respond with 200 and return no matching integrations when searching by searchTerm" in {
@@ -126,14 +126,14 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       }
 
       "respond with 200 and return DES api when searching by searchTerm=getKnownFactsName, platformFilter=DES and backendsFilter=CUSTOMS" in {
-        setupFilterTestDataAndRunTest("searchTerm=getKnownFactsName&platformFilter=DES&backendsFilter=CUSTOMS", OK, List(exampleApiDetailForSearch2.publisherReference))
+        setupFilterTestDataAndRunTest("searchTerm=getKnownFactsName&platformFilter=DES&backendsFilter=CUSTOMS", OK, List(apiDetail4.publisherReference))
       }
 
       "respond with 200 and return 2 CORE_IF apis and 1 file transfer when filtering by CORE_IF platform" in {
         setupFilterTestDataAndRunTest(
           "platformFilter=CORE_IF",
           OK,
-          List(exampleApiDetail.publisherReference, exampleFileTransfer.publisherReference, exampleApiDetail2.publisherReference)
+          List(fileTransfer2.publisherReference, apiDetail1.publisherReference, apiDetail5.publisherReference)
         )
       }
 
@@ -154,10 +154,10 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
           "",
           OK,
           List(
-            exampleApiDetailForSearch2.publisherReference,
-            exampleApiDetail.publisherReference,
-            exampleFileTransfer.publisherReference,
-            exampleApiDetail2.publisherReference
+            fileTransfer2.publisherReference,
+            apiDetail1.publisherReference,
+            apiDetail4.publisherReference,
+            apiDetail5.publisherReference
           )
         )
       }
@@ -166,7 +166,7 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
         setupFilterTestDataAndRunTest(
           "backendsFilter=CUSTOMS",
           OK,
-          List(exampleApiDetailForSearch2.publisherReference)
+          List(apiDetail4.publisherReference)
         )
       }
 
@@ -174,7 +174,7 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
         setupFilterTestDataAndRunTest(
           "backendsFilter=CUSTOMS&backendsFilter=source",
           OK,
-          List(exampleApiDetailForSearch2.publisherReference, exampleFileTransfer.publisherReference)
+          List(fileTransfer2.publisherReference, apiDetail4.publisherReference)
         )
       }
 
@@ -183,15 +183,15 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
           "integrationType=API",
           OK,
           List(
-            exampleApiDetailForSearch2.publisherReference,
-            exampleApiDetail.publisherReference,
-            exampleApiDetail2.publisherReference
+            apiDetail1.publisherReference,
+            apiDetail4.publisherReference,
+            apiDetail5.publisherReference
           )
         )
       }
 
       "respond with 200 and return all File Transfers when filtering by FILE_TRANSFER type" in {
-        setupFilterTestDataAndRunTest("integrationType=FILE_TRANSFER", OK, List(exampleFileTransfer.publisherReference))
+        setupFilterTestDataAndRunTest("integrationType=FILE_TRANSFER", OK, List(fileTransfer2.publisherReference))
       }
 
     }
@@ -199,8 +199,8 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
     "GET /integrations/:id" should {
       "respond with integration when search for existing CDS_CLASSIC integration " in {
 
-        await(apiRepo.findAndModify(exampleApiDetail2))
-        val result1 = await(apiRepo.findAndModify(exampleApiDetail3))
+        await(apiRepo.findAndModify(apiDetail5))
+        val result1 = await(apiRepo.findAndModify(apiDetail6))
 
         result1 match {
           case Left(_)                                    => fail()
@@ -209,8 +209,8 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
             result.status mustBe OK
 
             val response = Json.parse(result.body).as[IntegrationDetail]
-            response.publisherReference mustBe exampleApiDetail3.publisherReference
-            response.platform mustBe exampleApiDetail3.platform
+            response.publisherReference mustBe apiDetail6.publisherReference
+            response.platform mustBe apiDetail6.platform
         }
 
       }
@@ -223,8 +223,8 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
       "respond with 404 when integration not found" in {
 
-        await(apiRepo.findAndModify(exampleApiDetail))
-        await(apiRepo.findAndModify(exampleApiDetail2))
+        await(apiRepo.findAndModify(apiDetail1))
+        await(apiRepo.findAndModify(apiDetail5))
 
         val result = callGetEndpoint(s"$url/integrations/${UUID.randomUUID}")
         result.status mustBe NOT_FOUND
@@ -236,12 +236,12 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
     "GET  /report " should {
 
       "respond with correct report when integrations exist" in {
-        await(apiRepo.findAndModify(exampleApiDetail))           // CORE_IF - API
-        await(apiRepo.findAndModify(exampleApiDetailForSearch1)) // CORE_IF - API
-        await(apiRepo.findAndModify(exampleApiDetailForSearch2)) // DES - API
-        await(apiRepo.findAndModify(exampleApiDetail3))          // CDS_CLASSIC - API
-        await(apiRepo.findAndModify(exampleFileTransfer))        // CORE_IF - FILE_TRANSFER
-        await(apiRepo.findAndModify(exampleFileTransfer2))       // API_PLATFORM - FILE_TRANSFER
+        await(apiRepo.findAndModify(apiDetail1))    // CORE_IF - API
+        await(apiRepo.findAndModify(apiDetail3))    // CORE_IF - API
+        await(apiRepo.findAndModify(apiDetail4))    // DES - API
+        await(apiRepo.findAndModify(apiDetail6))    // CDS_CLASSIC - API
+        await(apiRepo.findAndModify(fileTransfer2)) // CORE_IF - FILE_TRANSFER
+        await(apiRepo.findAndModify(fileTransfer7)) // API_PLATFORM - FILE_TRANSFER
 
         val expectedResults = List(
           IntegrationPlatformReport(API_PLATFORM, FILE_TRANSFER, 1),
@@ -259,9 +259,9 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
     "GET /filetransfers/platform/transports" should {
       def setupFileTransfers() {
 
-        await(apiRepo.findAndModify(exampleFileTransfer))  // CORE_IF | source -> target | transports = UTM
-        await(apiRepo.findAndModify(exampleFileTransfer2)) // API_PLATFORM | someSource -> target | transports = S3
-        await(apiRepo.findAndModify(exampleFileTransfer3)) // API_PLATFORM | someSource -> target | transports = S3, WTM
+        await(apiRepo.findAndModify(fileTransfer2)) // CORE_IF | source -> target | transports = UTM
+        await(apiRepo.findAndModify(fileTransfer7)) // API_PLATFORM | someSource -> target | transports = S3
+        await(apiRepo.findAndModify(fileTransfer8)) // API_PLATFORM | someSource -> target | transports = S3, WTM
       }
       "return all transports when called without query params" in {
         setupFileTransfers()
@@ -311,7 +311,7 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
     "DELETE /integrations/:integrationId" should {
       "not remove integration when integrationId does not exist" in {
 
-        val result = callDeleteEndpoint(s"$url/integrations/${exampleApiDetail.id.value}")
+        val result = callDeleteEndpoint(s"$url/integrations/${apiDetail1.id.value}")
         result.status mustBe NOT_FOUND
 
       }
@@ -346,7 +346,7 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
       }
       "return 204 when single platform type filters is provided" in {
-        await(apiRepo.findAndModify(exampleApiDetail))
+        await(apiRepo.findAndModify(apiDetail1))
         val result = callDeleteEndpoint(s"$url/integrations?platformFilter=CORE_IF")
         result.status mustBe OK
         result.body mustBe "{\"numberOfIntegrationsDeleted\":1}"

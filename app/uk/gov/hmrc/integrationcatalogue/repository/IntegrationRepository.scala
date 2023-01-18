@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,10 @@
 
 package uk.gov.hmrc.integrationcatalogue.repository
 
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 import com.mongodb.BasicDBObject
 import org.bson.BsonValue
 import org.mongodb.scala.bson.collection.immutable.Document
@@ -26,19 +30,16 @@ import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Indexes._
 import org.mongodb.scala.model.Updates.{set, setOnInsert}
 import org.mongodb.scala.model._
+
 import play.api.Logging
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
+
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.Types.IsUpdate
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, IntegrationType, PlatformType}
 import uk.gov.hmrc.integrationcatalogue.repository.MongoFormatters._
-import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
-
-import java.util.UUID
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NonFatal
 
 @Singleton
 class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)(implicit ec: ExecutionContext)
@@ -64,30 +65,6 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
     with Logging {
 
   // https://docs.mongodb.com/manual/core/index-text/#wildcard-text-indexes
-
-  private def ensureLocalIndexes() = {
-    Future.sequence(
-      List(
-        Future.successful(config.oldIndexesToDrop.map(indexToDrop => {
-          collection.dropIndex(indexToDrop)
-            .toFuture
-            .map(_ => logger.info(s"dropping index $indexToDrop succeeded"))
-            .recover {
-              case NonFatal(e) => logger.info(s"dropping index $indexToDrop failed ${e.getMessage}")
-              case _           => logger.info(s"dropping index $indexToDrop failed")
-            }
-        })),
-        collection.createIndexes(models = indexes)
-          .toFuture().map(results => results.map(i => logger.info(s"created Index $i")))
-      )
-    )
-
-  }
-
-  override def ensureIndexes: Future[Seq[String]] = {
-    ensureLocalIndexes()
-    super.ensureIndexes
-  }
 
   private def determineUpdateOp2(integrationDetail: IntegrationDetail) = {
     integrationDetail.integrationType match {
@@ -130,7 +107,10 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
 
   def findAndModify(integrationDetail: IntegrationDetail): Future[Either[Exception, (IntegrationDetail, IsUpdate)]] = {
     for {
-      isUpdate <- collection.find(and(equal("publisherReference", integrationDetail.publisherReference), equal("platform", Codecs.toBson(integrationDetail.platform))))
+      isUpdate <- collection.find(and(
+                    equal("publisherReference", integrationDetail.publisherReference),
+                    equal("platform", Codecs.toBson(integrationDetail.platform))
+                  ))
                     .toFuture.map(results => results.nonEmpty)
       result   <- findAndModify2(integrationDetail, isUpdate)
     } yield result
@@ -170,7 +150,7 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
       if (perPageFilter.isDefined) Some(results.size) else None
     }
 
-    def buildFilters() = {
+    def buildFilters(): Seq[Bson] = {
       val integrationTypeFilter    = filter.typeFilter.map(typeVal => Filters.equal("_type", typeVal.integrationType))
       val textFilter: Option[Bson] = filter.searchText.headOption.map(searchText => Filters.text(searchText))
       val platformFilter           = if (filter.platforms.nonEmpty) Some(Filters.in("platform", filter.platforms.map(Codecs.toBson(_)): _*)) else None
@@ -185,12 +165,12 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
 
     val filters = buildFilters()
 
-    val sortByScore     = Sorts.metaTextScore("score")
-    val scoreProjection = Projections.metaTextScore("score")
-    val sortOp          = if (filter.searchText.headOption.isEmpty) ascending("title") else sortByScore
-    val perPage         = filter.itemsPerPage.getOrElse(0)
-    val currentPage     = filter.currentPage.getOrElse(1)
-    val skipAmount      = if (currentPage > 1) (currentPage - 1) * perPage else 0
+    val sortByScore          = Sorts.metaTextScore("score")
+    val mayBeScoreProjection = filter.searchText.headOption.map(_ => Projections.metaTextScore("score"))
+    val sortOp               = if (filter.searchText.headOption.isEmpty) ascending("title") else sortByScore
+    val perPage              = filter.itemsPerPage.getOrElse(0)
+    val currentPage          = filter.currentPage.getOrElse(1)
+    val skipAmount           = if (currentPage > 1) (currentPage - 1) * perPage else 0
     if (filters.isEmpty) {
       for {
         count   <- collection.countDocuments.toFuture()
@@ -204,13 +184,15 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
     } else {
       for {
         count   <- collection.countDocuments(and(filters: _*)).toFuture()
-        results <- collection.find(and(filters: _*))
-                     .projection(scoreProjection)
-                     .sort(sortOp)
-                     .skip(skipAmount)
-                     .limit(perPage)
-                     .toFuture()
-                     .map(_.toList)
+        results <-
+          (mayBeScoreProjection match {
+            case None          => collection.find(and(filters: _*))
+            case Some(x: Bson) => collection.find(and(filters: _*)).projection(x)
+          }).sort(sortOp)
+            .skip(skipAmount)
+            .limit(perPage)
+            .toFuture()
+            .map(_.toList)
       } yield IntegrationResponse(count.toInt, sendPagedResults(results, filter.itemsPerPage), results)
     }
   }

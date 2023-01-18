@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,20 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
+import java.util
+import scala.collection.JavaConverters._
+import scala.util.{Failure, Success, Try}
+
 import cats.data.Validated._
 import cats.data._
 import cats.implicits._
 import io.swagger.v3.oas.models.info.Info
-
-import java.util
-import scala.collection.JavaConverters._
+import org.joda.time.DateTime
+import org.joda.time.format.ISODateTimeFormat
 
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
-import org.joda.time.DateTime
-import scala.util.Try
-import scala.util.Failure
-import scala.util.Success
-import org.joda.time.format.ISODateTimeFormat
 
 trait OASExtensionsAdapter extends ExtensionKeys {
 
@@ -138,7 +136,8 @@ trait OASExtensionsAdapter extends ExtensionKeys {
       case Some(x: String)           => handleMultiplePublisherReferences(publisherReference, x)
       case Some(x: Integer)          => handleMultiplePublisherReferences(publisherReference, x.toString)
       case Some(x: java.lang.Double) => handleMultiplePublisherReferences(publisherReference, x.toString)
-      case Some(o)                   => s"Invalid value. Expected a string, integer or double but found value: $o of type ${o.getClass.toString}".invalidNel[String]
+      case Some(o)                   =>
+        s"Invalid value. Expected a string, integer or double but found value: $o of type ${o.getClass.toString}".invalidNel[String]
     }
   }
 }

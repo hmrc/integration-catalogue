@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.integrationcatalogue.utils
 
-import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 
 trait AwaitTestSupport {
   def await[A](future: Future[A], timeout: Duration = 5 seconds): A = Await.result(future, timeout)

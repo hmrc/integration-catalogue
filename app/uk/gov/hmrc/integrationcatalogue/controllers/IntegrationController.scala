@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,19 @@
 
 package uk.gov.hmrc.integrationcatalogue.controllers
 
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.{Action, _}
-import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
-import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformType}
-import uk.gov.hmrc.integrationcatalogue.models._
-import uk.gov.hmrc.integrationcatalogue.service.IntegrationService
-import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType
+import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders._
+import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
+import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, IntegrationType, PlatformType}
+import uk.gov.hmrc.integrationcatalogue.service.IntegrationService
 
 @Singleton
 class IntegrationController @Inject() (
@@ -89,7 +89,9 @@ class IntegrationController @Inject() (
             logger.warn(s"DeleteWithFilters numberDeleted is $numberDeleted PlatformFilters: ${valuesOrNone(platformFilter.map(_.toString))}")
             Ok(Json.toJson(DeleteIntegrationsResponse(numberDeleted)))
           })
-        case None           => Future.successful(BadRequest(Json.toJson(ErrorResponse(List(ErrorResponseMessage("DeleteWithFilters no platformtype passed as filter"))))))
+        case None           => Future.successful(BadRequest(
+            Json.toJson(ErrorResponse(List(ErrorResponseMessage("DeleteWithFilters no platformtype passed as filter"))))
+          ))
 
       }
     }

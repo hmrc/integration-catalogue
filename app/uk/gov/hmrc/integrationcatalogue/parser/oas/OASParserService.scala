@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,19 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas
 
+import javax.inject.{Inject, Singleton}
+import scala.collection.JavaConverters._
+
 import cats.data.Validated._
 import cats.data._
 import cats.implicits._
 import io.swagger.v3.oas.models.OpenAPI
+
 import play.api.Logging
+
 import uk.gov.hmrc.integrationcatalogue.models.ApiDetail
 import uk.gov.hmrc.integrationcatalogue.models.common._
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.OASV3Adapter
-
-import javax.inject.{Inject, Singleton}
-import scala.collection.JavaConverters._
 
 @Singleton
 class OASParserService @Inject() (oasParser: OASFileLoader, oasV3Service: OASV3Adapter) extends Logging {

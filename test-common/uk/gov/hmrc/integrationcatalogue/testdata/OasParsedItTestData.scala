@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.integrationcatalogue.testdata
 
+import java.util.UUID
+
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, Maintainer, PlatformType, SpecificationType}
-import uk.gov.hmrc.integrationcatalogue.models._
-import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
 
-import java.util.UUID
+import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
+import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, Maintainer, PlatformType, SpecificationType}
 
 trait OasParsedItTestData {
 
@@ -97,10 +98,10 @@ trait OasParsedItTestData {
 
   val endpointsNoDeepSearch = List(Endpoint("/some/url", List(getEndpoint1, putEndpoint1)))
 
-  val exampleApiDetail: ApiDetail = ApiDetail(
+  val apiDetail1: ApiDetail = ApiDetail(
     IntegrationId(UUID.fromString("dda7249a-9b88-11eb-a8b3-0242ac130003")),
     publisherReference = "API1001",
-    title = "getKnownFactsName ETMP",
+    title = "getKnownFactsName 1 ETMP",
     description = "getKnownFactsDesc",
     lastUpdated = dateValue,
     platform = PlatformType.CORE_IF,
@@ -116,62 +117,11 @@ trait OasParsedItTestData {
     reviewedDate = reviewedDate
   )
 
-  val exampleFileTransfer: FileTransferDetail =
-    FileTransferDetail(
-      IntegrationId(UUID.fromString("e2e4ce48-29b0-11eb-adc1-0242ac120002")),
-      fileTransferSpecificationVersion = "0.1",
-      publisherReference = "API1002",
-      title = "getKnownFactsName ETMP",
-      description = "getKnownFactsDesc",
-      lastUpdated = dateValue,
-      reviewedDate = reviewedDate,
-      platform = PlatformType.CORE_IF,
-      maintainer = coreIfMaintainer,
-      sourceSystem = List("source"),
-      targetSystem = List("target"),
-      transports = List("UTM"),
-      fileTransferPattern = "pattern1"
-    )
-
-  val exampleFileTransfer2: FileTransferDetail =
-    FileTransferDetail(
-      IntegrationId(UUID.fromString("8f8190dc-d992-11eb-b8bc-0242ac130003")),
-      fileTransferSpecificationVersion = "0.1",
-      publisherReference = "API1007",
-      title = "filetransfer 2",
-      description = "file transfer 2 desc",
-      lastUpdated = dateValue,
-      reviewedDate = reviewedDate,
-      platform = PlatformType.API_PLATFORM,
-      maintainer = apiPlatformMaintainer,
-      sourceSystem = List("someSource"),
-      targetSystem = List("target"),
-      transports = List("AB"),
-      fileTransferPattern = "pattern3"
-    )
-
-  val exampleFileTransfer3: FileTransferDetail =
-    FileTransferDetail(
-      IntegrationId(UUID.fromString("8f8190dc-d992-11eb-b8bc-0242ac130003")),
-      fileTransferSpecificationVersion = "0.1",
-      publisherReference = "API1007",
-      title = "filetransfer 2",
-      description = "file transfer 2 desc",
-      lastUpdated = dateValue,
-      reviewedDate = reviewedDate,
-      platform = PlatformType.API_PLATFORM,
-      maintainer = apiPlatformMaintainer,
-      sourceSystem = List("someSource"),
-      targetSystem = List("target"),
-      transports = List("WTM", "AB", "S3"),
-      fileTransferPattern = "pattern3"
-    )
-
-  val exampleApiDetailForSearch1: ApiDetail = ApiDetail(
+  val apiDetail3: ApiDetail = ApiDetail(
     IntegrationId(UUID.fromString("fab1868e-9b88-11eb-a8b3-0242ac130003")),
     publisherReference = "API1003",
-    title = "getKnownFactsName",
-    description = "getKnownFactsDesc ETMP",
+    title = "getKnownFactsName 3",
+    description = "api detail 3",
     lastUpdated = dateValue,
     platform = PlatformType.CORE_IF,
     maintainer = coreIfMaintainer,
@@ -186,10 +136,10 @@ trait OasParsedItTestData {
     reviewedDate = reviewedDate
   )
 
-  val exampleApiDetailForSearch2: ApiDetail = ApiDetail(
+  val apiDetail4: ApiDetail = ApiDetail(
     IntegrationId(UUID.fromString("e2e4ce48-29b0-11eb-adc1-0242ac120001")),
     publisherReference = "API1004",
-    title = "getKnownFactsName",
+    title = "getKnownFactsName 4",
     description = "getKnownFactsDesc ETMP",
     lastUpdated = dateValue,
     platform = PlatformType.DES,
@@ -197,19 +147,19 @@ trait OasParsedItTestData {
     version = "1.1.0",
     specificationType = SpecificationType.OAS_V3,
     hods = List("CUSTOMS"),
-    endpoints = endpoints2,
+    endpoints = endpointsNoDeepSearch,
     components = Components(List.empty, List.empty),
     shortDescription = None,
-    openApiSpecification = "OAS file contents 3",
+    openApiSpecification = "OAS file contents 3 BOOP",
     apiStatus = LIVE,
     reviewedDate = reviewedDate
   )
 
-  val exampleApiDetail2: ApiDetail = ApiDetail(
+  val apiDetail5: ApiDetail = ApiDetail(
     IntegrationId(UUID.fromString("28c0bd67-4176-42c7-be13-53be98a4db58")),
     publisherReference = "API1005",
-    title = "getOtherFactsName BOOP",
-    description = "getKnownFactsDesc",
+    title = "getOtherFactsName 5 BOOP",
+    description = "api detail 5",
     lastUpdated = dateValue,
     platform = PlatformType.CORE_IF,
     maintainer = coreIfMaintainer,
@@ -224,7 +174,7 @@ trait OasParsedItTestData {
     reviewedDate = reviewedDate
   )
 
-  val exampleApiDetail3: ApiDetail = ApiDetail(
+  val apiDetail6: ApiDetail = ApiDetail(
     IntegrationId(UUID.fromString("6d5a98fc-a33a-11eb-bcbc-0242ac130002")),
     publisherReference = "API1006",
     title = "CDS Classic API",
@@ -242,4 +192,56 @@ trait OasParsedItTestData {
     apiStatus = LIVE,
     reviewedDate = reviewedDate
   )
+
+  val fileTransfer2: FileTransferDetail =
+    FileTransferDetail(
+      IntegrationId(UUID.fromString("e2e4ce48-29b0-11eb-adc1-0242ac120002")),
+      fileTransferSpecificationVersion = "0.1",
+      publisherReference = "API1002",
+      title = "filetransfer 1",
+      description = "file transfer 1 desc",
+      lastUpdated = dateValue,
+      reviewedDate = reviewedDate,
+      platform = PlatformType.CORE_IF,
+      maintainer = coreIfMaintainer,
+      sourceSystem = List("source"),
+      targetSystem = List("target"),
+      transports = List("UTM"),
+      fileTransferPattern = "pattern1"
+    )
+
+  val fileTransfer7: FileTransferDetail =
+    FileTransferDetail(
+      IntegrationId(UUID.fromString("8f8190dc-d992-11eb-b8bc-0242ac130003")),
+      fileTransferSpecificationVersion = "0.1",
+      publisherReference = "API1007",
+      title = "filetransfer 2",
+      description = "file transfer 2 desc",
+      lastUpdated = dateValue,
+      reviewedDate = reviewedDate,
+      platform = PlatformType.API_PLATFORM,
+      maintainer = apiPlatformMaintainer,
+      sourceSystem = List("someSource"),
+      targetSystem = List("target"),
+      transports = List("AB"),
+      fileTransferPattern = "pattern3"
+    )
+
+  val fileTransfer8: FileTransferDetail =
+    FileTransferDetail(
+      IntegrationId(UUID.fromString("8f8190dc-d992-11eb-b8bc-0242ac130003")),
+      fileTransferSpecificationVersion = "0.1",
+      publisherReference = "API1008",
+      title = "filetransfer 3",
+      description = "file transfer 3 desc",
+      lastUpdated = dateValue,
+      reviewedDate = reviewedDate,
+      platform = PlatformType.API_PLATFORM,
+      maintainer = apiPlatformMaintainer,
+      sourceSystem = List("someSource"),
+      targetSystem = List("target"),
+      transports = List("WTM", "AB", "S3"),
+      fileTransferPattern = "pattern3"
+    )
+
 }
