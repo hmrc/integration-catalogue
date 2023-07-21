@@ -28,7 +28,7 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
   override def beforeEach(): Unit = {
     super.beforeEach()
     dropMongoDb()
-    await(repository.ensureIndexes)
+    await(repository.ensureIndexes, Duration.apply(10, SECONDS))
   }
 
   protected override def appBuilder: GuiceApplicationBuilder =

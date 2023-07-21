@@ -21,7 +21,7 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import java.util.UUID
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.Await
 
 class IntegrationRepositoryISpec
@@ -53,7 +53,7 @@ class IntegrationRepositoryISpec
   override def beforeEach(): Unit = {
     super.beforeEach()
     dropMongoDb()
-    await(repo.ensureIndexes)
+    await(repo.ensureIndexes, Duration.apply(10, SECONDS))
   }
 
   def getAll: List[IntegrationDetail] = {

@@ -60,9 +60,11 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
             .name("text_index_1_1").background(true)
         )
       ),
-      replaceIndexes = false
+      replaceIndexes = false,
     )
     with Logging {
+
+  override lazy val requiresTtlIndex = false // There are no requirements to expire applications
 
   // https://docs.mongodb.com/manual/core/index-text/#wildcard-text-indexes
 
