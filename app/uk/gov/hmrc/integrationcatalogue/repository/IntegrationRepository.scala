@@ -60,7 +60,7 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
             .name("text_index_1_1").background(true)
         )
       ),
-      replaceIndexes = false,
+      replaceIndexes = false
     )
     with Logging {
 
