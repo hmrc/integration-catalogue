@@ -20,8 +20,8 @@ import scala.concurrent.duration.{Duration, SECONDS}
 
 class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with MongoApp with OasParsedItTestData with AwaitTestSupport with DefaultPlayMongoRepositorySupport[IntegrationDetail] with MongoSupport {
 
-  override protected def repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
-  val apiRepo: IntegrationRepository                                        = repository.asInstanceOf[IntegrationRepository]
+  val repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
+  val apiRepo: IntegrationRepository = repository.asInstanceOf[IntegrationRepository]
 
   override def beforeEach(): Unit = {
     super.beforeEach()

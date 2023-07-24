@@ -5,7 +5,7 @@ import uk.gov.hmrc.DefaultBuildSettings
 
 val appName = "integration-catalogue"
 
-val silencerVersion = "1.7.6"
+val silencerVersion = "1.17.13"
 
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
 
@@ -28,8 +28,7 @@ lazy val microservice = Project(appName, file("."))
     // ***************
     // Use the silencer plugin to suppress warnings
     scalacOptions ++= Seq(
-      "-P:silencer:pathFilters=routes",
-      "-Ypartial-unification"
+      "-P:silencer:pathFilters=routes"
     ),
     libraryDependencies ++= Seq(
       compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),

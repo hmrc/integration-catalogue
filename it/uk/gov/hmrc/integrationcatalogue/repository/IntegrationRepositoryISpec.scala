@@ -34,8 +34,7 @@ class IntegrationRepositoryISpec
     with OasParsedItTestData
     with AwaitTestSupport {
 
-  override protected def repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
-
+  lazy val repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
   val indexNameToDrop = "please_delete_me__let_me_go"
 
   protected def appBuilder: GuiceApplicationBuilder =

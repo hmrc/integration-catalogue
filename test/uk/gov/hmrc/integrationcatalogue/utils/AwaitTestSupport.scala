@@ -20,5 +20,5 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
 trait AwaitTestSupport {
-  def await[A](future: Future[A], timeout: Duration = 5 seconds): A = Await.result(future, timeout)
+  def await[A](future: Future[A], timeout: Duration = Duration.apply(5,SECONDS)): A = Await.result(future, timeout)
 }
