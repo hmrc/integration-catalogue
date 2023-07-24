@@ -66,7 +66,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       when(mockOasParserService.parse(*, *, *, *)).thenReturn(parseSuccess)
       when(mockApiRepo.findAndModify(*)).thenReturn(Future.successful(apiUpsertSuccessInsert))
 
-      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), 500 millis)
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
 
       val expectedPublisDetails: PublishDetails = PublishDetails(false, apiDetail0.id, apiDetail0.publisherReference, apiDetail0.platform)
@@ -88,7 +88,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       when(mockOasParserService.parse(*, *, *, *)).thenReturn(parseSuccess)
       when(mockApiRepo.findAndModify(*)).thenReturn(Future.successful(apiUpsertSuccessUpdate))
 
-      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), 500 millis)
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
 
       val expectedPublisDetails: PublishDetails = PublishDetails(true, apiDetail0.id, apiDetail0.publisherReference, apiDetail0.platform)
@@ -108,7 +108,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
 
       when(mockOasParserService.parse(*, *, *, *)).thenReturn(parseFailure)
 
-      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), 500 millis)
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe false
 
       verify(mockOasParserService).parse(
@@ -125,7 +125,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       when(mockOasParserService.parse(*, *, *, *)).thenReturn(parseSuccess)
       when(mockApiRepo.findAndModify(*)).thenReturn(Future.successful(apiUpsertFailure))
 
-      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), 500 millis)
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe false
       result.errors.head.code shouldBe API_UPSERT_ERROR
 

@@ -13,18 +13,21 @@ import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 import uk.gov.hmrc.integrationcatalogue.support.{AwaitTestSupport, MongoApp, ServerBaseISpec}
 import uk.gov.hmrc.integrationcatalogue.testdata.OasParsedItTestData
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.mongo.test.{DefaultPlayMongoRepositorySupport, MongoSupport}
 
 import java.util.UUID
+import scala.concurrent.duration.{Duration, SECONDS}
 
-class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with MongoApp with OasParsedItTestData with AwaitTestSupport {
+class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with MongoApp with OasParsedItTestData with AwaitTestSupport with DefaultPlayMongoRepositorySupport[IntegrationDetail] with MongoSupport {
 
-  override protected def repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
-  val apiRepo: IntegrationRepository                                        = repository.asInstanceOf[IntegrationRepository]
+  val repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
+  val apiRepo: IntegrationRepository = repository.asInstanceOf[IntegrationRepository]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     dropMongoDb()
-    await(apiRepo.ensureIndexes)
+    prepareDatabase()
+    await(apiRepo.ensureIndexes, Duration.apply(10, SECONDS))
   }
 
   protected override def appBuilder: GuiceApplicationBuilder =
@@ -33,7 +36,7 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
         "microservice.services.auth.port" -> wireMockPort,
         "metrics.enabled"                 -> true,
         "auditing.enabled"                -> false,
-        "mongodb.uri"                     -> s"mongodb://127.0.0.1:27017/test-${this.getClass.getSimpleName}",
+        "mongodb.uri"                     -> s"${mongoUri}",
         "auditing.consumer.baseUri.host"  -> wireMockHost,
         "auditing.consumer.baseUri.port"  -> wireMockPort
       )

@@ -21,7 +21,7 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import java.util.UUID
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.Await
 
 class IntegrationRepositoryISpec
@@ -34,8 +34,7 @@ class IntegrationRepositoryISpec
     with OasParsedItTestData
     with AwaitTestSupport {
 
-  override protected def repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
-
+  lazy val repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
   val indexNameToDrop = "please_delete_me__let_me_go"
 
   protected def appBuilder: GuiceApplicationBuilder =
@@ -53,7 +52,7 @@ class IntegrationRepositoryISpec
   override def beforeEach(): Unit = {
     super.beforeEach()
     dropMongoDb()
-    await(repo.ensureIndexes)
+    await(repo.ensureIndexes, Duration.apply(10, SECONDS))
   }
 
   def getAll: List[IntegrationDetail] = {

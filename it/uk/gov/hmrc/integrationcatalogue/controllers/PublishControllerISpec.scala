@@ -21,14 +21,13 @@ import scala.concurrent.duration._
 
 class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with MongoApp with OasTestData with OasParsedItTestData with AwaitTestSupport {
 
-  override protected def repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
-
+  val repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
   val apiRepo = repository.asInstanceOf[IntegrationRepository]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     dropMongoDb()
-    await(repository.ensureIndexes)
+    await(repository.ensureIndexes, Duration.apply(10, SECONDS))
   }
 
   protected override def appBuilder: GuiceApplicationBuilder =
@@ -111,7 +110,7 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
         publishResult.isSuccess mustBe true
         publishResult.errors.size mustBe 0
 
-        val apis: Seq[IntegrationDetail] = Await.result(apiRepo.findWithFilters(IntegrationFilter()), 500 millis).results
+        val apis: Seq[IntegrationDetail] = Await.result(apiRepo.findWithFilters(IntegrationFilter()), Duration.apply(500, MILLISECONDS)).results
         apis.size mustBe 1
         apis.head.publisherReference mustBe validPublishRequest.publisherReference.getOrElse("")
 
@@ -154,7 +153,7 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
         publishResult.isSuccess mustBe true
         publishResult.errors.size mustBe 0
 
-        val apis: immutable.Seq[IntegrationDetail] = Await.result(apiRepo.findWithFilters(IntegrationFilter()), 500 millis).results
+        val apis: immutable.Seq[IntegrationDetail] = Await.result(apiRepo.findWithFilters(IntegrationFilter()), Duration.apply(500, MILLISECONDS)).results
         apis.size mustBe 1
 
         apis.head match {
@@ -173,11 +172,11 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
         val result          = Json.parse(publishResponse.body).as[PublishResult]
         result.isSuccess mustBe true
 
-        val savedId: IntegrationId = Await.result(apiRepo.findWithFilters(IntegrationFilter()), 500 millis).results.map(_.id).head
-        Await.result(apiRepo.findById(savedId), 500 millis).size mustBe 1
+        val savedId: IntegrationId = Await.result(apiRepo.findWithFilters(IntegrationFilter()), Duration.apply(500, MILLISECONDS)).results.map(_.id).head
+        Await.result(apiRepo.findById(savedId), Duration.apply(500, MILLISECONDS)).size mustBe 1
         callDeleteEndpoint(s"$url/integrations/${savedId.value}")
 
-        Await.result(apiRepo.findById(savedId), 500 millis).size mustBe 0
+        Await.result(apiRepo.findById(savedId), Duration.apply(500, MILLISECONDS)).size mustBe 0
       }
     }
   }

@@ -60,7 +60,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
           case Invalid(errors) => errors.toList.invalidNel[ApiDetail]
           case Valid(_)        =>
             val mayBePaths   = Option(openApi.getPaths)
-            val pathNames    = mayBePaths.map(_.keySet().asScala.to[LinkedHashSet].toList).getOrElse(List.empty)
+            val pathNames    = mayBePaths.map(_.keySet().asScala.to(LinkedHashSet).toList).getOrElse(List.empty)
             val allEndpoints = pathNames.flatMap(pathName => {
               mayBePaths.map(path => {
                 val pathItem = path.get(pathName)
@@ -214,8 +214,13 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
     }).toList
   }
 
-  private def extractRequestMediaType(contentMap: Map[String, MediaType]) = {
-    contentMap.flatMap(mediaTypeKeyValue => mediaTypeKeyValue._1.split(';').head.split('-')).headOption.getOrElse("")
+  private def extractRequestMediaType(contentMap: Map[String, MediaType]): String = {
+    //    val value = contentMap.flatMap(mediaTypeKeyValue => mediaTypeKeyValue._1.split(';').head.split('-')).headOption.getOrElse("")
+    val a = contentMap.keySet.flatMap(key => key.split(';'))
+    val b = a.headOption.flatMap(p => p.split('-').headOption)
+    val c = b.getOrElse("")
+
+    c
   }
 
 }

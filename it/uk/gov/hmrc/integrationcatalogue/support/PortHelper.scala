@@ -16,7 +16,7 @@ object PortHelper {
 
   @tailrec
   def randomAvailable: Int = {
-    range(rnd.nextInt(range length)) match {
+    range(rnd.nextInt(range.length)) match {
       case 8080   => randomAvailable
       case 8090   => randomAvailable
       case p: Int => {

@@ -64,6 +64,8 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
     )
     with Logging {
 
+  override lazy val requiresTtlIndex = false // There are no requirements to expire applications
+
   // https://docs.mongodb.com/manual/core/index-text/#wildcard-text-indexes
 
   private def determineUpdateOp2(integrationDetail: IntegrationDetail) = {

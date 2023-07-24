@@ -4,8 +4,8 @@ object AppDependencies {
 
   lazy val scalaCheckVersion = "1.14.0"
   lazy val enumeratumVersion = "1.6.3"
-  lazy val hmrcMongoVersion = "0.74.0"
-  lazy val bootstrapVersion = "7.12.0"
+  lazy val hmrcMongoVersion = "1.3.0"
+  lazy val bootstrapVersion = "7.19.0"
   lazy val jacksonVersion = "2.12.6"
   lazy val playJsonVersion = "2.9.2"
 
