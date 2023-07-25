@@ -17,19 +17,18 @@
 package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
 import java.util
-import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
-
 import cats.data.Validated._
 import cats.data._
 import cats.implicits._
 import io.swagger.v3.oas.models.info.Info
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
-
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
+
+import scala.jdk.CollectionConverters._
 
 trait OASExtensionsAdapter extends ExtensionKeys {
 

@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas
 
-import javax.inject.{Inject, Singleton}
-import scala.jdk.CollectionConverters
 import cats.data.Validated._
 import cats.data._
 import cats.implicits._
@@ -27,6 +25,7 @@ import uk.gov.hmrc.integrationcatalogue.models.ApiDetail
 import uk.gov.hmrc.integrationcatalogue.models.common._
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.OASV3Adapter
 
+import javax.inject.{Inject, Singleton}
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 @Singleton
