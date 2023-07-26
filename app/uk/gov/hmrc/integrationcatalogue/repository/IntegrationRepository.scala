@@ -113,7 +113,7 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
                     equal("publisherReference", integrationDetail.publisherReference),
                     equal("platform", Codecs.toBson(integrationDetail.platform))
                   ))
-                    .toFuture.map(results => results.nonEmpty)
+                    .toFuture().map(results => results.nonEmpty)
       result   <- findAndModify2(integrationDetail, isUpdate)
     } yield result
   }
@@ -136,8 +136,8 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
       filter = query,
       update = Updates.combine(allOps: _*),
       options = FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
-    ).toFuture
-      .map(x => Right(x, isUpsert)) // not sure how we get is upserted / updated now))
+    ).toFuture()
+      .map(x => Right((x, isUpsert)))// not sure how we get is upserted / updated now))
       .recover {
         case e: Exception =>
           logger.warn(s"IntegrationDetail find and modify error - ${e.getMessage}")
@@ -175,7 +175,7 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
     val skipAmount           = if (currentPage > 1) (currentPage - 1) * perPage else 0
     if (filters.isEmpty) {
       for {
-        count   <- collection.countDocuments.toFuture()
+        count   <- collection.countDocuments().toFuture()
         results <- collection.find()
                      .skip(skipAmount)
                      .limit(perPage)
@@ -202,7 +202,7 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
   def getCatalogueReport(): Future[List[IntegrationPlatformReport]] = {
     collection.aggregate[BsonValue](List(
       group(Document("platform" -> "$platform", "integrationType" -> "$_type"), sum("count", 1))
-    )).toFuture
+    )).toFuture()
       .map(_.toList.map(Codecs.fromBson[IntegrationCountResponse]))
       .map(items =>
         items.map(item => IntegrationPlatformReport(item._id.platform, IntegrationType.fromIntegrationTypeString(item._id.integrationType), item.count))
@@ -222,7 +222,7 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
       case _                  => aggregatePipelineWithoutMatch
     }
 
-    collection.aggregate[BsonValue](aggregatePipeline).toFuture
+    collection.aggregate[BsonValue](aggregatePipeline).toFuture()
       .map(_.toList.map(Codecs.fromBson[FileTransferTransportsResponse]))
       .map(items =>
         items.map(item => FileTransferTransportsForPlatform(item._id.platform, item.transports.sortWith(_ < _)))

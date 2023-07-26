@@ -18,7 +18,7 @@ package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
 import java.util
 import javax.inject.{Inject, Singleton}
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable.LinkedHashSet
 
 import cats.data.Validated._
@@ -146,7 +146,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
 
   private def parseResponseBody(apiResponses: ApiResponses): List[uk.gov.hmrc.integrationcatalogue.models.Response] = {
     apiResponses.getDefault
-    apiResponses.asScala.seq
+    apiResponses.asScala
       .map {
         case (statusCode, apiResponse: ApiResponse) =>
           extractResponse(statusCode, Option(apiResponse.getDescription), apiResponse)
@@ -197,7 +197,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
 
   private def extractExamples(contentMap: Map[String, MediaType], descriptionPrefix: Option[String]): List[Example] = {
     contentMap.flatMap(mediaTypeKeyValue => {
-      Option(mediaTypeKeyValue._2.getExamples.asScala) match {
+      Option(mediaTypeKeyValue._2.getExamples().asScala) match {
         case Some(oasExamples) =>
           oasExamples.toMap.map(er => {
             Option(er._2).map(exampleObj => {

@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
+
 
 import io.swagger.v3.oas.models.parameters.{Parameter => OasParameter}
 import io.swagger.v3.oas.models.{OpenAPI, Operation}

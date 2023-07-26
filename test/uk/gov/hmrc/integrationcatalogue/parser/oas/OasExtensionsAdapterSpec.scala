@@ -35,8 +35,8 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
   trait Setup {
     val publisherRefValue  = "SOMEREFERENCE"
-    val publisherRefInt    = new java.lang.Integer(1234)
-    val publisherRefDouble = new java.lang.Double(1.5)
+    val publisherRefInt    = java.lang.Integer.valueOf(1234)
+    val publisherRefDouble = java.lang.Double.valueOf(1.5)
     val publisherRefList   = new util.ArrayList[Object]()
     val shortDescription   = "I am a short description"
 
@@ -57,7 +57,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
     extensionsWithInvalidStatus.put(STATUS_EXTENSION_KEY, "invalid_status")
 
     val extensionsWithWrongTypeStatus = new util.HashMap[String, Object]()
-    extensionsWithWrongTypeStatus.put(STATUS_EXTENSION_KEY, new java.lang.Double(10.5))
+    extensionsWithWrongTypeStatus.put(STATUS_EXTENSION_KEY, java.lang.Double.valueOf(10.5))
 
     val extensionsWithEmptyStatus = new util.HashMap[String, Object]()
     extensionsWithEmptyStatus.put(STATUS_EXTENSION_KEY, "")
@@ -70,7 +70,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
     extensionsWithReviewDateAndPublisherReference.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefValue)
 
     val extensionsWithInvalidShortDesc = new util.HashMap[String, Object]()
-    extensionsWithInvalidShortDesc.put(SHORT_DESC_EXTENSION_KEY, new java.lang.Double(10.5))
+    extensionsWithInvalidShortDesc.put(SHORT_DESC_EXTENSION_KEY, java.lang.Double.valueOf(10.5))
 
     val extensionsWithReviewDatePublisherReferenceAndBackends = new util.HashMap[String, Object]()
     extensionsWithReviewDatePublisherReferenceAndBackends.put(REVIEWED_DATE_EXTENSION_KEY, "2020-12-25")
@@ -106,7 +106,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       result match {
         case Left(errors)      =>
           errors.map(println)
-          fail
+          fail()
         case Right(extensions) =>
           extensions.backends shouldBe Nil
           extensions.publisherReference shouldBe publisherRefValue
@@ -118,7 +118,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
         parseExtensions(generateInfoObject(new util.HashMap[String, Object]()), None, mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe "Publisher Reference must be provided and must be valid"
-        case Right(_)     => fail
+        case Right(_)     => fail()
       }
     }
 
@@ -126,7 +126,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
         parseExtensions(generateInfoObject(extensionsWithOnlyBackendsAndReviewDate), Some(publisherRefValue), mockAppConfig)
       result match {
-        case Left(_)           => fail
+        case Left(_)           => fail()
         case Right(extensions) =>
           extensions.backends shouldBe List("ITMP", "NPS")
           extensions.publisherReference shouldBe publisherRefValue
@@ -138,7 +138,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
         parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), Some(publisherRefValue), mockAppConfig)
       result match {
-        case Left(_)           => fail
+        case Left(_)           => fail()
         case Right(extensions) =>
           extensions.backends shouldBe List("ITMP", "NPS")
           extensions.publisherReference shouldBe publisherRefValue
@@ -150,7 +150,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
         parseExtensions(generateInfoObject(extensionsWithOnlyBackendsAndReviewDate), None, mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe "Publisher Reference must be provided and must be valid"
-        case Right(_)     => fail
+        case Right(_)     => fail()
       }
     }
 
@@ -159,7 +159,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
         parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), Some("SOMEOTHERREFERENCE"), mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe "Publisher reference provided twice but they do not match"
-        case Right(_)     => fail
+        case Right(_)     => fail()
       }
     }
 
@@ -167,7 +167,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
         parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), None, mockAppConfig)
       result match {
-        case Left(_)           => fail
+        case Left(_)           => fail()
         case Right(extensions) =>
           extensions.backends shouldBe List("ITMP", "NPS")
           extensions.publisherReference shouldBe publisherRefValue
@@ -179,7 +179,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
         parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), None, mockAppConfig)
       result match {
-        case Left(_)           => fail
+        case Left(_)           => fail()
         case Right(extensions) =>
           extensions.backends shouldBe List("ITMP", "NPS")
           extensions.publisherReference shouldBe publisherRefInt.toString
@@ -191,7 +191,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
         parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), None, mockAppConfig)
       result match {
-        case Left(_)           => fail
+        case Left(_)           => fail()
         case Right(extensions) =>
           extensions.backends shouldBe List("ITMP", "NPS")
           extensions.publisherReference shouldBe publisherRefDouble.toString
@@ -204,7 +204,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
         parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), None, mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe "Invalid value. Expected a string, integer or double but found value: [] of type class java.util.ArrayList"
-        case Right(_)     => fail
+        case Right(_)     => fail()
       }
     }
 
@@ -212,7 +212,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
         parseExtensions(generateInfoObject(extensionsWithOnlyBackendsAndReviewDate), Some(publisherRefValue), mockAppConfig)
       result match {
-        case Left(_)           => fail
+        case Left(_)           => fail()
         case Right(extensions) =>
           extensions.backends shouldBe List("ITMP", "NPS")
           extensions.publisherReference shouldBe publisherRefValue
@@ -223,7 +223,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
         parseExtensions(generateInfoObject(extensionsWithReviewDateAndTime), Some(""), mockAppConfig)
       result match {
-        case Left(_)           => fail
+        case Left(_)           => fail()
         case Right(extensions) => extensions.backends shouldBe Nil
       }
     }
@@ -233,7 +233,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
         parseExtensions(generateInfoObject(new util.HashMap[String, Object]()), Some(""), mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe "Reviewed date must be provided"
-        case Right(_)     => fail
+        case Right(_)     => fail()
       }
     }
 
@@ -246,7 +246,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(info, Some(""), mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe "attribute x-integration-catalogue is not of type `object`"
-        case Right(_)     => fail
+        case Right(_)     => fail()
       }
     }
 
@@ -260,7 +260,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(info, Some(""), mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe "backends must be a list but was: Some(null)"
-        case Right(_)     => fail
+        case Right(_)     => fail()
       }
     }
 
@@ -269,7 +269,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
         parseExtensions(generateInfoObject(extensionsWithShortDescAndPublisherReferenceAndBackends), Some(publisherRefValue), mockAppConfig)
       result match {
-        case Left(_)           => fail
+        case Left(_)           => fail()
         case Right(extensions) =>
           extensions.backends shouldBe List("ITMP", "NPS")
           extensions.publisherReference shouldBe publisherRefValue
@@ -284,7 +284,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
         parseExtensions(generateInfoObject(extensionsWithShortDescAndPublisherReferenceAndBackends), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe s"Short Description cannot be more than ${mockAppConfig.shortDescLength} characters long."
-        case Right(_)     => fail
+        case Right(_)     => fail()
       }
     }
 
@@ -293,7 +293,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
         parseExtensions(generateInfoObject(extensionsWithInvalidShortDesc), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe s"Short Description must be a String"
-        case Right(_)     => fail
+        case Right(_)     => fail()
       }
     }
 
@@ -301,7 +301,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
         parseExtensions(generateInfoObject(extensionsWithReviewDateAndStatus), Some(publisherRefValue), mockAppConfig)
       result match {
-        case Left(e)           => fail
+        case Left(e)           => fail()
         case Right(extensions) =>
           extensions.status shouldBe ApiStatus.ALPHA
           extensions.backends shouldBe List.empty
@@ -314,7 +314,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
         parseExtensions(generateInfoObject(extensionsWithInvalidStatus), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe s"Status must be one of ALPHA, BETA, LIVE or DEPRECATED"
-        case Right(_)     => fail
+        case Right(_)     => fail()
       }
     }
 
@@ -323,7 +323,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
         parseExtensions(generateInfoObject(extensionsWithWrongTypeStatus), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe s"Status must be one of ALPHA, BETA, LIVE or DEPRECATED"
-        case Right(_)     => fail
+        case Right(_)     => fail()
       }
     }
 
@@ -332,7 +332,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
         parseExtensions(generateInfoObject(extensionsWithEmptyStatus), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe s"Status must be one of ALPHA, BETA, LIVE or DEPRECATED"
-        case Right(_)     => fail
+        case Right(_)     => fail()
       }
     }
 
@@ -341,7 +341,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
         parseExtensions(generateInfoObject(extensionsWithNullStatus), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe s"Status must be one of ALPHA, BETA, LIVE or DEPRECATED"
-        case Right(_)     => fail
+        case Right(_)     => fail()
       }
     }
 

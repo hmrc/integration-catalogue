@@ -17,7 +17,7 @@
 package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
 import java.util
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.media.{ArraySchema => OasArraySchema, ComposedSchema => OasComposedSchema, MediaType, Schema => OasSchema}

@@ -18,7 +18,7 @@ package uk.gov.hmrc.integrationcatalogue.testdata
 
 import java.util.HashMap
 import java.{util => ju}
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.v3.oas.models.info.{Contact, Info}

@@ -17,19 +17,18 @@
 package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
 import java.util
-import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
-
 import cats.data.Validated._
 import cats.data._
 import cats.implicits._
 import io.swagger.v3.oas.models.info.Info
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
-
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
+
+import scala.jdk.CollectionConverters._
 
 trait OASExtensionsAdapter extends ExtensionKeys {
 
@@ -61,8 +60,8 @@ trait OASExtensionsAdapter extends ExtensionKeys {
   private def getIntegrationCatalogueExtensionsMap(extensions: Map[String, AnyRef]): ValidatedNel[String, Map[String, AnyRef]] =
     extensions.get(EXTENSIONS_KEY) match {
       case None                                                     => Validated.valid(Map.empty)
-      case Some(e) if e.isInstanceOf[java.util.Map[String, AnyRef]] =>
-        Validated.valid(e.asInstanceOf[java.util.Map[String, AnyRef]]
+      case Some(e: java.util.Map[String, AnyRef]) =>
+        Validated.valid(e
           .asScala
           .toMap
           .filter { case (k, _) => k != null })
