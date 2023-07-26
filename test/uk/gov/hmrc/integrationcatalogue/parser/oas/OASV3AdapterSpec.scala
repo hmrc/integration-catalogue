@@ -189,7 +189,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
       )
       result match {
         case _: Invalid[NonEmptyList[List[String]]] => succeed
-        case Valid(parsedObject)                    => fail
+        case Valid(parsedObject)                    => fail()
 
       }
 

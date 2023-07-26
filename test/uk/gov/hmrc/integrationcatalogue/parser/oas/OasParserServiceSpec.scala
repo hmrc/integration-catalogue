@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import cats.data.Validated._
 import cats.data._
@@ -45,12 +45,12 @@ class OasParserServiceSpec extends AnyWordSpec with Matchers with MockitoSugar w
     val objInTest                      = new OASParserService(mockFileLoader, mockAdapterService)
     when(mockFileLoader.parseOasSpec(*)).thenReturn(mockSwaggerParseResult)
 
-    def primeSuccessNoWarnings() {
+    def primeSuccessNoWarnings() : Unit = {
       when(mockSwaggerParseResult.getOpenAPI).thenReturn(getOpenAPIObject(withExtensions = false))
       when(mockSwaggerParseResult.getMessages).thenReturn(null)
     }
 
-    def primeFailureWithErrors() {
+    def primeFailureWithErrors() : Unit = {
       when(mockSwaggerParseResult.getOpenAPI).thenReturn(null)
 
       when(mockSwaggerParseResult.getMessages).thenReturn(errors.asJava)
