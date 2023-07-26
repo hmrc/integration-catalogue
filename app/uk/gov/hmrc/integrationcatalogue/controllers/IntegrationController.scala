@@ -72,7 +72,7 @@ class IntegrationController @Inject() (
     }
   }
 
-  def deleteByIntegrationId(integrationId: IntegrationId): Action[AnyContent] = Action.async { implicit request =>
+  def deleteByIntegrationId(integrationId: IntegrationId): Action[AnyContent] = Action.async {
     integrationService.deleteByIntegrationId(integrationId).map {
       case NoContentDeleteApiResult => NoContent
       case _                        => NotFound
@@ -97,13 +97,13 @@ class IntegrationController @Inject() (
     }
   }
 
-  def getIntegrationCatalogueReport(): Action[AnyContent] = Action.async { implicit request =>
+  def getIntegrationCatalogueReport(): Action[AnyContent] = Action.async {
     integrationService.getCatalogueReport()
       .map(result => Ok(Json.toJson(result)))
   }
 
   def getFileTransferTransportsByPlatform(source: Option[String], target: Option[String]): Action[AnyContent] =
-    (Action andThen validateFileTransferWizardQueryParamKeyAction).async { implicit request =>
+    (Action andThen validateFileTransferWizardQueryParamKeyAction).async {
       integrationService.getFileTransferTransportsByPlatform(source, target)
         .map(result => Ok(Json.toJson(result)))
     }

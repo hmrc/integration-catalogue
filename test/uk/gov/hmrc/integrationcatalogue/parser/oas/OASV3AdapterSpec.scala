@@ -20,7 +20,6 @@ import java.util.UUID
 
 import cats.data.Validated._
 import cats.data._
-import cats.implicits._
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.info.Info
 import org.joda.time.DateTime
