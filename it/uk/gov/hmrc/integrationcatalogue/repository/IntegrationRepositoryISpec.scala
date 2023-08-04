@@ -1,13 +1,9 @@
 package uk.gov.hmrc.integrationcatalogue.repository
 
-import org.bson.BsonString
-import org.mongodb.scala.bson.collection.immutable.Document
-import org.mongodb.scala.model.IndexOptions
-import org.mongodb.scala.model.Indexes.ascending
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{Assertion, BeforeAndAfterEach}
-import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -19,10 +15,10 @@ import uk.gov.hmrc.integrationcatalogue.support.{AwaitTestSupport, MongoApp}
 import uk.gov.hmrc.integrationcatalogue.testdata.OasParsedItTestData
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import java.util.UUID
-import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.{Duration, SECONDS}
 
 class IntegrationRepositoryISpec
     extends AnyWordSpec
@@ -52,7 +48,7 @@ class IntegrationRepositoryISpec
   override def beforeEach(): Unit = {
     super.beforeEach()
     dropMongoDb()
-    await(repo.ensureIndexes, Duration.apply(10, SECONDS))
+    await(repo.ensureIndexes(), Duration.apply(10, SECONDS))
   }
 
   def getAll: List[IntegrationDetail] = {
@@ -115,7 +111,7 @@ class IntegrationRepositoryISpec
       Await.result(combinedFuture, Duration.Inf)
     }
 
-    def setUpTest() {
+    def setUpTest(): Unit = {
       val result = findWithFilters(IntegrationFilter(List.empty, List.empty)).results
       result shouldBe List.empty
 
@@ -124,12 +120,12 @@ class IntegrationRepositoryISpec
       x.results.size shouldBe 6
     }
 
-    def validateResults(results: Seq[IntegrationDetail], expectedReferences: List[String]) {
+    def validateResults(results: Seq[IntegrationDetail], expectedReferences: List[String]): Unit = {
       results.size shouldBe expectedReferences.size
       results.map(_.publisherReference) shouldBe (expectedReferences)
     }
 
-    def validatePagedResults(integrationResponse: IntegrationResponse, expectedReferences: List[String], expectedCount: Int) {
+    def validatePagedResults(integrationResponse: IntegrationResponse, expectedReferences: List[String], expectedCount: Int): Unit = {
       validateResults(integrationResponse.results, expectedReferences)
 
       integrationResponse.pagedCount.map(x => x shouldBe expectedReferences.size)

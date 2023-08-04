@@ -1,10 +1,13 @@
 package uk.gov.hmrc.integrationcatalogue.controllers
 
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.{WSClient, WSResponse}
 import uk.gov.hmrc.integrationcatalogue.support.ServerBaseISpec
 import uk.gov.hmrc.integrationcatalogue.support.AwaitTestSupport
 import play.api.test.Helpers._
+import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.IdentifierAction
+import uk.gov.hmrc.integrationcatalogue.testdata.FakeIdentifierAction
 
 class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
 
@@ -23,6 +26,9 @@ class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
         "platforms.SOMENEW.email"           -> "des@mail.com",
         "platforms.SOMENEW.name"            -> "DES Platform support hot line"
       )
+      .overrides(
+        bind[IdentifierAction].to(classOf[FakeIdentifierAction])
+      )
 
   val url = s"http://localhost:$port/integration-catalogue"
 
@@ -31,6 +37,7 @@ class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
   def callGetEndpoint(url: String): WSResponse =
     wsClient
       .url(url)
+      .withHttpHeaders(FakeIdentifierAction.fakeAuthorizationHeader)
       .withFollowRedirects(false)
       .get()
       .futureValue

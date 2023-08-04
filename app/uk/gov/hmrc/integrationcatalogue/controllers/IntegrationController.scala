@@ -18,12 +18,10 @@ package uk.gov.hmrc.integrationcatalogue.controllers
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-
 import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.{Action, _}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-
 import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders._
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 import uk.gov.hmrc.integrationcatalogue.models._
@@ -35,12 +33,13 @@ class IntegrationController @Inject() (
     controllerComponents: ControllerComponents,
     integrationService: IntegrationService,
     validateQueryParamKeyAction: ValidateQueryParamKeyAction,
-    validateFileTransferWizardQueryParamKeyAction: ValidateFileTransferWizardQueryParamKeyAction
+    validateFileTransferWizardQueryParamKeyAction: ValidateFileTransferWizardQueryParamKeyAction,
+    identify: IdentifierAction
   )(implicit val ec: ExecutionContext
   ) extends BackendController(controllerComponents)
     with Logging {
 
-  def findById(id: IntegrationId): Action[AnyContent] = Action.async {
+  def findById(id: IntegrationId): Action[AnyContent] = identify.async {
     integrationService.findById(id).map {
       case Some(result) => Ok(Json.toJson(result))
       case None         =>
@@ -57,7 +56,7 @@ class IntegrationController @Inject() (
       currentPage: Option[Int],
       integrationType: Option[IntegrationType]
     ): Action[AnyContent] =
-    (Action andThen validateQueryParamKeyAction).async {
+    (identify andThen validateQueryParamKeyAction).async {
       integrationService.findWithFilters(IntegrationFilter(searchTerm, platformFilter, backendsFilter, itemsPerPage, currentPage, integrationType))
         .map(result => {
           logger.warn(s"FindWithFilter results: ${result.count} - SearchTerms: ${valuesOrNone(searchTerm)} PlatformFilters: ${valuesOrNone(platformFilter.map(_.toString))} itemsPerPage: ${itemsPerPage.map(_.toString).getOrElse("Value Not Set")} currentPage: ${currentPage.map(_.toString).getOrElse("Value Not Set")}")
@@ -72,7 +71,7 @@ class IntegrationController @Inject() (
     }
   }
 
-  def deleteByIntegrationId(integrationId: IntegrationId): Action[AnyContent] = Action.async {
+  def deleteByIntegrationId(integrationId: IntegrationId): Action[AnyContent] = identify.async {
     integrationService.deleteByIntegrationId(integrationId).map {
       case NoContentDeleteApiResult => NoContent
       case _                        => NotFound
@@ -80,7 +79,7 @@ class IntegrationController @Inject() (
 
   }
 
-  def deleteWithFilters(platformFilter: List[PlatformType]): Action[AnyContent] = Action.async {
+  def deleteWithFilters(platformFilter: List[PlatformType]): Action[AnyContent] = identify.async {
     if (platformFilter.size > 1) {
       Future.successful(BadRequest(Json.toJson(ErrorResponse(List(ErrorResponseMessage("only one platform can be deleted at a time"))))))
     } else {
@@ -97,13 +96,13 @@ class IntegrationController @Inject() (
     }
   }
 
-  def getIntegrationCatalogueReport(): Action[AnyContent] = Action.async {
+  def getIntegrationCatalogueReport(): Action[AnyContent] = identify.async {
     integrationService.getCatalogueReport()
       .map(result => Ok(Json.toJson(result)))
   }
 
   def getFileTransferTransportsByPlatform(source: Option[String], target: Option[String]): Action[AnyContent] =
-    (Action andThen validateFileTransferWizardQueryParamKeyAction).async {
+    (identify andThen validateFileTransferWizardQueryParamKeyAction).async {
       integrationService.getFileTransferTransportsByPlatform(source, target)
         .map(result => Ok(Json.toJson(result)))
     }

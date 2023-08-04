@@ -1,24 +1,33 @@
 package uk.gov.hmrc.integrationcatalogue.controllers
 
 import org.scalatest.BeforeAndAfterEach
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{BAD_REQUEST, NOT_FOUND, OK}
+import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.IdentifierAction
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType.{API, FILE_TRANSFER}
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.{API_PLATFORM, CDS_CLASSIC, CORE_IF, DES}
 import uk.gov.hmrc.integrationcatalogue.models.{FileTransferTransportsForPlatform, IntegrationDetail, IntegrationPlatformReport, IntegrationResponse}
 import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 import uk.gov.hmrc.integrationcatalogue.support.{AwaitTestSupport, MongoApp, ServerBaseISpec}
-import uk.gov.hmrc.integrationcatalogue.testdata.OasParsedItTestData
+import uk.gov.hmrc.integrationcatalogue.testdata.{FakeIdentifierAction, OasParsedItTestData}
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.test.{DefaultPlayMongoRepositorySupport, MongoSupport}
 
 import java.util.UUID
 import scala.concurrent.duration.{Duration, SECONDS}
 
-class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with MongoApp with OasParsedItTestData with AwaitTestSupport with DefaultPlayMongoRepositorySupport[IntegrationDetail] with MongoSupport {
+class IntegrationControllerISpec
+  extends ServerBaseISpec
+    with BeforeAndAfterEach
+    with MongoApp
+    with OasParsedItTestData
+    with AwaitTestSupport
+    with DefaultPlayMongoRepositorySupport[IntegrationDetail]
+    with MongoSupport {
 
   val repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
   val apiRepo: IntegrationRepository = repository.asInstanceOf[IntegrationRepository]
@@ -27,7 +36,7 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
     super.beforeEach()
     dropMongoDb()
     prepareDatabase()
-    await(apiRepo.ensureIndexes, Duration.apply(10, SECONDS))
+    await(apiRepo.ensureIndexes(), Duration.apply(10, SECONDS))
   }
 
   protected override def appBuilder: GuiceApplicationBuilder =
@@ -36,9 +45,12 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
         "microservice.services.auth.port" -> wireMockPort,
         "metrics.enabled"                 -> true,
         "auditing.enabled"                -> false,
-        "mongodb.uri"                     -> s"${mongoUri}",
+        "mongodb.uri"                     -> s"$mongoUri",
         "auditing.consumer.baseUri.host"  -> wireMockHost,
         "auditing.consumer.baseUri.port"  -> wireMockPort
+      )
+      .overrides(
+        bind[IdentifierAction].to(classOf[FakeIdentifierAction])
       )
 
   val url = s"http://localhost:$port/integration-catalogue"
@@ -48,6 +60,7 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
   def callGetEndpoint(url: String): WSResponse =
     wsClient
       .url(url)
+      .withHttpHeaders(FakeIdentifierAction.fakeAuthorizationHeader)
       .withFollowRedirects(false)
       .get()
       .futureValue
@@ -55,15 +68,16 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
   def callDeleteEndpoint(url: String): WSResponse =
     wsClient
       .url(url)
+      .withHttpHeaders(FakeIdentifierAction.fakeAuthorizationHeader)
       .withFollowRedirects(false)
-      .delete
+      .delete()
       .futureValue
 
   "IntegrationController" when {
 
     "GET /integrations" should {
 
-      def setupFilterTestDataAndRunTest(searchTerm: String, expectedResult: Int, expectedReferences: List[String], expectedCount: Option[Int] = None) {
+      def setupFilterTestDataAndRunTest(searchTerm: String, expectedResult: Int, expectedReferences: List[String], expectedCount: Option[Int] = None): Unit = {
         await(apiRepo.findAndModify(apiDetail1))
         await(apiRepo.findAndModify(apiDetail5))
         await(apiRepo.findAndModify(apiDetail4))
@@ -83,7 +97,7 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
             }
             response.results.map(_.publisherReference) mustBe expectedReferences
           case NOT_FOUND =>
-          case _         => fail // at present we are only returning 200 or 404 for searching
+          case _         => fail() // at present we are only returning 200 or 404 for searching
         }
 
       }
@@ -260,7 +274,7 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
     }
 
     "GET /filetransfers/platform/transports" should {
-      def setupFileTransfers() {
+      def setupFileTransfers(): Unit = {
 
         await(apiRepo.findAndModify(fileTransfer2)) // CORE_IF | source -> target | transports = UTM
         await(apiRepo.findAndModify(fileTransfer7)) // API_PLATFORM | someSource -> target | transports = S3
@@ -279,7 +293,7 @@ class IntegrationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       }
 
       "return CORE_IF transports when source=source and target=target" in {
-        setupFileTransfers
+        setupFileTransfers()
         val expectedResults = List(
           FileTransferTransportsForPlatform(CORE_IF, List("UTM"))
         )

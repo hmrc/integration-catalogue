@@ -17,12 +17,14 @@
 package uk.gov.hmrc.integrationcatalogue
 
 import com.google.inject.AbstractModule
-
+import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.{AuthenticatedIdentifierAction, IdentifierAction}
 import uk.gov.hmrc.integrationcatalogue.scheduled.MetricsScheduler
 
 class CustomModule extends AbstractModule {
 
   override def configure(): Unit = {
     bind(classOf[MetricsScheduler]).asEagerSingleton()
+    bind(classOf[IdentifierAction]).to(classOf[AuthenticatedIdentifierAction]).asEagerSingleton()
   }
+
 }
