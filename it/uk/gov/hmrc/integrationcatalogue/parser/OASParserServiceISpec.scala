@@ -163,7 +163,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
           response401.schema.head.not.isDefined shouldBe true
           response401.schema.head.not.head.isInstanceOf[ComposedSchema] shouldBe true
           val anyOf401Schemas       = response401.schema.head.not.head.asInstanceOf[ComposedSchema].anyOf
-          anyOf401Schemas.map(_.ref.getOrElse("")) should contain only ("#/components/schemas/orgName56String", "#/components/schemas/utrType")
+          anyOf401Schemas.map(_.ref.getOrElse("")) should contain theSameElementsAs List("#/components/schemas/orgName56String", "#/components/schemas/utrType")
 
           response401.headers.size shouldBe 1
           response401.headers.nonEmpty shouldBe true

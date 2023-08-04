@@ -18,19 +18,23 @@ package uk.gov.hmrc.integrationcatalogue.controllers
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
+import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.IdentifierAction
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 
 @Singleton
-class PlatformController @Inject() (controllerComponents: ControllerComponents, appConfig: AppConfig)(implicit val ec: ExecutionContext)
+class PlatformController @Inject() (
+  controllerComponents: ControllerComponents,
+  appConfig: AppConfig,
+  identify: IdentifierAction
+)(implicit val ec: ExecutionContext)
     extends BackendController(controllerComponents) {
 
-  def getPlatformContacts(): Action[AnyContent] = Action.async { request =>
+  def getPlatformContacts(): Action[AnyContent] = identify.async {
     Future.successful(Ok(Json.toJson(appConfig.platformContacts)))
   }
+
 }

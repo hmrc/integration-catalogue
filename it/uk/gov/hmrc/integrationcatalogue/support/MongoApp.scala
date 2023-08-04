@@ -1,7 +1,6 @@
 package uk.gov.hmrc.integrationcatalogue.support
 
 import org.scalatest.{BeforeAndAfterEach, Suite, TestSuite}
-import play.api.test.Helpers.await
 import uk.gov.hmrc.integrationcatalogue.models.IntegrationDetail
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 

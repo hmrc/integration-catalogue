@@ -2,17 +2,19 @@ package uk.gov.hmrc.integrationcatalogue.controllers
 
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.HeaderNames.CONTENT_TYPE
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{BAD_REQUEST, NOT_FOUND, OK}
 import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes._
+import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.IdentifierAction
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.{ContactInformation, IntegrationId, PlatformType, SpecificationType}
 import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 import uk.gov.hmrc.integrationcatalogue.support.{AwaitTestSupport, MongoApp, ServerBaseISpec}
-import uk.gov.hmrc.integrationcatalogue.testdata.{OasParsedItTestData, OasTestData}
+import uk.gov.hmrc.integrationcatalogue.testdata.{FakeIdentifierAction, OasParsedItTestData, OasTestData}
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import scala.collection.immutable
@@ -27,7 +29,7 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
   override def beforeEach(): Unit = {
     super.beforeEach()
     dropMongoDb()
-    await(repository.ensureIndexes, Duration.apply(10, SECONDS))
+    await(repository.ensureIndexes(), Duration.apply(10, SECONDS))
   }
 
   protected override def appBuilder: GuiceApplicationBuilder =
@@ -40,12 +42,15 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
         "auditing.consumer.baseUri.host"  -> wireMockHost,
         "auditing.consumer.baseUri.port"  -> wireMockPort
       )
+      .overrides(
+        bind[IdentifierAction].to(classOf[FakeIdentifierAction])
+      )
 
   val url = s"http://localhost:$port/integration-catalogue"
 
   val wsClient: WSClient = app.injector.instanceOf[WSClient]
 
-  val validHeaders = List(CONTENT_TYPE -> "application/json")
+  val validHeaders = List(CONTENT_TYPE -> "application/json", FakeIdentifierAction.fakeAuthorizationHeader)
 
   def callPutEndpoint(url: String, body: String, headers: List[(String, String)]): WSResponse =
     wsClient
@@ -58,8 +63,9 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
   def callDeleteEndpoint(url: String): WSResponse =
     wsClient
       .url(url)
+      .withHttpHeaders(FakeIdentifierAction.fakeAuthorizationHeader)
       .withFollowRedirects(false)
-      .delete
+      .delete()
       .futureValue
 
   trait Setup {

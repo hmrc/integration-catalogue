@@ -8,6 +8,7 @@ object AppDependencies {
   lazy val bootstrapVersion = "7.19.0"
   lazy val jacksonVersion = "2.12.6"
   lazy val playJsonVersion = "2.9.2"
+  lazy val internalAuthVersion = "1.4.0"
 
   val compile = Seq(
     "uk.gov.hmrc"                       %% "bootstrap-backend-play-28"              % bootstrapVersion,
@@ -15,6 +16,7 @@ object AppDependencies {
     "com.typesafe.play"                 %% "play-json-joda"                         % playJsonVersion,
     "com.beachape"                      %% "enumeratum-play-json"                   % enumeratumVersion,
     "uk.gov.hmrc.mongo"                 %% "hmrc-mongo-work-item-repo-play-28"      % hmrcMongoVersion,
+    "uk.gov.hmrc"                       %% "internal-auth-client-play-28"           % internalAuthVersion,
 
     "com.fasterxml.jackson.module"      %% "jackson-module-scala"           % jacksonVersion,
     "com.fasterxml.jackson.core"        % "jackson-annotations"             % jacksonVersion,

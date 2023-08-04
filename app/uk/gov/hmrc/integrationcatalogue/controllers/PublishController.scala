@@ -19,12 +19,11 @@ package uk.gov.hmrc.integrationcatalogue.controllers
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
-
 import play.api.Logging
 import play.api.libs.json.{JsValue, Json, Reads}
 import play.api.mvc._
+import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.IdentifierAction
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 import uk.gov.hmrc.integrationcatalogue.models.{ErrorResponse, ErrorResponseMessage, FileTransferPublishRequest, PublishRequest}
 import uk.gov.hmrc.integrationcatalogue.service.PublishService
@@ -32,12 +31,13 @@ import uk.gov.hmrc.integrationcatalogue.service.PublishService
 @Singleton
 class PublishController @Inject() (
     cc: ControllerComponents,
-    publishService: PublishService
+    publishService: PublishService,
+    identify: IdentifierAction
   )(implicit ec: ExecutionContext
   ) extends BackendController(cc)
     with Logging {
 
-  def publishFileTransfer(): Action[JsValue] = Action.async(parse.tolerantJson) { implicit request =>
+  def publishFileTransfer(): Action[JsValue] = identify.async(parse.tolerantJson) { implicit request =>
     if (validateJsonString[FileTransferPublishRequest](request.body.toString())) {
       val bodyVal = request.body.as[FileTransferPublishRequest]
       for {
@@ -49,7 +49,7 @@ class PublishController @Inject() (
     }
   }
 
-  def publishApi(): Action[JsValue] = Action.async(parse.tolerantJson) { implicit request =>
+  def publishApi(): Action[JsValue] = identify.async(parse.tolerantJson) { implicit request =>
     if (validateJsonString[PublishRequest](request.body.toString())) {
       val bodyVal = request.body.as[PublishRequest]
       for {
