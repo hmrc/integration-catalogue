@@ -85,7 +85,6 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
           set("hods", apiDetail.hods),
           set("apiStatus", Codecs.toBson(apiDetail.apiStatus)),
           set("endpoints", apiDetail.endpoints.map(Codecs.toBson(_))),
-          set("components", Codecs.toBson(apiDetail.components)),
           set("openApiSpecification", Codecs.toBson(apiDetail.openApiSpecification))
         )
       case IntegrationType.FILE_TRANSFER =>

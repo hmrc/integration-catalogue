@@ -73,9 +73,6 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
               case Right(extensions: IntegrationCatalogueExtensions) =>
                 val hods                  = extensions.backends
                 val status                = extensions.status
-                val componentSchemas      = extractComponentSchemas(openApi)
-                val componentHeaders      = extractComponentHeaders(openApi)
-                val componentParameters   = extractComponentParameters(openApi)
                 val extensionReviewedDate = extensions.reviewedDate
 
                 Valid(ApiDetail(
@@ -91,7 +88,6 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
                   platform = platformType,
                   hods = hods.toList,
                   shortDescription = extensions.shortDescription,
-                  components = Components(componentSchemas, componentHeaders, componentParameters),
                   openApiSpecification = openApiSpecificationContent,
                   apiStatus = status,
                   reviewedDate = extensionReviewedDate
@@ -125,11 +121,12 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
   private def extractEndpoints(path: String, item: PathItem): List[Endpoint] = {
     val endpointMethods = item.readOperationsMap().asScala.toMap
       .map {
-        case (m: HttpMethod, operation: Operation) => {
-          val method                                                                     = Option(m).map(_.toString).getOrElse("")
-          val extractedRequest: Option[uk.gov.hmrc.integrationcatalogue.models.Request]  = Option(operation.getRequestBody).map(parseRequestBody)
-          val extractedResponses: List[uk.gov.hmrc.integrationcatalogue.models.Response] = Option(operation.getResponses).map(parseResponseBody).getOrElse(List.empty)
-          val extractedParameters                                                        = extractEndpointMethodParameters(operation)
+        case (m: HttpMethod, operation: Operation) =>
+          val method              = Option(m).map(_.toString).getOrElse("")
+          val extractedRequest    = Option(operation.getRequestBody).map(parseRequestBody)
+          val extractedResponses  = Option(operation.getResponses).map(parseResponseBody).getOrElse(List.empty)
+          val extractedParameters = extractEndpointMethodParameters(operation)
+
           EndpointMethod(
             httpMethod = method,
             operationId = Option(operation.getOperationId),
@@ -139,7 +136,6 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
             responses = extractedResponses,
             parameters = extractedParameters
           )
-        }
       }.toList
     List(Endpoint(path, endpointMethods))
   }
@@ -197,7 +193,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
 
   private def extractExamples(contentMap: Map[String, MediaType], descriptionPrefix: Option[String]): List[Example] = {
     contentMap.flatMap(mediaTypeKeyValue => {
-      Option(mediaTypeKeyValue._2.getExamples().asScala) match {
+      Option(mediaTypeKeyValue._2.getExamples.asScala) match {
         case Some(oasExamples) =>
           oasExamples.toMap.map(er => {
             Option(er._2).map(exampleObj => {

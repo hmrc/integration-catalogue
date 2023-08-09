@@ -77,52 +77,6 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       result match {
         case Valid(parsedObject) =>
           parsedObject.title shouldBe "API1000 Get Data"
-          val componentHeaders    = parsedObject.components.headers
-          val componentSchemas    = parsedObject.components.schemas
-          val componentParameters = parsedObject.components.parameters
-
-          componentHeaders.size shouldBe 1
-          validateHeader(componentHeaders.head, "CorrelationId", "A UUID format string for the transaction used for traceability purposes")
-          componentHeaders.head.schema should not be None
-
-          val headerSchemas = componentHeaders.head.schema.head
-          headerSchemas.ref shouldBe None
-          headerSchemas.`type` shouldBe Some("string")
-          headerSchemas.pattern shouldBe Some("^[0-9a-fA-F]{8}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{12}$")
-          componentSchemas.size shouldBe 18
-
-          componentParameters.size shouldBe 4
-          val idTypeParam = componentParameters.head
-          idTypeParam.name shouldBe Some("idType")
-          idTypeParam.in shouldBe Some("path")
-          idTypeParam.description shouldBe Some("Required - Possible values for idType")
-          idTypeParam.required shouldBe Some(true)
-          idTypeParam.allowEmptyValue shouldBe None
-          idTypeParam.schema should not be None
-          idTypeParam.schema.flatMap(_.pattern) shouldBe Some("^[A-Z0-9]{3,6}$")
-          idTypeParam.schema.flatMap(_.`type`) shouldBe Some("string")
-
-          val idValueParam = componentParameters(1)
-          idValueParam.name shouldBe Some("idValue")
-          idValueParam.in shouldBe Some("query")
-          idValueParam.description shouldBe Some("Required - Value of")
-          idValueParam.required shouldBe Some(true)
-          idValueParam.deprecated shouldBe Some(false)
-          idValueParam.allowEmptyValue shouldBe Some(false)
-          idValueParam.schema should not be None
-          idValueParam.schema.flatMap(_.pattern) shouldBe Some("^([A-Z0-9]{1,15})$")
-          idValueParam.schema.flatMap(_.`type`) shouldBe Some("string")
-
-          val environment = componentParameters(2)
-          environment.name shouldBe Some("Environment")
-          environment.in shouldBe Some("header")
-          environment.description shouldBe Some("Mandatory. The environment in use.")
-          environment.required shouldBe Some(true)
-          environment.deprecated shouldBe None
-          environment.allowEmptyValue shouldBe None
-          environment.schema should not be None
-          environment.schema.flatMap(_.`type`) shouldBe Some("string")
-          environment.schema.map(_.`enum`) shouldBe Some(List("stuff", "stuf1", "stuff3"))
 
           parsedObject.endpoints.size shouldBe 1
           parsedObject.endpoints.head.methods.size shouldBe 1

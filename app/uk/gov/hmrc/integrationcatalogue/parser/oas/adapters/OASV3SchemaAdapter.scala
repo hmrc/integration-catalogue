@@ -19,24 +19,11 @@ package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 import java.util
 import scala.jdk.CollectionConverters._
 
-import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.media.{ArraySchema => OasArraySchema, ComposedSchema => OasComposedSchema, MediaType, Schema => OasSchema}
 
 import uk.gov.hmrc.integrationcatalogue.models._
 
 trait OASV3SchemaAdapter {
-
-  def extractComponentSchemas(openApi: OpenAPI): List[uk.gov.hmrc.integrationcatalogue.models.Schema] = {
-    nullSafeGetSchemas(openApi).map(schemas =>
-      schemas.asScala.map(oasSchema => {
-        extractOasSchema(Option(oasSchema._1), oasSchema._2)
-      }).toList
-    ).getOrElse(List.empty)
-  }
-
-  private def nullSafeGetSchemas(openApi: OpenAPI): Option[util.Map[String, OasSchema[_]]] = {
-    Option(openApi.getComponents).flatMap(components => Option(components.getSchemas))
-  }
 
   def extractOasSchema(mayBeSchemaName: Option[String], oasSchemaVal: OasSchema[_]): Schema = {
     oasSchemaVal match {

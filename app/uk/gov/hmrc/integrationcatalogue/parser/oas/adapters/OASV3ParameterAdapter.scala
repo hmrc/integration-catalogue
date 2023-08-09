@@ -16,50 +16,37 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
-import scala.jdk.CollectionConverters._
-
-
+import io.swagger.v3.oas.models.Operation
 import io.swagger.v3.oas.models.parameters.{Parameter => OasParameter}
-import io.swagger.v3.oas.models.{OpenAPI, Operation}
-
 import uk.gov.hmrc.integrationcatalogue.models.Parameter
+
+import scala.jdk.CollectionConverters._
 
 trait OASV3ParameterAdapter extends OASV3SchemaAdapter {
 
   def extractEndpointMethodParameters(operation: Operation): List[Parameter] = {
-    val maybeparameters = Option(operation.getParameters())
+    val maybeparameters = Option(operation.getParameters)
     maybeparameters.map(_.asScala.toList)
       .getOrElse(List.empty).map(adaptParameter)
   }
 
   private def adaptParameter(parameter: OasParameter): Parameter = {
 
-    Option(parameter.get$ref()).map(value => Parameter(Option(parameter.getName()), Option(value)))
+    Option(parameter.get$ref()).map(value => Parameter(Option(parameter.getName), Option(value)))
       .getOrElse({
-        val parameterSchema = Option(parameter.getSchema())
+        val parameterSchema = Option(parameter.getSchema)
         val schema          = parameterSchema.map(schema => extractOasSchema(Option(parameter.getName), schema))
         Parameter(
-          name = Option(parameter.getName()),
-          description = Option(parameter.getDescription()),
-          in = Option(parameter.getIn()),
+          name = Option(parameter.getName),
+          description = Option(parameter.getDescription),
+          in = Option(parameter.getIn),
           ref = Option(parameter.get$ref()),
           required = Option(Boolean.unbox(parameter.getRequired)),
-          deprecated = Option(Boolean.unbox(parameter.getDeprecated())),
+          deprecated = Option(Boolean.unbox(parameter.getDeprecated)),
           schema = schema,
-          allowEmptyValue = Option(Boolean.unbox(parameter.getAllowEmptyValue()))
+          allowEmptyValue = Option(Boolean.unbox(parameter.getAllowEmptyValue))
         )
       })
-  }
-
-  def extractComponentParameters(openApi: OpenAPI): List[Parameter] = {
-    Option(openApi.getComponents())
-      .flatMap(components => Option(components.getParameters()))
-      .map(_.asScala.toList).getOrElse(List.empty)
-      .map {
-        case (_: String, parameter: OasParameter) => {
-          adaptParameter(parameter)
-        }
-      }
   }
 
 }
