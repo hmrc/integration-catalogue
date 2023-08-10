@@ -27,19 +27,19 @@ import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, Maintainer
 
 trait ApiTestData {
 
-  val dateValue    = DateTime.parse("04/11/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
-  val reviewedDate = DateTime.parse("25/12/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
+  val dateValue: DateTime = DateTime.parse("04/11/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"))
+  val reviewedDate: DateTime = DateTime.parse("25/12/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"))
 
-  val coreIfPlatform = PlatformType.CORE_IF
-  val apiPlatform    = PlatformType.API_PLATFORM
+  val coreIfPlatform: PlatformType = PlatformType.CORE_IF
+  val apiPlatform: PlatformType = PlatformType.API_PLATFORM
 
   val jsonMediaType       = "application/json"
   val exampleRequest1name = "example request 1"
   val exampleRequest1Body = "{\"someValue\": \"abcdefg\"}"
-  val exampleRequest1     = Example(exampleRequest1name, exampleRequest1Body)
-  val exampleResponse1    = Example("example response name", "example response body")
+  val exampleRequest1: Example = Example(exampleRequest1name, exampleRequest1Body)
+  val exampleResponse1: Example = Example("example response name", "example response body")
 
-  val schema1 = DefaultSchema(
+  val schema1: DefaultSchema = DefaultSchema(
     name = Some("agentReferenceNumber"),
     not = None,
     `type` = Some("string"),
@@ -58,7 +58,7 @@ trait ApiTestData {
     example = None
   )
 
-  val schema2 = DefaultSchema(
+  val schema2: DefaultSchema = DefaultSchema(
     name = Some("agentReferenceNumber"),
     not = None,
     `type` = Some("object"),
@@ -77,21 +77,33 @@ trait ApiTestData {
     example = None
   )
 
-  val request  = Request(description = Some("request"), schema = Some(schema1), mediaType = Some(jsonMediaType), examples = List(exampleRequest1))
-  val response = Response(statusCode = "200", description = Some("response"), schema = Some(schema2), mediaType = Some("application/json"), examples = List(exampleResponse1))
+  val request: Request = Request(
+    description = Some("request"),
+    schema = Some(schema1),
+    mediaType = Some(jsonMediaType),
+    examples = List(exampleRequest1)
+  )
 
-  val apiPlatformMaintainer = Maintainer("Api Platform Team", "#team-api-platform-sup")
-  val coreIfMaintainer      = Maintainer("Core IF Team", "**core-if-slack-channel**")
+  val response: Response = Response(
+    statusCode = "200",
+    description = Some("response"),
+    schema = Some(schema2),
+    mediaType = Some("application/json"),
+    examples = List(exampleResponse1)
+  )
 
-  val selfassessmentApiId = IntegrationId(UUID.fromString("b7c649e6-e10b-4815-8a2c-706317ec484d"))
+  val apiPlatformMaintainer: Maintainer = Maintainer("Api Platform Team", "#team-api-platform-sup")
+  val coreIfMaintainer: Maintainer = Maintainer("Core IF Team", "**core-if-slack-channel**")
 
-  val endpointGetMethod = EndpointMethod("GET", Some("operationId"), Some("some summary"), Some("some description"), None, List(response))
-  val endpointPutMethod = EndpointMethod("PUT", Some("operationId2"), Some("some summary"), Some("some description"), Some(request), List.empty)
-  val endpoint1         = Endpoint("/some/url", List(endpointGetMethod, endpointPutMethod))
+  val selfassessmentApiId: IntegrationId = IntegrationId(UUID.fromString("b7c649e6-e10b-4815-8a2c-706317ec484d"))
+
+  val endpointGetMethod: EndpointMethod = EndpointMethod("GET", Some("summary"), Some("some description"))
+  val endpointPutMethod: EndpointMethod = EndpointMethod("PUT", Some("summary"), Some("some description"))
+  val endpoint1: Endpoint = Endpoint("/some/url", List(endpointGetMethod, endpointPutMethod))
 
   val endpoints = List(endpoint1, Endpoint("/some/url", List.empty))
 
-  val apiDetail0 = ApiDetail(
+  val apiDetail0: ApiDetail = ApiDetail(
     selfassessmentApiId,
     publisherReference = "self-assessment-api",
     title = "Self Assessment (MTD)",
@@ -108,7 +120,7 @@ trait ApiTestData {
     reviewedDate = reviewedDate
   )
 
-  val apiDetail1 = ApiDetail(
+  val apiDetail1: ApiDetail = ApiDetail(
     IntegrationId(UUID.fromString("2f0c9fc4-7773-433b-b4cf-15d4cb932e36")),
     publisherReference = "marriage-allowance",
     title = "Marriage Allowance",
@@ -125,7 +137,7 @@ trait ApiTestData {
     reviewedDate = reviewedDate
   )
 
-  val apiDetail2 = ApiDetail(
+  val apiDetail2: ApiDetail = ApiDetail(
     IntegrationId(UUID.fromString("bd05e606-b400-49f2-a436-89d1ed1513bc")),
     publisherReference = "API1001",
     title = "API#1001 Get Data 1",
@@ -143,7 +155,7 @@ trait ApiTestData {
     reviewedDate = reviewedDate
   )
 
-  val apiDetail3 = ApiDetail(
+  val apiDetail3: ApiDetail = ApiDetail(
     IntegrationId(UUID.fromString("136791a6-2b1c-11eb-adc1-0242ac120002")),
     publisherReference = "API1002",
     title = "API#1002 Get Data 2",

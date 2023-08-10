@@ -16,30 +16,24 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
-import java.util
-import javax.inject.{Inject, Singleton}
-import scala.jdk.CollectionConverters._
-import scala.collection.mutable.LinkedHashSet
-
 import cats.data.Validated._
 import cats.data._
 import cats.implicits._
 import com.fasterxml.jackson.databind.JsonNode
 import io.swagger.v3.oas.models.PathItem.HttpMethod
 import io.swagger.v3.oas.models.info.Contact
-import io.swagger.v3.oas.models.media.MediaType
-import io.swagger.v3.oas.models.parameters.RequestBody
-import io.swagger.v3.oas.models.responses.{ApiResponse, ApiResponses}
 import io.swagger.v3.oas.models.{OpenAPI, Operation, PathItem}
 import org.joda.time.DateTime
-
 import play.api.Logging
-
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common._
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASV3Validation
 import uk.gov.hmrc.integrationcatalogue.service.{AcronymHelper, UuidService}
+
+import javax.inject.{Inject, Singleton}
+import scala.collection.mutable.LinkedHashSet
+import scala.jdk.CollectionConverters._
 
 @Singleton
 class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
@@ -123,31 +117,14 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
       .map {
         case (m: HttpMethod, operation: Operation) =>
           val method              = Option(m).map(_.toString).getOrElse("")
-          val extractedRequest    = Option(operation.getRequestBody).map(parseRequestBody)
-          val extractedResponses  = Option(operation.getResponses).map(parseResponseBody).getOrElse(List.empty)
-          val extractedParameters = extractEndpointMethodParameters(operation)
 
           EndpointMethod(
             httpMethod = method,
-            operationId = Option(operation.getOperationId),
             summary = Option(operation).flatMap(x => Option(x.getSummary)),
-            description = Option(operation.getDescription),
-            request = extractedRequest,
-            responses = extractedResponses,
-            parameters = extractedParameters
+            description = Option(operation.getDescription)
           )
       }.toList
     List(Endpoint(path, endpointMethods))
-  }
-
-  private def parseResponseBody(apiResponses: ApiResponses): List[uk.gov.hmrc.integrationcatalogue.models.Response] = {
-    apiResponses.getDefault
-    apiResponses.asScala
-      .map {
-        case (statusCode, apiResponse: ApiResponse) =>
-          extractResponse(statusCode, Option(apiResponse.getDescription), apiResponse)
-
-      }.toList
   }
 
   def getExampleText(maybeObject: Option[Object]): String = {
@@ -159,64 +136,6 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
         }
       }
     }.getOrElse("")
-  }
-
-  private def parseRequestBody(requestBody: RequestBody): uk.gov.hmrc.integrationcatalogue.models.Request = {
-    extractRequest(Option(requestBody.getDescription), Option(requestBody.getContent).getOrElse(new util.LinkedHashMap()).asScala.toMap)
-  }
-
-  private def extractRequest(description: Option[String], contentMap: Map[String, MediaType], descriptionPrefix: Option[String] = None) = {
-    uk.gov.hmrc.integrationcatalogue.models.Request(
-      description,
-      extractEndpointSchema(contentMap),
-      Some(extractRequestMediaType(contentMap)),
-      extractExamples(contentMap, descriptionPrefix)
-    )
-  }
-
-  private def extractResponse(statusCode: String, description: Option[String], response: ApiResponse, descriptionPrefix: Option[String] = None) = {
-    val headers = extractResponseHeaders(response)
-
-    Option(response.getContent).map(contentMap => {
-      uk.gov.hmrc.integrationcatalogue.models.Response(
-        statusCode,
-        description,
-        extractEndpointSchema(contentMap.asScala.toMap),
-        Some(extractRequestMediaType(contentMap.asScala.toMap)),
-        extractExamples(contentMap.asScala.toMap, descriptionPrefix),
-        headers = headers
-      )
-    })
-      .getOrElse(uk.gov.hmrc.integrationcatalogue.models.Response(statusCode, description, schema = None, mediaType = None, headers = headers))
-
-  }
-
-  private def extractExamples(contentMap: Map[String, MediaType], descriptionPrefix: Option[String]): List[Example] = {
-    contentMap.flatMap(mediaTypeKeyValue => {
-      Option(mediaTypeKeyValue._2.getExamples.asScala) match {
-        case Some(oasExamples) =>
-          oasExamples.toMap.map(er => {
-            Option(er._2).map(exampleObj => {
-              val exampleText = getExampleText(Option(exampleObj.getValue))
-              val summary     = Option(er._2.getSummary)
-              val name        = List(descriptionPrefix, Some(er._1), summary).flatten.mkString(" - ")
-              Example(name = name, jsonBody = exampleText)
-            })
-          }).filterNot(_.isEmpty).flatten
-        case None              =>
-          logger.info("NO EXAMPLES FOUND")
-          List.empty
-      }
-    }).toList
-  }
-
-  private def extractRequestMediaType(contentMap: Map[String, MediaType]): String = {
-    //    val value = contentMap.flatMap(mediaTypeKeyValue => mediaTypeKeyValue._1.split(';').head.split('-')).headOption.getOrElse("")
-    val a = contentMap.keySet.flatMap(key => key.split(';'))
-    val b = a.headOption.flatMap(p => p.split('-').headOption)
-    val c = b.getOrElse("")
-
-    c
   }
 
 }
