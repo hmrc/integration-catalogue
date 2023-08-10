@@ -37,8 +37,7 @@ import scala.jdk.CollectionConverters._
 
 @Singleton
 class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
-    extends Logging with AcronymHelper with OASV3Validation with OASExtensionsAdapter
-    with OASV3SchemaAdapter with OASV3HeaderAdapter with OASV3ParameterAdapter {
+    extends Logging with AcronymHelper with OASV3Validation with OASExtensionsAdapter {
 
   def extractOpenApi(
       publisherRef: Option[String],
