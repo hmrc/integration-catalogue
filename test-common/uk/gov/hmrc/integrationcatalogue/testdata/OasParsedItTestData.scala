@@ -31,14 +31,14 @@ trait OasParsedItTestData {
   val fileContents        = "{}"
   val uuid: UUID          = UUID.fromString("28c0bd67-4176-42c7-be13-53be98a4db58")
   val dateValue: DateTime = DateTime.parse("04/11/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"))
-  val reviewedDate        = DateTime.parse("25/12/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"));
+  val reviewedDate: DateTime = DateTime.parse("25/12/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"))
 
   val apiPlatformMaintainer: Maintainer = Maintainer("API Platform Team", "#team-api-platform-sup")
   val coreIfMaintainer: Maintainer      = Maintainer("IF Team", "N/A", List.empty)
 
   val jsonMediaType = "application/json"
 
-  val schema1 = DefaultSchema(
+  val schema1: DefaultSchema = DefaultSchema(
     name = Some("agentReferenceNumber"),
     not = None,
     `type` = Some("string"),
@@ -57,7 +57,7 @@ trait OasParsedItTestData {
     example = None
   )
 
-  val schema2 = DefaultSchema(
+  val schema2: DefaultSchema = DefaultSchema(
     name = Some("agentReferenceNumber"),
     not = None,
     `type` = Some("object"),
@@ -80,18 +80,30 @@ trait OasParsedItTestData {
   val exampleRequest1Body      = "{\"someValue\": \"abcdefg\"}"
   val exampleRequest1: Example = Example(exampleRequest1name, exampleRequest1Body)
 
-  val exampleResponse1 = new Example("example response name", "example response body")
+  val exampleResponse1: Example = Example("example response name", "example response body")
 
-  val request  = Request(description = Some("request"), schema = Some(schema1), mediaType = Some(jsonMediaType), examples = List(exampleRequest1))
-  val response = Response(statusCode = "200", description = Some("response"), schema = Some(schema2), mediaType = Some("application/json"), examples = List(exampleResponse1))
+  val request: Request = Request(
+    description = Some("request"),
+    schema = Some(schema1),
+    mediaType = Some(jsonMediaType),
+    examples = List(exampleRequest1)
+  )
 
-  val putEndpoint1: EndpointMethod = EndpointMethod("PUT", Some("operationId"), Some("some summary"), Some("some description"), Some(request), List(response))
-  val getEndpoint1: EndpointMethod = EndpointMethod("GET", Some("operationId"), Some("some summary"), Some("some description"), None, List(response))
+  val response: Response = Response(
+    statusCode = "200",
+    description = Some("response"),
+    schema = Some(schema2),
+    mediaType = Some("application/json"),
+    examples = List(exampleResponse1)
+  )
 
-  val endpoint1                    = Endpoint("/some/url", List(putEndpoint1, getEndpoint1))
-  val getEndpoint2: EndpointMethod = EndpointMethod("GET", Some("operationId"), Some("some BOOP summary"), Some("some  DEEPSEARCH description"), None, List(response))
-  val putEndpoint2: EndpointMethod = EndpointMethod("PUT", Some("operationId"), Some("some DEEPSEARCH summary"), Some("some DEEPSEARCH description"), Some(request), List(response))
-  val endpoint2                    = Endpoint("/someOther/Newurl", List(putEndpoint2, getEndpoint2))
+  val putEndpoint1: EndpointMethod = EndpointMethod("PUT", Some("some summary"), Some("some description"))
+  val getEndpoint1: EndpointMethod = EndpointMethod("GET", Some("some summary"), Some("some description"))
+
+  val endpoint1: Endpoint          = Endpoint("/some/url", List(putEndpoint1, getEndpoint1))
+  val getEndpoint2: EndpointMethod = EndpointMethod("GET", Some("some BOOP summary"), Some("some  DEEPSEARCH description"))
+  val putEndpoint2: EndpointMethod = EndpointMethod("PUT", Some("some DEEPSEARCH summary"), Some("some DEEPSEARCH description"))
+  val endpoint2: Endpoint          = Endpoint("/someOther/Newurl", List(putEndpoint2, getEndpoint2))
 
   val endpoints  = List(endpoint1)
   val endpoints2 = List(endpoint2)
@@ -110,7 +122,6 @@ trait OasParsedItTestData {
     specificationType = SpecificationType.OAS_V3,
     hods = List("POOP"),
     endpoints = endpoints,
-    components = Components(List.empty, List.empty),
     shortDescription = Some("exampleApiDetail's short description"),
     openApiSpecification = "OAS file contents 1",
     apiStatus = LIVE,
@@ -129,7 +140,6 @@ trait OasParsedItTestData {
     specificationType = SpecificationType.OAS_V3,
     hods = List("CUSTOMS"),
     endpoints = endpoints2,
-    components = Components(List.empty, List.empty),
     shortDescription = None,
     openApiSpecification = "OAS file contents 2",
     apiStatus = LIVE,
@@ -148,7 +158,6 @@ trait OasParsedItTestData {
     specificationType = SpecificationType.OAS_V3,
     hods = List("CUSTOMS"),
     endpoints = endpointsNoDeepSearch,
-    components = Components(List.empty, List.empty),
     shortDescription = None,
     openApiSpecification = "OAS file contents 3 BOOP",
     apiStatus = LIVE,
@@ -167,7 +176,6 @@ trait OasParsedItTestData {
     specificationType = SpecificationType.OAS_V3,
     hods = List("ETMP"),
     endpoints = endpointsNoDeepSearch,
-    components = Components(List.empty, List.empty),
     shortDescription = Some("A short description"),
     openApiSpecification = "OAS file contents 4",
     apiStatus = LIVE,
@@ -186,7 +194,6 @@ trait OasParsedItTestData {
     specificationType = SpecificationType.OAS_V3,
     hods = List("ETMP"),
     endpoints = endpointsNoDeepSearch,
-    components = Components(List.empty, List.empty),
     shortDescription = None,
     openApiSpecification = "OAS file contents 5",
     apiStatus = LIVE,

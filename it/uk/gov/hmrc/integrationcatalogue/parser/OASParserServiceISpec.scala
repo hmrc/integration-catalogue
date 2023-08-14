@@ -52,7 +52,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       header.description shouldBe Some(expectedDescription)
     }
 
-    def testValidationFailureMessage(filePath: String, expectedErrorMessage: String, setHeaderPublisherRef: Boolean = true) = {
+    def testValidationFailureMessage(filePath: String, expectedErrorMessage: String, setHeaderPublisherRef: Boolean = true): Assertion = {
 
       val publisherReference      = if (setHeaderPublisherRef) Some("SOMEFILEREFERENCE") else None
       val oasFileContents: String = parseFileToString(filePath)
@@ -77,115 +77,12 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       result match {
         case Valid(parsedObject) =>
           parsedObject.title shouldBe "API1000 Get Data"
-          val componentHeaders    = parsedObject.components.headers
-          val componentSchemas    = parsedObject.components.schemas
-          val componentParameters = parsedObject.components.parameters
-
-          componentHeaders.size shouldBe 1
-          validateHeader(componentHeaders.head, "CorrelationId", "A UUID format string for the transaction used for traceability purposes")
-          componentHeaders.head.schema should not be None
-
-          val headerSchemas = componentHeaders.head.schema.head
-          headerSchemas.ref shouldBe None
-          headerSchemas.`type` shouldBe Some("string")
-          headerSchemas.pattern shouldBe Some("^[0-9a-fA-F]{8}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{12}$")
-          componentSchemas.size shouldBe 18
-
-          componentParameters.size shouldBe 4
-          val idTypeParam = componentParameters.head
-          idTypeParam.name shouldBe Some("idType")
-          idTypeParam.in shouldBe Some("path")
-          idTypeParam.description shouldBe Some("Required - Possible values for idType")
-          idTypeParam.required shouldBe Some(true)
-          idTypeParam.allowEmptyValue shouldBe None
-          idTypeParam.schema should not be None
-          idTypeParam.schema.flatMap(_.pattern) shouldBe Some("^[A-Z0-9]{3,6}$")
-          idTypeParam.schema.flatMap(_.`type`) shouldBe Some("string")
-
-          val idValueParam = componentParameters(1)
-          idValueParam.name shouldBe Some("idValue")
-          idValueParam.in shouldBe Some("query")
-          idValueParam.description shouldBe Some("Required - Value of")
-          idValueParam.required shouldBe Some(true)
-          idValueParam.deprecated shouldBe Some(false)
-          idValueParam.allowEmptyValue shouldBe Some(false)
-          idValueParam.schema should not be None
-          idValueParam.schema.flatMap(_.pattern) shouldBe Some("^([A-Z0-9]{1,15})$")
-          idValueParam.schema.flatMap(_.`type`) shouldBe Some("string")
-
-          val environment = componentParameters(2)
-          environment.name shouldBe Some("Environment")
-          environment.in shouldBe Some("header")
-          environment.description shouldBe Some("Mandatory. The environment in use.")
-          environment.required shouldBe Some(true)
-          environment.deprecated shouldBe None
-          environment.allowEmptyValue shouldBe None
-          environment.schema should not be None
-          environment.schema.flatMap(_.`type`) shouldBe Some("string")
-          environment.schema.map(_.`enum`) shouldBe Some(List("stuff", "stuf1", "stuff3"))
 
           parsedObject.endpoints.size shouldBe 1
           parsedObject.endpoints.head.methods.size shouldBe 1
           parsedObject.publisherReference shouldBe publisherReference
           val getMethod: EndpointMethod = parsedObject.endpoints.head.methods.head
           getMethod.httpMethod shouldBe "GET"
-          getMethod.request shouldBe None
-          getMethod.parameters.size shouldBe 5
-
-          getMethod.parameters.head.ref shouldBe Some("#/components/parameters/environment")
-          getMethod.parameters.head.name shouldBe None
-          getMethod.parameters(1).ref shouldBe Some("#/components/parameters/correlationId")
-          getMethod.parameters(1).name shouldBe None
-          getMethod.parameters(2).ref shouldBe Some("#/components/parameters/idTypeParam")
-          getMethod.parameters(2).name shouldBe None
-          getMethod.parameters(3).ref shouldBe Some("#/components/parameters/idValueParam")
-          getMethod.parameters(3).name shouldBe None
-
-          val inlineParameter = getMethod.parameters(4)
-          inlineParameter.name shouldBe Some("InlineId")
-          inlineParameter.ref shouldBe None
-          inlineParameter.in shouldBe Some("header")
-          inlineParameter.description shouldBe Some("A UUID format string for the transaction.")
-          inlineParameter.required shouldBe Some(true)
-          inlineParameter.schema.flatMap(_.`type`) shouldBe Some("string")
-          inlineParameter.schema.flatMap(_.pattern) shouldBe Some("^[0-9a-fA-F]{8}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{12}$")
-
-          getMethod.responses.size shouldBe 8
-          val response200: Response = getMethod.responses.filter(_.statusCode.toInt == 200).head
-          response200.mediaType shouldBe Some("application/json")
-
-          response200.headers.size shouldBe 1
-          response200.headers.nonEmpty shouldBe true
-          validateRefHeader(response200.headers.head, expectedName = "CorrelationId", expectedRef = "#/components/headers/CorrelationId")
-
-          val response401: Response = getMethod.responses.filter(_.statusCode.toInt == 401).head
-          response401.schema.isDefined shouldBe true
-          response401.schema.head.not.isDefined shouldBe true
-          response401.schema.head.not.head.isInstanceOf[ComposedSchema] shouldBe true
-          val anyOf401Schemas       = response401.schema.head.not.head.asInstanceOf[ComposedSchema].anyOf
-          anyOf401Schemas.map(_.ref.getOrElse("")) should contain theSameElementsAs List("#/components/schemas/orgName56String", "#/components/schemas/utrType")
-
-          response401.headers.size shouldBe 1
-          response401.headers.nonEmpty shouldBe true
-          validateRefHeader(response401.headers.head, expectedName = "CorrelationId", expectedRef = "#/components/headers/CorrelationId")
-
-          val response204: Response = getMethod.responses.filter(_.statusCode.toInt == 204).head
-          response204.mediaType shouldBe None
-          response204.schema shouldBe None
-
-          response204.headers.size shouldBe 1
-          response204.headers.nonEmpty shouldBe true
-          val header204    = response204.headers.head
-          header204.name shouldBe "Location"
-          header204.ref shouldBe None
-          header204.deprecated shouldBe Some(false)
-          header204.required shouldBe Some(true)
-          header204.description shouldBe Some("Location of the  request.")
-          header204.schema.isDefined shouldBe true
-          val headerSchema = header204.schema.get
-          headerSchema.description shouldBe Some("Location of the authorisation request.")
-          headerSchema.`type` shouldBe Some("string")
-
         case _: Invalid[NonEmptyList[List[String]]] => fail()
       }
     }
@@ -202,23 +99,6 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
           parsedObject.endpoints.head.methods.size shouldBe 1
           val getMethod: EndpointMethod = parsedObject.endpoints.head.methods.head
           getMethod.httpMethod shouldBe "GET"
-          getMethod.responses.size shouldBe 9
-          val responseDefault: Response = getMethod.responses.filter(_.statusCode == "default").head
-          responseDefault.description shouldBe Some("Test default response")
-        case _                   => fail()
-      }
-    }
-
-    "parse oas file correctly with null enum value" in new Setup {
-      val publisherReference = "SOMEFILEREFERENCE"
-
-      val oasFileContents: String = parseFileToString("/API1000_withEnumWithNullValue.yaml")
-
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
-      result match {
-        case Valid(parsedObject) =>
-          val actualEnumValues = parsedObject.endpoints.head.methods.head.responses.head.schema.get.properties.head.enum
-          actualEnumValues shouldBe List("M", "F", "null")
         case _                   => fail()
       }
     }
@@ -294,7 +174,9 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case Valid(parsedObject) =>
-          parsedObject.shortDescription.getOrElse("") shouldBe "Hello Im a sensible short description, you wont find me getting too long and breaking any tests. No sireee!!"
+          parsedObject
+            .shortDescription
+            .getOrElse("") shouldBe "Hello Im a sensible short description, you wont find me getting too long and breaking any tests. No sireee!!"
         case _                   => fail()
       }
 
@@ -339,7 +221,11 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
     }
 
     "catch error in oas file with missing extension publisher-reference" in new Setup {
-      testValidationFailureMessage("/API1000_withMissingPublisherRef.yaml", "Publisher Reference must be provided and must be valid", setHeaderPublisherRef = false)
+      testValidationFailureMessage(
+        "/API1000_withMissingPublisherRef.yaml",
+        "Publisher Reference must be provided and must be valid",
+        setHeaderPublisherRef = false
+      )
     }
 
     "catch error in oas file with missing title" in new Setup {
@@ -426,7 +312,12 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
     "parse OpenApi object correctly without extensions" in new Setup {
       val publisherReference = "SOMEFILEREFERENCE"
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(oasContactName))
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(
+        Some(publisherReference),
+        PlatformType.CORE_IF,
+        OASSpecType,
+        rawOASData(oasContactName)
+      )
 
       result match {
         case Valid(parsedObject) =>
@@ -437,9 +328,6 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
           parsedObject.specificationType shouldBe SpecificationType.OAS_V3
           parsedObject.shortDescription shouldBe None
           parsedObject.apiStatus shouldBe ApiStatus.LIVE
-
-          parsedObject.endpoints.head.methods.head.responses.head.description shouldBe Some("Successful Response")
-          parsedObject.endpoints.head.methods.head.responses.head.schema.get.ref shouldBe Some("#/components/schemas/successResponse")
 
           val contact: ContactInformation = parsedObject.maintainer.contactInfo.head
           contact.name.getOrElse("") shouldBe oasContactName
@@ -453,10 +341,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
     "handle when spec file is not present" in new Setup {
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF, OASSpecType, "{Unparseable}")
-      result match {
-        case _: Valid[ApiDetail]                    => fail("should not return a parsed object")
-        case _: Invalid[NonEmptyList[List[String]]] => succeed
-      }
+      result shouldBe a[Invalid[_]]
 
     }
   }

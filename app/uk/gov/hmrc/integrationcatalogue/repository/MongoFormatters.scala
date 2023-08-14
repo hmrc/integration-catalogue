@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.integrationcatalogue.repository
 
+import org.joda.time.DateTime
 import play.api.libs.json._
 import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
-
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common._
 
 object MongoFormatters extends MongoJodaFormats {
   implicit val integrationIdFormatter: Format[IntegrationId] = Json.valueFormat[IntegrationId]
-  implicit val dateTimeFormats                               = MongoJodaFormats.dateTimeFormat
+  implicit val dateTimeFormats: Format[DateTime] = MongoJodaFormats.dateTimeFormat
 
   implicit val contactInformationFormats: OFormat[ContactInformation] = Json.format[ContactInformation]
   implicit val maintainerFormats: OFormat[Maintainer]                 = Json.format[Maintainer]
@@ -38,7 +38,6 @@ object MongoFormatters extends MongoJodaFormats {
   implicit val arraySchemaFormats: Format[ArraySchema]            = Json.format[ArraySchema]
   implicit val headerFormats: Format[Header]                      = Json.format[Header]
   implicit val parameterFormats: Format[Parameter]                = Json.format[Parameter]
-  implicit val componentsFormats: Format[Components]              = Json.format[Components]
 
   implicit val requestFormats: OFormat[Request]   = Json.format[Request]
   implicit val responseFormats: OFormat[Response] = Json.format[Response]
