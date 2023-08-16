@@ -110,6 +110,11 @@ trait OasParsedItTestData {
 
   val endpointsNoDeepSearch = List(Endpoint("/some/url", List(getEndpoint1, putEndpoint1)))
 
+  val endpointsWithScopes = List(
+    Endpoint("/path/1", List(EndpointMethod("GET", None, None, List("read:scope1")))),
+    Endpoint("/path/2", List(EndpointMethod("GET", None, None, List("read:scope2"))))
+  )
+
   val apiDetail1: ApiDetail = ApiDetail(
     IntegrationId(UUID.fromString("dda7249a-9b88-11eb-a8b3-0242ac130003")),
     publisherReference = "API1001",
@@ -196,6 +201,24 @@ trait OasParsedItTestData {
     endpoints = endpointsNoDeepSearch,
     shortDescription = None,
     openApiSpecification = "OAS file contents 5",
+    apiStatus = LIVE,
+    reviewedDate = reviewedDate
+  )
+
+  val apiDetail9: ApiDetail = ApiDetail(
+    IntegrationId(UUID.fromString("53b96a37-d9bb-4d55-8528-be107e3003bf")),
+    publisherReference = "API1009",
+    title = "API9 with Scopes",
+    description = "Description of API9 with Scopes",
+    lastUpdated = dateValue,
+    platform = PlatformType.HIP,
+    maintainer = coreIfMaintainer,
+    version = "9.2.0",
+    specificationType = SpecificationType.OAS_V3,
+    hods = List("EMS"),
+    endpoints = endpointsWithScopes,
+    shortDescription = None,
+    openApiSpecification = "OAS file contents 9",
     apiStatus = LIVE,
     reviewedDate = reviewedDate
   )

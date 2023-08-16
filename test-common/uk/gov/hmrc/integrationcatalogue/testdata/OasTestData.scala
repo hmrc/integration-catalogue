@@ -172,9 +172,9 @@ trait OasTestData extends ExtensionKeys {
 
   private def addOAuth2SecurityScheme(
     openApi: OpenAPI,
-    oAuth2SecuritySchemeName: Option[String] = None,
-    globalScopes: List[String] = List.empty,
-    endpointScopes: Map[String, List[String]] = Map.empty
+    oAuth2SecuritySchemeName: Option[String],
+    globalScopes: List[String],
+    endpointScopes: Map[String, List[String]]
   ): Unit = {
     oAuth2SecuritySchemeName.foreach {
       name =>

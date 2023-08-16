@@ -10,7 +10,7 @@ import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.IdentifierAct
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType.{API, FILE_TRANSFER}
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.{API_PLATFORM, CDS_CLASSIC, CORE_IF, DES}
-import uk.gov.hmrc.integrationcatalogue.models.{FileTransferTransportsForPlatform, IntegrationDetail, IntegrationPlatformReport, IntegrationResponse}
+import uk.gov.hmrc.integrationcatalogue.models.{ApiDetail, FileTransferTransportsForPlatform, IntegrationDetail, IntegrationPlatformReport, IntegrationResponse}
 import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 import uk.gov.hmrc.integrationcatalogue.support.{AwaitTestSupport, MongoApp, ServerBaseISpec}
 import uk.gov.hmrc.integrationcatalogue.testdata.{FakeIdentifierAction, OasParsedItTestData}
@@ -248,6 +248,24 @@ class IntegrationControllerISpec
 
       }
 
+      "respond with integration having scopes" in {
+        await(apiRepo.findAndModify(apiDetail9)) match {
+          case Right((integration, _)) =>
+            val result = callGetEndpoint(s"$url/integrations/${integration.id.value.toString}")
+            result.status mustBe OK
+
+            val apiDetail = Json.parse(result.body).as[ApiDetail]
+            apiDetail.endpoints.foreach(
+              endpoint =>
+                endpoint.methods.foreach(
+                  method =>
+                    method.scopes must not be empty
+                )
+            )
+          case Left(error) =>
+            throw error
+        }
+      }
     }
 
     "GET  /report " should {
