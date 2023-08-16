@@ -344,5 +344,24 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       result shouldBe a[Invalid[_]]
 
     }
+
+    "parse oas file with scopes correctly" in new Setup {
+      val oasFileContents: String = parseFileToString("/API1000_multipleEndpoints.yaml")
+
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("test-publisher-ref"), PlatformType.CORE_IF, OASSpecType, oasFileContents)
+      result match {
+        case Valid(parsedObject) =>
+          parsedObject.endpoints.foreach(
+            endpoint =>
+              endpoint.methods.foreach(
+                method =>
+                  method.scopes shouldBe List("write:pets", "read:pets")
+              )
+          )
+        case _                   => fail()
+      }
+    }
+
   }
+
 }
