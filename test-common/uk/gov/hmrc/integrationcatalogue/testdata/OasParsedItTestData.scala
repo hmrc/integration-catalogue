@@ -97,12 +97,12 @@ trait OasParsedItTestData {
     examples = List(exampleResponse1)
   )
 
-  val putEndpoint1: EndpointMethod = EndpointMethod("PUT", Some("some summary"), Some("some description"))
-  val getEndpoint1: EndpointMethod = EndpointMethod("GET", Some("some summary"), Some("some description"))
+  val putEndpoint1: EndpointMethod = EndpointMethod("PUT", Some("some summary"), Some("some description"), List.empty)
+  val getEndpoint1: EndpointMethod = EndpointMethod("GET", Some("some summary"), Some("some description"), List.empty)
 
   val endpoint1: Endpoint          = Endpoint("/some/url", List(putEndpoint1, getEndpoint1))
-  val getEndpoint2: EndpointMethod = EndpointMethod("GET", Some("some BOOP summary"), Some("some  DEEPSEARCH description"))
-  val putEndpoint2: EndpointMethod = EndpointMethod("PUT", Some("some DEEPSEARCH summary"), Some("some DEEPSEARCH description"))
+  val getEndpoint2: EndpointMethod = EndpointMethod("GET", Some("some BOOP summary"), Some("some  DEEPSEARCH description"), List.empty)
+  val putEndpoint2: EndpointMethod = EndpointMethod("PUT", Some("some DEEPSEARCH summary"), Some("some DEEPSEARCH description"), List.empty)
   val endpoint2: Endpoint          = Endpoint("/someOther/Newurl", List(putEndpoint2, getEndpoint2))
 
   val endpoints  = List(endpoint1)

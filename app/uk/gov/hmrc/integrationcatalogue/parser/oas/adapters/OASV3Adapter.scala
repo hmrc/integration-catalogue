@@ -22,6 +22,7 @@ import cats.implicits._
 import com.fasterxml.jackson.databind.JsonNode
 import io.swagger.v3.oas.models.PathItem.HttpMethod
 import io.swagger.v3.oas.models.info.Contact
+import io.swagger.v3.oas.models.security.{SecurityRequirement, SecurityScheme}
 import io.swagger.v3.oas.models.{OpenAPI, Operation, PathItem}
 import org.joda.time.DateTime
 import play.api.Logging
@@ -32,7 +33,7 @@ import uk.gov.hmrc.integrationcatalogue.parser.oas.OASV3Validation
 import uk.gov.hmrc.integrationcatalogue.service.{AcronymHelper, UuidService}
 
 import javax.inject.{Inject, Singleton}
-import scala.collection.mutable.LinkedHashSet
+import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 
 @Singleton
@@ -52,22 +53,18 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
         validateInfo(info) match {
           case Invalid(errors) => errors.toList.invalidNel[ApiDetail]
           case Valid(_)        =>
+            val globalScopes = extractScopes(openApi, openApi.getSecurity)
             val mayBePaths   = Option(openApi.getPaths)
-            val pathNames    = mayBePaths.map(_.keySet().asScala.to(LinkedHashSet).toList).getOrElse(List.empty)
+            val pathNames    = mayBePaths.map(_.keySet().asScala.to(mutable.LinkedHashSet).toList).getOrElse(List.empty)
             val allEndpoints = pathNames.flatMap(pathName => {
               mayBePaths.map(path => {
                 val pathItem = path.get(pathName)
-                extractEndpoints(pathName, pathItem)
+                extractEndpoints(openApi, pathName, pathItem, globalScopes)
               }).getOrElse(List.empty)
             })
 
-            // What to do about errors parsing extensions????
             parseExtensions(info, publisherRef, appConfig) match {
               case Right(extensions: IntegrationCatalogueExtensions) =>
-                val hods                  = extensions.backends
-                val status                = extensions.status
-                val extensionReviewedDate = extensions.reviewedDate
-
                 Valid(ApiDetail(
                   id = IntegrationId(uuidService.newUuid()),
                   publisherReference = extensions.publisherReference,
@@ -79,11 +76,11 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
                   maintainer = extractMaintainer(info.getContact),
                   specificationType = specType,
                   platform = platformType,
-                  hods = hods.toList,
+                  hods = extensions.backends.toList,
                   shortDescription = extensions.shortDescription,
                   openApiSpecification = openApiSpecificationContent,
-                  apiStatus = status,
-                  reviewedDate = extensionReviewedDate
+                  apiStatus = extensions.status,
+                  reviewedDate = extensions.reviewedDate
                 ))
               case Left(x)                                           => x.toList.invalidNel[ApiDetail]
             }
@@ -111,7 +108,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
     }
   }
 
-  private def extractEndpoints(path: String, item: PathItem): List[Endpoint] = {
+  private def extractEndpoints(openApi: OpenAPI, path: String, item: PathItem, globalScopes: List[String]): List[Endpoint] = {
     val endpointMethods = item.readOperationsMap().asScala.toMap
       .map {
         case (m: HttpMethod, operation: Operation) =>
@@ -120,10 +117,44 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
           EndpointMethod(
             httpMethod = method,
             summary = Option(operation).flatMap(x => Option(x.getSummary)),
-            description = Option(operation.getDescription)
+            description = Option(operation.getDescription),
+            scopes = extractScopes(openApi, operation.getSecurity, globalScopes)
           )
       }.toList
     List(Endpoint(path, endpointMethods))
+  }
+
+  private def extractScopes(openApi: OpenAPI, securityRequirements: java.util.List[SecurityRequirement]): List[String] = {
+    (for {
+      schemeName <- extractOAuth2SchemeName(openApi)
+      requirements <- Option(securityRequirements)
+    } yield {
+      requirements.asScala.toList
+        .flatMap(
+          securityRequirement =>
+            Option(securityRequirement.get(schemeName))
+              .map(_.asScala.toList)
+              .getOrElse(List.empty)
+        )
+    }).getOrElse(List.empty)
+  }
+
+  private def extractScopes(openApi: OpenAPI, securityRequirements: java.util.List[SecurityRequirement], globalScopes: List[String]): List[String] = {
+    extractScopes(openApi, securityRequirements) match {
+      case scopes @ _ :: _  => scopes
+      case _ => globalScopes
+    }
+  }
+
+  private def extractOAuth2SchemeName(openApi: OpenAPI): Option[String] = {
+    (for {
+      components <- Option(openApi.getComponents)
+      securitySchemes <- Option(components.getSecuritySchemes)
+    } yield securitySchemes.asScala)
+      .flatMap(
+        _.find(scheme => scheme._2.getType.equals(SecurityScheme.Type.OAUTH2))
+          .map(_._1)
+      )
   }
 
   def getExampleText(maybeObject: Option[Object]): String = {
