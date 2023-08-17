@@ -151,7 +151,8 @@ case class Endpoint(path: String, methods: List[EndpointMethod])
 case class EndpointMethod(
     httpMethod: String,
     summary: Option[String],
-    description: Option[String]
+    description: Option[String],
+    scopes: List[String]
   )
 
 sealed trait ApiStatus extends EnumEntry

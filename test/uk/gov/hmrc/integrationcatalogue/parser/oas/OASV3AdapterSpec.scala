@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas
 
-import java.util.UUID
-
 import cats.data.Validated._
 import cats.data._
 import io.swagger.v3.oas.models.OpenAPI
@@ -28,13 +26,14 @@ import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiDetail
 import uk.gov.hmrc.integrationcatalogue.models.common.{ContactInformation, IntegrationId, PlatformType, SpecificationType}
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.OASV3Adapter
 import uk.gov.hmrc.integrationcatalogue.service.UuidService
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
+
+import java.util.UUID
 
 class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach {
 
@@ -44,7 +43,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
     val specType: SpecificationType         = SpecificationType.OAS_V3
     val generatedUuid: UUID                 = UUID.fromString("f26babbb-c9b1-4b79-b99a-9f99cf741f78")
     val mockUuidService: UuidService        = mock[UuidService]
-    val mockAppConfig                       = mock[AppConfig]
+    val mockAppConfig: AppConfig            = mock[AppConfig]
 
     val objInTest = new OASV3Adapter(mockUuidService, mockAppConfig)
 
@@ -57,14 +56,14 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
     val parseFailure: ValidatedNel[List[String], ApiDetail] =
       invalid(NonEmptyList[List[String]](List("Invalid OAS, info item missing from OAS specification"), List()))
 
-    val reviewedDate = DateTime.parse("25/12/20", DateTimeFormat.forPattern("dd/MM/yy"));
+    val reviewedDate: DateTime = DateTime.parse("25/12/20", DateTimeFormat.forPattern("dd/MM/yy"))
   }
 
   "extractOpenApi" should {
     "do happy path with extensions" in new Setup {
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
       val hods                                          = List("ITMP", "NPS")
-      val expectedReviewedDate                          = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser());
+      val expectedReviewedDate: DateTime                = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser())
       val result: ValidatedNel[List[String], ApiDetail] =
         objInTest.extractOpenApi(
           Some(apiDetail0.publisherReference),
@@ -89,10 +88,8 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           contact.emailAddress.getOrElse("") shouldBe oasContactEMail
           parsedObject.hods shouldBe hods
 
-        case errors: Invalid[NonEmptyList[List[String]]] => {
-          errors.e.head.foreach(println)
+        case _: Invalid[NonEmptyList[List[String]]] =>
           fail()
-        }
       }
 
     }
@@ -100,7 +97,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
     "do happy path with extensions but empty content in response and requests" in new Setup {
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
       val hods                                          = List("ITMP", "NPS")
-      val expectedReviewedDate                          = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser());
+      val expectedReviewedDate: DateTime                = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser())
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(
         Some(apiDetail0.publisherReference),
         apiDetail0.platform,
@@ -133,7 +130,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
 
     "do happy path with reviewedDate but without backends and publisherRef extensions" in new Setup {
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
-      val expectedReviewedDate                          = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser());
+      val expectedReviewedDate: DateTime                = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser())
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(
         Some(apiDetail0.publisherReference),
         apiDetail0.platform,
@@ -171,27 +168,21 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         getOpenAPIObject(withExtensions = false, reviewedDateExtension = None),
         openApiSpecificationContent = apiDetail0.openApiSpecification
       )
-      result match {
-        case Valid(parsedObject)                    => fail()
-        case _: Invalid[NonEmptyList[List[String]]] => succeed
-      }
 
+      result shouldBe an[Invalid[_]]
     }
 
     "parse extensions returns error(s)" in new Setup {
+      //noinspection ScalaStyle
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(
         Some(apiDetail0.publisherReference),
         apiDetail0.platform,
         apiDetail0.specificationType,
-        getOpenAPIObject(true, null),
+        getOpenAPIObject(withExtensions = true, backendsExtension = null),
         openApiSpecificationContent = apiDetail0.openApiSpecification
       )
-      result match {
-        case _: Invalid[NonEmptyList[List[String]]] => succeed
-        case Valid(parsedObject)                    => fail()
 
-      }
-
+      result shouldBe an[Invalid[_]]
     }
 
     "return failure with correct message when empty openApi object is passed in" in new Setup {
@@ -217,9 +208,126 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           openApi,
           openApiSpecificationContent = apiDetail0.openApiSpecification
         )
-      parseResult shouldBe createInvalidMessage(List("Invalid OAS, title missing from OAS specification", "Invalid OAS, version missing from OAS specification"))
+      parseResult shouldBe createInvalidMessage(
+        List("Invalid OAS, title missing from OAS specification", "Invalid OAS, version missing from OAS specification")
+      )
     }
 
+    "extract endpoint-level scopes when there are no global scopes" in new Setup {
+      when(mockUuidService.newUuid()).thenReturn(generatedUuid)
+
+      val endpointScopes: Map[String, List[String]] = Map(
+        oasPath1Uri -> List("read:scope-common", s"read:scope-path1"),
+        oasPath2Uri -> List.empty,
+        oasPath3Uri -> List("read:scope-common", s"read:scope-path3")
+      )
+
+      val openApi: OpenAPI = getOpenAPIObject(
+        withExtensions = true,
+        reviewedDateExtension = Some("2021-07-24"),
+        oAuth2SecuritySchemeName = Some("oAuth2Test"),
+        endpointScopes = endpointScopes
+      )
+
+      val result: ValidatedNel[List[String], ApiDetail] =
+        objInTest.extractOpenApi(
+          Some(apiDetail0.publisherReference),
+          apiDetail0.platform,
+          apiDetail0.specificationType,
+          openApi,
+          openApiSpecificationContent = apiDetail0.openApiSpecification
+        )
+
+      result match {
+        case Valid(apiDetail) =>
+          checkScopes(apiDetail, endpointScopes)
+        case invalid =>
+          fail(s"Result was not a valid ApiDetail: $invalid")
+      }
+    }
+
+    "extract endpoint-level scopes defaulting to global scopes" in  new Setup {
+      when(mockUuidService.newUuid()).thenReturn(generatedUuid)
+      val globalScopes: List[String] = List("read:global", "write:global")
+
+      val endpointScopes: Map[String, List[String]] = Map(
+        oasPath1Uri -> List("read:scope-common", s"read:scope-path1"),
+        oasPath2Uri -> List.empty,
+        oasPath3Uri -> List("read:scope-common", s"read:scope-path3")
+      )
+
+      val expectedScopes: Map[String, List[String]] = Map(
+        oasPath1Uri -> List("read:scope-common", s"read:scope-path1"),
+        oasPath2Uri -> List("read:global", "write:global"),
+        oasPath3Uri -> List("read:scope-common", s"read:scope-path3")
+      )
+
+      val openApi: OpenAPI = getOpenAPIObject(
+        withExtensions = true,
+        reviewedDateExtension = Some("2021-07-24"),
+        oAuth2SecuritySchemeName = Some("oAuth2Test"),
+        globalScopes = globalScopes,
+        endpointScopes = endpointScopes
+      )
+
+      val result: ValidatedNel[List[String], ApiDetail] =
+        objInTest.extractOpenApi(
+          Some(apiDetail0.publisherReference),
+          apiDetail0.platform,
+          apiDetail0.specificationType,
+          openApi,
+          openApiSpecificationContent = apiDetail0.openApiSpecification
+        )
+
+      result match {
+        case Valid(apiDetail) =>
+          checkScopes(apiDetail, expectedScopes)
+        case invalid =>
+          fail(s"Result was not a valid ApiDetail: $invalid")
+      }
+    }
+
+    "extract empty scopes when there is an OAuth2 security scheme but no endpoint or global scopes" in new Setup {
+      when(mockUuidService.newUuid()).thenReturn(generatedUuid)
+
+      val expectedScopes: Map[String, List[String]] = Map(
+        oasPath1Uri -> List.empty,
+        oasPath2Uri -> List.empty,
+        oasPath3Uri -> List.empty
+      )
+
+      val openApi: OpenAPI = getOpenAPIObject(
+        withExtensions = true,
+        reviewedDateExtension = Some("2021-07-24"),
+        oAuth2SecuritySchemeName = Some("oAuth2Test")
+      )
+
+      val result: ValidatedNel[List[String], ApiDetail] =
+        objInTest.extractOpenApi(
+          Some(apiDetail0.publisherReference),
+          apiDetail0.platform,
+          apiDetail0.specificationType,
+          openApi,
+          openApiSpecificationContent = apiDetail0.openApiSpecification
+        )
+
+      result match {
+        case Valid(apiDetail) =>
+          checkScopes(apiDetail, expectedScopes)
+        case invalid =>
+          fail(s"Result was not a valid ApiDetail: $invalid")
+      }
+    }
+  }
+
+  private def checkScopes(apiDetail: ApiDetail, expectedScopes: Map[String, List[String]]): Unit = {
+    apiDetail.endpoints.foreach(
+      endpoint =>
+        endpoint.methods.foreach(
+          method =>
+            method.scopes shouldBe expectedScopes(endpoint.path)
+        )
+    )
   }
 
 }

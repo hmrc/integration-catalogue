@@ -16,18 +16,16 @@
 
 package uk.gov.hmrc.integrationcatalogue.testdata
 
-import java.util.HashMap
-import java.{util => ju}
+import java.util
 import scala.jdk.CollectionConverters._
-
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.v3.oas.models.info.{Contact, Info}
 import io.swagger.v3.oas.models.media.{Content, MediaType}
 import io.swagger.v3.oas.models.parameters.RequestBody
 import io.swagger.v3.oas.models.responses.{ApiResponse, ApiResponses}
-import io.swagger.v3.oas.models.{OpenAPI, Operation, PathItem, Paths}
+import io.swagger.v3.oas.models.security.{SecurityRequirement, SecurityScheme}
+import io.swagger.v3.oas.models.{Components, OpenAPI, Operation, PathItem, Paths}
 import io.swagger.v3.parser.core.models.SwaggerParseResult
-
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.ExtensionKeys
 
 trait OasTestData extends ExtensionKeys {
@@ -51,14 +49,14 @@ trait OasTestData extends ExtensionKeys {
   val oasContactName        = "Test Developer"
   val oasContactEMail       = "test.developer@hmrc.gov.uk"
 
-  def getSwaggerResult(messages: List[String] = List.empty) = {
+  def getSwaggerResult(messages: List[String] = List.empty): SwaggerParseResult = {
     val result = new SwaggerParseResult()
     result.setMessages(messages.asJava)
-    result.setOpenAPI(getOpenAPIObject(false))
+    result.setOpenAPI(getOpenAPIObject(withExtensions = false))
     result
   }
 
-  def getOpenApiInfo() = {
+  private def buildOpenApiInfo(): Info = {
     val openAPIInfo = new Info()
     openAPIInfo.setTitle(oasApiName)
     openAPIInfo.setDescription(oasApiDescription)
@@ -74,16 +72,18 @@ trait OasTestData extends ExtensionKeys {
       withExtensions: Boolean,
       backendsExtension: List[String] = List.empty,
       reviewedDateExtension: Option[String] = None,
-      hasEmptyReqRespContent: Boolean = false
+      hasEmptyReqRespContent: Boolean = false,
+      oAuth2SecuritySchemeName: Option[String] = None,
+      globalScopes: List[String] = List.empty,
+      endpointScopes: Map[String, List[String]] = Map.empty
     ): OpenAPI = {
-
-    val openAPIInfo = getOpenApiInfo()
+    val openAPIInfo = buildOpenApiInfo()
 
     if (withExtensions || reviewedDateExtension.isDefined) {
-      val sublevelExtensions = new HashMap[String, AnyRef]()
+      val sublevelExtensions = new util.HashMap[String, AnyRef]()
 
       if (withExtensions) {
-        var backends: ju.List[String] = null
+        var backends: util.List[String] = null
         if (Option(backendsExtension).isDefined) {
           backends = new java.util.ArrayList[String]()
           backendsExtension.foreach(e => backends.add(e))
@@ -95,33 +95,44 @@ trait OasTestData extends ExtensionKeys {
       if (reviewedDateExtension.isDefined) {
         sublevelExtensions.put(REVIEWED_DATE_EXTENSION_KEY, reviewedDateExtension.get)
       }
-      val topLevelExtensionsMap = new HashMap[String, AnyRef]()
+      val topLevelExtensionsMap = new util.HashMap[String, AnyRef]()
       topLevelExtensionsMap.put(EXTENSIONS_KEY, sublevelExtensions)
       openAPIInfo.setExtensions(topLevelExtensionsMap)
-
     }
 
+    val openApiObj = new OpenAPI()
+    openApiObj.setInfo(openAPIInfo)
+    addPaths(openApiObj, hasEmptyReqRespContent)
+    addOAuth2SecurityScheme(openApiObj, oAuth2SecuritySchemeName, globalScopes, endpointScopes)
+    openApiObj
+  }
+
+  private def addPaths(openApiObj: OpenAPI, hasEmptyReqRespContent: Boolean): Unit = {
     val pathItem1    = new PathItem()
+    pathItem1.setGet(buildGetOperation(hasEmptyReqRespContent))
+
+    val pathItem2  = new PathItem()
+    pathItem2.setGet(buildGetOperation(hasEmptyReqRespContent))
+
+    val pathItem3  = new PathItem()
+    pathItem3.setGet(buildGetOperation(hasEmptyReqRespContent))
+
+    val pathsObj   = new Paths()
+    pathsObj.addPathItem(oasPath1Uri, pathItem1)
+    pathsObj.addPathItem(oasPath2Uri, pathItem2)
+    pathsObj.addPathItem(oasPath3Uri, pathItem3)
+
+    openApiObj.setPaths(pathsObj)
+  }
+
+  private def buildGetOperation(hasEmptyReqRespContent: Boolean): Operation = {
     val getOperation = new Operation()
     getOperation.setDescription(oasGetEndpointDesc)
     getOperation.setSummary(oasGetEndpointSummary)
     getOperation.setRequestBody(buildRequestBody(hasEmptyReqRespContent))
     getOperation.setResponses(buildResponseBodies(hasEmptyReqRespContent))
 
-    pathItem1.setGet(getOperation)
-    val pathItem2  = new PathItem()
-    pathItem2.setGet(getOperation)
-    val pathItem3  = new PathItem()
-    pathItem3.setGet(getOperation)
-    val pathsObj   = new Paths()
-    pathsObj.addPathItem(oasPath1Uri, pathItem1)
-    pathsObj.addPathItem(oasPath2Uri, pathItem2)
-    pathsObj.addPathItem(oasPath3Uri, pathItem3)
-    val openApiObj = new OpenAPI()
-    openApiObj.setInfo(openAPIInfo)
-    openApiObj.setPaths(pathsObj)
-
-    openApiObj
+    getOperation
   }
 
   def buildRequestBody(hasEmptyContent: Boolean = false): RequestBody = {
@@ -142,7 +153,7 @@ trait OasTestData extends ExtensionKeys {
     requestBody1
   }
 
-  def buildResponseBodies(hasEmptyContent: Boolean = false) = {
+  def buildResponseBodies(hasEmptyContent: Boolean = false): ApiResponses = {
     val responseBodies       = new ApiResponses()
     val apiResponse          = new ApiResponse()
     apiResponse.setDescription("response description")
@@ -159,7 +170,49 @@ trait OasTestData extends ExtensionKeys {
     responseBodies.addApiResponse("200", apiResponse)
   }
 
-  val rawOASDataWithExtensions = raw"""openapi: 3.0.3
+  private def addOAuth2SecurityScheme(
+    openApi: OpenAPI,
+    oAuth2SecuritySchemeName: Option[String],
+    globalScopes: List[String],
+    endpointScopes: Map[String, List[String]]
+  ): Unit = {
+    oAuth2SecuritySchemeName.foreach {
+      name =>
+        val securityScheme = new SecurityScheme()
+        securityScheme.setName(name)
+        securityScheme.setType(SecurityScheme.Type.OAUTH2)
+
+        val components = new Components()
+        components.addSecuritySchemes(securityScheme.getName, securityScheme)
+        openApi.setComponents(components)
+
+        addGlobalScopes(openApi, name, globalScopes)
+        addEndpointScopes(openApi, name, endpointScopes)
+    }
+  }
+
+  private def addGlobalScopes(openAPI: OpenAPI, oAuth2SecuritySchemeName: String, globalScopes: List[String]): Unit = {
+    val securityRequirement = new SecurityRequirement()
+    securityRequirement.addList(oAuth2SecuritySchemeName, globalScopes.asJava)
+    openAPI.setSecurity(List(securityRequirement).asJava)
+  }
+
+  private def addEndpointScopes(openApi: OpenAPI, oAuth2SecuritySchemeName: String, endpointScopes: Map[String, List[String]]): Unit = {
+    endpointScopes.keySet.foreach {
+      path =>
+        if (endpointScopes(path).nonEmpty) {
+          val securityRequirement = new SecurityRequirement()
+          securityRequirement.addList(oAuth2SecuritySchemeName, endpointScopes(path).asJava)
+
+          openApi.getPaths.get(path).readOperations().asScala.foreach {
+            operation =>
+              operation.setSecurity(List(securityRequirement).asJava)
+          }
+        }
+    }
+  }
+
+  val rawOASDataWithExtensions: String = raw"""openapi: 3.0.3
                                       |info:
                                       |  title: '$oasApiName'
                                       |  description: >-
@@ -719,7 +772,8 @@ trait OasTestData extends ExtensionKeys {
                                       |      additionalProperties: false
                                       |""".stripMargin
 
-  def rawOASData(contactName: String) =
+  //noinspection ScalaStyle
+  def rawOASData(contactName: String): String =
     raw"""openapi: 3.0.3
          |info:
          |  title: '$oasApiName'

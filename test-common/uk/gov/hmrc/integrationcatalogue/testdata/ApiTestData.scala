@@ -97,8 +97,8 @@ trait ApiTestData {
 
   val selfassessmentApiId: IntegrationId = IntegrationId(UUID.fromString("b7c649e6-e10b-4815-8a2c-706317ec484d"))
 
-  val endpointGetMethod: EndpointMethod = EndpointMethod("GET", Some("summary"), Some("some description"))
-  val endpointPutMethod: EndpointMethod = EndpointMethod("PUT", Some("summary"), Some("some description"))
+  val endpointGetMethod: EndpointMethod = EndpointMethod("GET", Some("summary"), Some("some description"), List.empty)
+  val endpointPutMethod: EndpointMethod = EndpointMethod("PUT", Some("summary"), Some("some description"), List.empty)
   val endpoint1: Endpoint = Endpoint("/some/url", List(endpointGetMethod, endpointPutMethod))
 
   val endpoints = List(endpoint1, Endpoint("/some/url", List.empty))

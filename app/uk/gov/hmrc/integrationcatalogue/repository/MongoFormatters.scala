@@ -17,6 +17,7 @@
 package uk.gov.hmrc.integrationcatalogue.repository
 
 import org.joda.time.DateTime
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
 import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
 import uk.gov.hmrc.integrationcatalogue.models._
@@ -42,7 +43,16 @@ object MongoFormatters extends MongoJodaFormats {
   implicit val requestFormats: OFormat[Request]   = Json.format[Request]
   implicit val responseFormats: OFormat[Response] = Json.format[Response]
 
-  implicit val endpointMethodFormats: OFormat[EndpointMethod] = Json.format[EndpointMethod]
+  private val endpointMethodReads: Reads[EndpointMethod] = (
+    (JsPath \ "httpMethod").read[String] and
+      (JsPath \ "summary").readNullable[String] and
+      (JsPath \ "description").readNullable[String] and
+      (JsPath \ "scopes").readWithDefault[List[String]](List.empty)
+    )(EndpointMethod.apply _)
+
+  private val endpointMethodWrites: Writes[EndpointMethod] = Json.writes[EndpointMethod]
+  implicit val endpointMethodFormats: Format[EndpointMethod] = Format(endpointMethodReads, endpointMethodWrites)
+
   implicit val endpointFormats: OFormat[Endpoint]             = Json.format[Endpoint]
 
   implicit val integrationDetailFormats: OFormat[IntegrationDetail]                           = Json.format[IntegrationDetail]
