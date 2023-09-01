@@ -166,10 +166,10 @@ object ApiStatus extends Enum[ApiStatus] with PlayJsonEnum[ApiStatus] {
   case object DEPRECATED extends ApiStatus
 }
 
-case class Scope(
-                  name: String,
-                  description: Option[String]
-                )
+case class Scope( name: String,
+                  description: Option[String] ) {
+  def this(name: String, description: String) = this(name, Option(description))
+}
 
 case class ApiDetail(
                       id: IntegrationId,
