@@ -27,8 +27,8 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
-import uk.gov.hmrc.integrationcatalogue.models.ApiDetail
 import uk.gov.hmrc.integrationcatalogue.models.common.{ContactInformation, IntegrationId, PlatformType, SpecificationType}
+import uk.gov.hmrc.integrationcatalogue.models.{ApiDetail, Scope}
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.OASV3Adapter
 import uk.gov.hmrc.integrationcatalogue.service.UuidService
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
@@ -240,7 +240,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
 
       result match {
         case Valid(apiDetail) =>
-          checkScopes(apiDetail, endpointScopes)
+          checkEndpointScopes(apiDetail, endpointScopes)
         case invalid =>
           fail(s"Result was not a valid ApiDetail: $invalid")
       }
@@ -281,7 +281,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
 
       result match {
         case Valid(apiDetail) =>
-          checkScopes(apiDetail, expectedScopes)
+          checkEndpointScopes(apiDetail, expectedScopes)
         case invalid =>
           fail(s"Result was not a valid ApiDetail: $invalid")
       }
@@ -313,14 +313,106 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
 
       result match {
         case Valid(apiDetail) =>
-          checkScopes(apiDetail, expectedScopes)
+          checkEndpointScopes(apiDetail, expectedScopes)
         case invalid =>
           fail(s"Result was not a valid ApiDetail: $invalid")
       }
     }
   }
 
-  private def checkScopes(apiDetail: ApiDetail, expectedScopes: Map[String, List[String]]): Unit = {
+  "extract oauth scopes and definitions for all scopes being used" in new Setup {
+    when(mockUuidService.newUuid()).thenReturn(generatedUuid)
+    val globalScopes: List[String] = List("read:global", "write:global")
+
+    val endpointScopes: Map[String, List[String]] = Map(
+      oasPath1Uri -> List("read:scope-common", s"read:scope-path1"),
+      oasPath2Uri -> List.empty,
+      oasPath3Uri -> List("read:scope-common", s"read:scope-path3")
+    )
+
+    private val oauthScopes: List[(String, String)] = List[(String, String)](
+      ("read:global", "Global READ scope"),
+      ("read:scope-common", "READ scope COMMON"),
+      ("read:scope-cheese", "CHEESE scope"))
+
+    private val expectedScopes: Set[Scope] = Set(
+      Scope("read:global", Option("Global READ scope")),
+      Scope("write:global", Option.empty),
+      Scope("read:scope-common", Option("READ scope COMMON")),
+      Scope("read:scope-path1",Option.empty),
+      Scope("read:scope-path3",Option.empty))
+
+    val openApi: OpenAPI = getOpenAPIObject(
+      withExtensions = true,
+      reviewedDateExtension = Some("2021-07-24"),
+      oAuth2SecuritySchemeName = Some("oAuth2Test"),
+      globalScopes = globalScopes,
+      endpointScopes = endpointScopes,
+      oauthFlowScopes = Map("clientCredentials" -> oauthScopes))
+
+    val result: ValidatedNel[List[String], ApiDetail] =
+      objInTest.extractOpenApi(
+        Some(apiDetail0.publisherReference),
+        apiDetail0.platform,
+        apiDetail0.specificationType,
+        openApi,
+        openApiSpecificationContent = apiDetail0.openApiSpecification
+      )
+
+    result match {
+      case Valid(apiDetail) =>
+        checkScopeDefinitions(apiDetail, expectedScopes)
+      case invalid =>
+        fail(s"Result was not a valid ApiDetail: $invalid")
+    }
+  }
+
+  "not provide any definitions listed in oauth flows that are not also mentioned elsewhere" in new Setup {
+    when(mockUuidService.newUuid()).thenReturn(generatedUuid)
+    val globalScopes: List[String] = List("read:global", "write:global")
+
+    val endpointScopes: Map[String, List[String]] = Map(
+      oasPath1Uri -> List("read:scope-common", s"read:scope-path1"),
+      oasPath2Uri -> List.empty,
+      oasPath3Uri -> List("read:scope-common", s"read:scope-path3")
+    )
+
+    private val definedScopes: List[(String, String)] = List[(String, String)](
+      ("read:cheese", "CHEESE scope"),
+      ("read:crackers", "CRACKERS scope"))
+
+    private val expectedScopes: Set[Scope] = Set(
+      Scope("read:global", Option.empty),
+      Scope("write:global", Option.empty),
+      Scope("read:scope-common", Option.empty),
+      Scope("read:scope-path1", Option.empty),
+      Scope("read:scope-path3", Option.empty))
+
+    val openApi: OpenAPI = getOpenAPIObject(
+      withExtensions = true,
+      reviewedDateExtension = Some("2021-07-24"),
+      oAuth2SecuritySchemeName = Some("oAuth2Test"),
+      globalScopes = globalScopes,
+      endpointScopes = endpointScopes,
+      oauthFlowScopes = Map("clientCredentials" -> definedScopes))
+
+    val result: ValidatedNel[List[String], ApiDetail] =
+      objInTest.extractOpenApi(
+        Some(apiDetail0.publisherReference),
+        apiDetail0.platform,
+        apiDetail0.specificationType,
+        openApi,
+        openApiSpecificationContent = apiDetail0.openApiSpecification
+      )
+
+    result match {
+      case Valid(apiDetail) =>
+        checkScopeDefinitions(apiDetail, expectedScopes)
+      case invalid =>
+        fail(s"Result was not a valid ApiDetail: $invalid")
+    }
+  }
+  private def checkEndpointScopes(apiDetail: ApiDetail, expectedScopes: Map[String, List[String]]): Unit = {
     apiDetail.endpoints.foreach(
       endpoint =>
         endpoint.methods.foreach(
@@ -328,6 +420,10 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
             method.scopes shouldBe expectedScopes(endpoint.path)
         )
     )
+  }
+
+  private def checkScopeDefinitions(apiDetail: ApiDetail, expectedScopes: Set[Scope]): Unit = {
+    apiDetail.scopes should be(expectedScopes)
   }
 
 }

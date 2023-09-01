@@ -16,14 +16,13 @@
 
 package uk.gov.hmrc.integrationcatalogue.testdata
 
-import java.util.UUID
-
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, Maintainer, PlatformType, SpecificationType}
+
+import java.util.UUID
 
 trait ApiTestData {
 
@@ -117,7 +116,8 @@ trait ApiTestData {
     shortDescription = None,
     openApiSpecification = "OAS content for Self Assessment",
     apiStatus = LIVE,
-    reviewedDate = reviewedDate
+    reviewedDate = reviewedDate,
+    scopes = Set.empty
   )
 
   val apiDetail1: ApiDetail = ApiDetail(
@@ -134,7 +134,8 @@ trait ApiTestData {
     shortDescription = None,
     openApiSpecification = "OAS content for Marriage Allowance",
     apiStatus = LIVE,
-    reviewedDate = reviewedDate
+    reviewedDate = reviewedDate,
+    scopes = Set.empty
   )
 
   val apiDetail2: ApiDetail = ApiDetail(
@@ -152,7 +153,8 @@ trait ApiTestData {
     shortDescription = None,
     openApiSpecification = "OAS content for API#1001",
     apiStatus = LIVE,
-    reviewedDate = reviewedDate
+    reviewedDate = reviewedDate,
+    scopes = Set.empty
   )
 
   val apiDetail3: ApiDetail = ApiDetail(
@@ -170,7 +172,8 @@ trait ApiTestData {
     shortDescription = None,
     openApiSpecification = "OAS content for API#1002",
     apiStatus = LIVE,
-    reviewedDate = reviewedDate
+    reviewedDate = reviewedDate,
+    scopes = Set.empty
   )
 
   val apiList = List(apiDetail0, apiDetail1, apiDetail2, apiDetail3)

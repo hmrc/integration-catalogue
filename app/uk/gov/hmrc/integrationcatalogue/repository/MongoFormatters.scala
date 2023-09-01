@@ -19,9 +19,9 @@ package uk.gov.hmrc.integrationcatalogue.repository
 import org.joda.time.DateTime
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
-import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common._
+import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
 
 object MongoFormatters extends MongoJodaFormats {
   implicit val integrationIdFormatter: Format[IntegrationId] = Json.valueFormat[IntegrationId]
@@ -50,12 +50,19 @@ object MongoFormatters extends MongoJodaFormats {
       (JsPath \ "scopes").readWithDefault[List[String]](List.empty)
     )(EndpointMethod.apply _)
 
+
   private val endpointMethodWrites: Writes[EndpointMethod] = Json.writes[EndpointMethod]
   implicit val endpointMethodFormats: Format[EndpointMethod] = Format(endpointMethodReads, endpointMethodWrites)
 
   implicit val endpointFormats: OFormat[Endpoint]             = Json.format[Endpoint]
 
+  implicit val scopeReads: Reads[Scope] = ((JsPath \ "name").read[String] and (JsPath \ "description").readNullable[String])(Scope.apply _)
+  private val scopeWrites: Writes[Scope] = Json.writes[Scope]
+  implicit val scopeFormats: Format[Scope] = Format(scopeReads, scopeWrites)
   implicit val integrationDetailFormats: OFormat[IntegrationDetail]                           = Json.format[IntegrationDetail]
+
+  implicit val scopesReads: Reads[Seq[Scope]] = (JsPath \ "scopes").readWithDefault[Seq[Scope]](Seq.empty)
+
   implicit val apiDetailParsedFormats: OFormat[ApiDetail]                                     = Json.format[ApiDetail]
   implicit val fileTransferDetailFormats: OFormat[FileTransferDetail]                         = Json.format[FileTransferDetail]
   implicit val integrationCountFormats: OFormat[IntegrationCount]                             = Json.format[IntegrationCount]
