@@ -362,6 +362,25 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       }
     }
 
+    "parse oas file correctly with scopes" in new Setup {
+      val publisherReference = "SOMEFILEREFERENCE"
+      val oasFileContents: String = parseFileToString("/API1000_withFlowsAndScopes.yaml")
+
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
+      result match {
+        case Valid(parsedObject) =>
+          parsedObject.title shouldBe "API1000 Get Data"
+
+          parsedObject.endpoints.size shouldBe 1
+          parsedObject.endpoints.head.methods.size shouldBe 1
+          parsedObject.publisherReference shouldBe publisherReference
+          val getMethod: EndpointMethod = parsedObject.endpoints.head.methods.head
+          getMethod.httpMethod shouldBe "GET"
+          parsedObject.scopes shouldBe Set(Scope("read_pets",Some("read your pets")), Scope("write_pets", Some("modify pets in your account")))
+        case _: Invalid[NonEmptyList[List[String]]] => fail()
+      }
+    }
+
   }
 
 }
