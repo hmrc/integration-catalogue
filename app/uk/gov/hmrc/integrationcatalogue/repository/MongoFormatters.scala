@@ -75,7 +75,7 @@ object MongoFormatters extends MongoJodaFormats {
       (JsPath \ "shortDescription").readNullable[String] and
       (JsPath \ "openApiSpecification").read[String] and
       (JsPath \ "apiStatus").read[ApiStatus] and
-      (JsPath \ "scopes").readWithDefault[Seq[Scope]](Seq.empty)
+      (JsPath \ "scopes").readWithDefault[Set[Scope]](Set.empty)
     )(ApiDetail.apply _)
 
   private val apiDetailWrites: Writes[ApiDetail] = Json.writes[ApiDetail]
@@ -83,9 +83,6 @@ object MongoFormatters extends MongoJodaFormats {
 
   implicit val integrationDetailFormats: OFormat[IntegrationDetail]                           = Json.format[IntegrationDetail]
 
-//  implicit val scopesReads: Reads[Seq[Scope]] = (JsPath \ "scopes").readWithDefault[Seq[Scope]](Seq.empty)
-
-  implicit val apiDetailParsedFormats: OFormat[ApiDetail]                                     = Json.format[ApiDetail]
   implicit val fileTransferDetailFormats: OFormat[FileTransferDetail]                         = Json.format[FileTransferDetail]
   implicit val integrationCountFormats: OFormat[IntegrationCount]                             = Json.format[IntegrationCount]
   implicit val integrationCountResponseFormats: OFormat[IntegrationCountResponse]             = Json.format[IntegrationCountResponse]
