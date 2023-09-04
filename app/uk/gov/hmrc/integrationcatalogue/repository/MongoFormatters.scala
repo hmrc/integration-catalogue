@@ -56,12 +56,34 @@ object MongoFormatters extends MongoJodaFormats {
 
   implicit val endpointFormats: OFormat[Endpoint]             = Json.format[Endpoint]
 
-  implicit val scopeReads: Reads[Scope] = ((JsPath \ "name").read[String] and (JsPath \ "description").readNullable[String])(Scope.apply _)
-  private val scopeWrites: Writes[Scope] = Json.writes[Scope]
-  implicit val scopeFormats: Format[Scope] = Format(scopeReads, scopeWrites)
+  implicit val scopeFormat: Format[Scope] = Json.format[Scope]
+
+  private val apiDetailReads: Reads[ApiDetail] = (
+    (JsPath \ "id").read[IntegrationId] and
+      (JsPath \ "publisherReference").read[String] and
+      (JsPath \ "title").read[String] and
+      (JsPath \ "description").read[String] and
+      (JsPath \ "platform").read[PlatformType] and
+      (JsPath \ "hods").read[List[String]] and
+      (JsPath \ "lastUpdated").read[DateTime] and
+      (JsPath \ "reviewedDate").read[DateTime] and
+      (JsPath \ "maintainer").read[Maintainer] and
+      (JsPath \ "score").readNullable[Double] and
+      (JsPath \ "version").read[String] and
+      (JsPath \ "specificationType").read[SpecificationType] and
+      (JsPath \ "endpoints").read[List[Endpoint]] and
+      (JsPath \ "shortDescription").readNullable[String] and
+      (JsPath \ "openApiSpecification").read[String] and
+      (JsPath \ "apiStatus").read[ApiStatus] and
+      (JsPath \ "scopes").readWithDefault[Seq[Scope]](Seq.empty)
+    )(ApiDetail.apply _)
+
+  private val apiDetailWrites: Writes[ApiDetail] = Json.writes[ApiDetail]
+  implicit val apiDetailParsedFormats: Format[ApiDetail] = Format(apiDetailReads, apiDetailWrites)
+
   implicit val integrationDetailFormats: OFormat[IntegrationDetail]                           = Json.format[IntegrationDetail]
 
-  implicit val scopesReads: Reads[Seq[Scope]] = (JsPath \ "scopes").readWithDefault[Seq[Scope]](Seq.empty)
+//  implicit val scopesReads: Reads[Seq[Scope]] = (JsPath \ "scopes").readWithDefault[Seq[Scope]](Seq.empty)
 
   implicit val apiDetailParsedFormats: OFormat[ApiDetail]                                     = Json.format[ApiDetail]
   implicit val fileTransferDetailFormats: OFormat[FileTransferDetail]                         = Json.format[FileTransferDetail]
