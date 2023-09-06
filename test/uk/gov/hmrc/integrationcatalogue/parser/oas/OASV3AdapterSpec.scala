@@ -367,7 +367,52 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
     }
   }
 
-  "not provide any definitions listed in oauth flows that are not also mentioned elsewhere" in new Setup {
+  "only list scopes that are used by endpoints" in new Setup {
+    when(mockUuidService.newUuid()).thenReturn(generatedUuid)
+    val globalScopes: List[String] = List("read:global", "write:global")
+
+    val endpointScopes: Map[String, List[String]] = Map(
+      oasPath1Uri -> List("read:scope-common"),
+      oasPath3Uri -> List("read:scope-common")
+    )
+
+    private val definedScopes: List[(String, String)] = List[(String, String)](
+      ("read:global", "GLOBAL read scope"),
+      ("write:global", "GLOBAL write scope"),
+      ("read:scope-common", "COMMON scope"),
+      ("read:scope-unused", "UNUSED scope"))
+
+    private val expectedScopes: Set[Scope] = Set(
+      Scope("read:global", Some("GLOBAL read scope")),
+      Scope("write:global", Some("GLOBAL write scope")),
+      Scope("read:scope-common", Some("COMMON scope")))
+
+    val openApi: OpenAPI = getOpenAPIObject(
+      withExtensions = true,
+      reviewedDateExtension = Some("2021-07-24"),
+      oAuth2SecuritySchemeName = Some("oAuth2Test"),
+      globalScopes = globalScopes,
+      endpointScopes = endpointScopes,
+      oauthFlowScopes = Map("clientCredentials" -> definedScopes))
+
+    val result: ValidatedNel[List[String], ApiDetail] =
+      objInTest.extractOpenApi(
+        Some(apiDetail0.publisherReference),
+        apiDetail0.platform,
+        apiDetail0.specificationType,
+        openApi,
+        openApiSpecificationContent = apiDetail0.openApiSpecification
+      )
+
+    result match {
+      case Valid(apiDetail) =>
+        checkScopeDefinitions(apiDetail, expectedScopes)
+      case invalid =>
+        fail(s"Result was not a valid ApiDetail: $invalid")
+    }
+  }
+
+  "provide scopes without descriptions for scopes that do not have any definition" in new Setup {
     when(mockUuidService.newUuid()).thenReturn(generatedUuid)
     val globalScopes: List[String] = List("read:global", "write:global")
 
