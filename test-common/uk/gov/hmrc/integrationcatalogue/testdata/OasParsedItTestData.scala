@@ -16,14 +16,13 @@
 
 package uk.gov.hmrc.integrationcatalogue.testdata
 
-import java.util.UUID
-
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, Maintainer, PlatformType, SpecificationType}
+
+import java.util.UUID
 
 trait OasParsedItTestData {
 
@@ -97,8 +96,8 @@ trait OasParsedItTestData {
     examples = List(exampleResponse1)
   )
 
-  val putEndpoint1: EndpointMethod = EndpointMethod("PUT", Some("some summary"), Some("some description"), List.empty)
-  val getEndpoint1: EndpointMethod = EndpointMethod("GET", Some("some summary"), Some("some description"), List.empty)
+  val putEndpoint1: EndpointMethod = EndpointMethod("PUT", Some("some summary"), Some("some description"), List("write scope"))
+  val getEndpoint1: EndpointMethod = EndpointMethod("GET", Some("some summary"), Some("some description"), List("read scope"))
 
   val endpoint1: Endpoint          = Endpoint("/some/url", List(putEndpoint1, getEndpoint1))
   val getEndpoint2: EndpointMethod = EndpointMethod("GET", Some("some BOOP summary"), Some("some  DEEPSEARCH description"), List.empty)
@@ -130,7 +129,8 @@ trait OasParsedItTestData {
     shortDescription = Some("exampleApiDetail's short description"),
     openApiSpecification = "OAS file contents 1",
     apiStatus = LIVE,
-    reviewedDate = reviewedDate
+    reviewedDate = reviewedDate,
+    scopes = Set(Scope("scopename", Some("Scope definition")))
   )
 
   val apiDetail3: ApiDetail = ApiDetail(
@@ -148,7 +148,8 @@ trait OasParsedItTestData {
     shortDescription = None,
     openApiSpecification = "OAS file contents 2",
     apiStatus = LIVE,
-    reviewedDate = reviewedDate
+    reviewedDate = reviewedDate,
+    scopes = Set.empty
   )
 
   val apiDetail4: ApiDetail = ApiDetail(
@@ -166,7 +167,8 @@ trait OasParsedItTestData {
     shortDescription = None,
     openApiSpecification = "OAS file contents 3 BOOP",
     apiStatus = LIVE,
-    reviewedDate = reviewedDate
+    reviewedDate = reviewedDate,
+    scopes = Set.empty
   )
 
   val apiDetail5: ApiDetail = ApiDetail(
@@ -184,7 +186,8 @@ trait OasParsedItTestData {
     shortDescription = Some("A short description"),
     openApiSpecification = "OAS file contents 4",
     apiStatus = LIVE,
-    reviewedDate = reviewedDate
+    reviewedDate = reviewedDate,
+    scopes = Set.empty
   )
 
   val apiDetail6: ApiDetail = ApiDetail(
@@ -202,7 +205,8 @@ trait OasParsedItTestData {
     shortDescription = None,
     openApiSpecification = "OAS file contents 5",
     apiStatus = LIVE,
-    reviewedDate = reviewedDate
+    reviewedDate = reviewedDate,
+    scopes = Set.empty
   )
 
   val apiDetail9: ApiDetail = ApiDetail(
@@ -220,7 +224,8 @@ trait OasParsedItTestData {
     shortDescription = None,
     openApiSpecification = "OAS file contents 9",
     apiStatus = LIVE,
-    reviewedDate = reviewedDate
+    reviewedDate = reviewedDate,
+    scopes = Set.empty
   )
 
   val fileTransfer2: FileTransferDetail =

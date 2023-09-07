@@ -69,7 +69,8 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
     shortDescription = None,
     openApiSpecification = "OAS content",
     apiStatus = LIVE,
-    reviewedDate = reviewedDate
+    reviewedDate = reviewedDate,
+    scopes = Set.empty
   )
 
   private val fakeDeleteRequest = FakeRequest("DELETE", s"/apis/${exampleApiDetail.publisherReference}")

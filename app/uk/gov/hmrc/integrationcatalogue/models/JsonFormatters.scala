@@ -17,7 +17,6 @@
 package uk.gov.hmrc.integrationcatalogue.models
 
 import play.api.libs.json._
-
 import uk.gov.hmrc.integrationcatalogue.models.common._
 
 object JsonFormatters {
@@ -51,6 +50,8 @@ object JsonFormatters {
   implicit val endpointMethodFormats: OFormat[EndpointMethod] = Json.format[EndpointMethod]
 
   implicit val endpointFormats: OFormat[Endpoint] = Json.format[Endpoint]
+
+  implicit val formatScope: Format[Scope] = Json.format[Scope]
 
   implicit val formatApiDetailParsed: Format[ApiDetail] = Json.format[ApiDetail]
 

@@ -38,15 +38,15 @@ import scala.jdk.CollectionConverters._
 
 @Singleton
 class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
-    extends Logging with AcronymHelper with OASV3Validation with OASExtensionsAdapter {
+  extends Logging with AcronymHelper with OASV3Validation with OASExtensionsAdapter {
 
   def extractOpenApi(
-      publisherRef: Option[String],
-      platformType: PlatformType,
-      specType: SpecificationType,
-      openApi: OpenAPI,
-      openApiSpecificationContent: String
-    ): ValidatedNel[List[String], ApiDetail] = {
+                      publisherRef: Option[String],
+                      platformType: PlatformType,
+                      specType: SpecificationType,
+                      openApi: OpenAPI,
+                      openApiSpecificationContent: String
+                    ): ValidatedNel[List[String], ApiDetail] = {
 
     Option(openApi.getInfo) match {
       case Some(info) =>
@@ -62,6 +62,8 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
                 extractEndpoints(openApi, pathName, pathItem, globalScopes)
               }).getOrElse(List.empty)
             })
+
+            val allScopeDefinitions = buildScopeDefinitions(allEndpoints, openApi)
 
             parseExtensions(info, publisherRef, appConfig) match {
               case Right(extensions: IntegrationCatalogueExtensions) =>
@@ -80,16 +82,26 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
                   shortDescription = extensions.shortDescription,
                   openApiSpecification = openApiSpecificationContent,
                   apiStatus = extensions.status,
-                  reviewedDate = extensions.reviewedDate
+                  reviewedDate = extensions.reviewedDate,
+                  scopes = allScopeDefinitions
                 ))
               case Left(x)                                           => x.toList.invalidNel[ApiDetail]
             }
         }
       case None       => List("Invalid OAS, info item missing from OAS specification").invalidNel[ApiDetail]
     }
-
   }
 
+  private def buildScopeDefinitions(allEndpoints: List[Endpoint], openApi: OpenAPI): Set[Scope] = {
+    val scopeNamesInUseByEndpoints = allEndpoints.flatMap(e => e.methods).flatMap(m => m.scopes).toSet
+    val securityScopes = extractSecurityScopes(openApi)
+    val securityScopesInUse = securityScopes.filter(scope => scopeNamesInUseByEndpoints.contains(scope.name))
+    val securityScopeNamesInUse = securityScopesInUse.map(scope => scope.name)
+    val scopeNamesUsedButWithoutDefinition = scopeNamesInUseByEndpoints -- securityScopeNamesInUse
+    val scopesUsedButWithoutDefinition = scopeNamesUsedButWithoutDefinition.map(name => Scope(name, Option.empty))
+    val allScopeDefinitions = securityScopesInUse ++ scopesUsedButWithoutDefinition
+    allScopeDefinitions
+  }
   private def getStringSafe(value: java.lang.String): String = {
     Option(value).getOrElse("")
   }
@@ -157,14 +169,32 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
       )
   }
 
+  private def extractSecurityScopes(openApi: OpenAPI) : Set[Scope] = {
+
+    val components = Option(openApi.getComponents)
+    val securitySchemes = components.map(c => c.getSecuritySchemes)
+    val oauth2SchemeName = extractOAuth2SchemeName(openApi)
+    val securityScheme = securitySchemes.flatMap(ss => oauth2SchemeName.map(oasn => ss.get(oasn)))
+    val flows = securityScheme.map(ss => ss.getFlows)
+
+    val authorizationCodeFlowScopes = flows.flatMap(f => Option(f.getAuthorizationCode)).map(flow => flow.getScopes.asScala).getOrElse(Map.empty)
+    val implicitFlowScopes = flows.flatMap(f => Option(f.getImplicit)).map(flow => flow.getScopes.asScala).getOrElse(Map.empty)
+    val passwordFlowScopes = flows.flatMap(f => Option(f.getPassword)).map(flow => flow.getScopes.asScala).getOrElse(Map.empty)
+    val clientCredentialsFlowScopes = flows.flatMap(f => Option(f.getClientCredentials)).map(flow => flow.getScopes.asScala).getOrElse(Map.empty)
+
+    val allScopes = authorizationCodeFlowScopes ++ implicitFlowScopes ++ passwordFlowScopes ++ clientCredentialsFlowScopes
+
+    allScopes.toSet[(String, String)].map(kv => Scope(kv._1, Option.apply(kv._2)))
+  }
+
   def getExampleText(maybeObject: Option[Object]): String = {
     maybeObject.map { (o: Object) =>
-      {
-        o match {
-          case js: JsonNode => js.toPrettyString
-          case x: Object    => x.toString
-        }
+    {
+      o match {
+        case js: JsonNode => js.toPrettyString
+        case x: Object    => x.toString
       }
+    }
     }.getOrElse("")
   }
 

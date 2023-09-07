@@ -19,9 +19,9 @@ package uk.gov.hmrc.integrationcatalogue.repository
 import org.joda.time.DateTime
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
-import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common._
+import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
 
 object MongoFormatters extends MongoJodaFormats {
   implicit val integrationIdFormatter: Format[IntegrationId] = Json.valueFormat[IntegrationId]
@@ -50,13 +50,39 @@ object MongoFormatters extends MongoJodaFormats {
       (JsPath \ "scopes").readWithDefault[List[String]](List.empty)
     )(EndpointMethod.apply _)
 
+
   private val endpointMethodWrites: Writes[EndpointMethod] = Json.writes[EndpointMethod]
   implicit val endpointMethodFormats: Format[EndpointMethod] = Format(endpointMethodReads, endpointMethodWrites)
 
   implicit val endpointFormats: OFormat[Endpoint]             = Json.format[Endpoint]
 
+  implicit val scopeFormat: Format[Scope] = Json.format[Scope]
+
+  private val apiDetailReads: Reads[ApiDetail] = (
+    (JsPath \ "id").read[IntegrationId] and
+      (JsPath \ "publisherReference").read[String] and
+      (JsPath \ "title").read[String] and
+      (JsPath \ "description").read[String] and
+      (JsPath \ "platform").read[PlatformType] and
+      (JsPath \ "hods").read[List[String]] and
+      (JsPath \ "lastUpdated").read[DateTime] and
+      (JsPath \ "reviewedDate").read[DateTime] and
+      (JsPath \ "maintainer").read[Maintainer] and
+      (JsPath \ "score").readNullable[Double] and
+      (JsPath \ "version").read[String] and
+      (JsPath \ "specificationType").read[SpecificationType] and
+      (JsPath \ "endpoints").read[List[Endpoint]] and
+      (JsPath \ "shortDescription").readNullable[String] and
+      (JsPath \ "openApiSpecification").read[String] and
+      (JsPath \ "apiStatus").read[ApiStatus] and
+      (JsPath \ "scopes").readWithDefault[Set[Scope]](Set.empty)
+    )(ApiDetail.apply _)
+
+  private val apiDetailWrites: Writes[ApiDetail] = Json.writes[ApiDetail]
+  implicit val apiDetailParsedFormats: Format[ApiDetail] = Format(apiDetailReads, apiDetailWrites)
+
   implicit val integrationDetailFormats: OFormat[IntegrationDetail]                           = Json.format[IntegrationDetail]
-  implicit val apiDetailParsedFormats: OFormat[ApiDetail]                                     = Json.format[ApiDetail]
+
   implicit val fileTransferDetailFormats: OFormat[FileTransferDetail]                         = Json.format[FileTransferDetail]
   implicit val integrationCountFormats: OFormat[IntegrationCount]                             = Json.format[IntegrationCount]
   implicit val integrationCountResponseFormats: OFormat[IntegrationCountResponse]             = Json.format[IntegrationCountResponse]
