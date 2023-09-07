@@ -1,5 +1,6 @@
 package uk.gov.hmrc.integrationcatalogue.repository
 
+import org.joda.time.DateTime
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -16,7 +17,7 @@ import uk.gov.hmrc.integrationcatalogue.testdata.OasParsedItTestData
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import java.util.UUID
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.{Duration, SECONDS}
 
@@ -258,6 +259,25 @@ class IntegrationRepositoryISpec
 
         getAll.size shouldBe 1
 
+      }
+
+      "Save API should serialize all fields in APIDetail" in {
+        await(repo.findAndModify(apiDetail1)) match {
+          case Right((persisted: ApiDetail, _)) => {
+            val id = UUID.randomUUID()
+            val now = DateTime.now
+            val actual = persisted.copy(id = IntegrationId(id), lastUpdated = now, reviewedDate = now)
+            val reference = apiDetail1.copy(id = IntegrationId(id), lastUpdated = now, reviewedDate = now)
+
+            classOf[ApiDetail].getDeclaredFields foreach(f => {
+              f.setAccessible(true)
+              f.get(actual) shouldBe(f.get(reference))
+            })
+          }
+          case _ => fail()
+        }
+
+        getAll.size shouldBe  1
       }
     }
 

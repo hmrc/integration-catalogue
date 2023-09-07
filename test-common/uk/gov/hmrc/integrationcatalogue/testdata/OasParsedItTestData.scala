@@ -96,8 +96,8 @@ trait OasParsedItTestData {
     examples = List(exampleResponse1)
   )
 
-  val putEndpoint1: EndpointMethod = EndpointMethod("PUT", Some("some summary"), Some("some description"), List.empty)
-  val getEndpoint1: EndpointMethod = EndpointMethod("GET", Some("some summary"), Some("some description"), List.empty)
+  val putEndpoint1: EndpointMethod = EndpointMethod("PUT", Some("some summary"), Some("some description"), List("write scope"))
+  val getEndpoint1: EndpointMethod = EndpointMethod("GET", Some("some summary"), Some("some description"), List("read scope"))
 
   val endpoint1: Endpoint          = Endpoint("/some/url", List(putEndpoint1, getEndpoint1))
   val getEndpoint2: EndpointMethod = EndpointMethod("GET", Some("some BOOP summary"), Some("some  DEEPSEARCH description"), List.empty)
@@ -130,7 +130,7 @@ trait OasParsedItTestData {
     openApiSpecification = "OAS file contents 1",
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
-    scopes = Set.empty
+    scopes = Set(Scope("scopename", Some("Scope definition")))
   )
 
   val apiDetail3: ApiDetail = ApiDetail(
