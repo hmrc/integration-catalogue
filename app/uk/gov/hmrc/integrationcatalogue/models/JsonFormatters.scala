@@ -74,7 +74,7 @@ object JsonFormatters {
   implicit val formatDeleteIntegrationsResponse: Format[DeleteIntegrationsResponse] = Json.format[DeleteIntegrationsResponse]
 
   implicit val formatErrorResponseMessage: Format[ErrorResponseMessage] = Json.format[ErrorResponseMessage]
-  implicit val formatErrorResponse: Format[ErrorResponse]               = Json.format[ErrorResponse]
+  implicit val formatErrorResponse: OFormat[ErrorResponse]               = Json.format[ErrorResponse]
 
   implicit val formatPlatformContactsResponse: Format[PlatformContactResponse] = Json.format[PlatformContactResponse]
 
