@@ -9,6 +9,7 @@ DELETE        /integrations                             uk.gov.hmrc.integrationc
 GET           /report                                   uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.getIntegrationCatalogueReport()
 
 PUT           /apis/publish                             uk.gov.hmrc.integrationcatalogue.controllers.PublishController.publishApi
+PUT           /apis/multipart/publish                   uk.gov.hmrc.integrationcatalogue.controllers.MultipartPublishController.publishApi
 PUT           /filetransfers/publish                    uk.gov.hmrc.integrationcatalogue.controllers.PublishController.publishFileTransfer
 GET           /filetransfers/platform/transports        uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.getFileTransferTransportsByPlatform(source: Option[String], target: Option[String])
 
