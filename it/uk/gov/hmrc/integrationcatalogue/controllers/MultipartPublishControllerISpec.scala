@@ -123,9 +123,9 @@ class MultipartPublishControllerISpec extends ServerBaseISpec with DefaultPlayMo
     }
   }
 
-  "PublishController" when {
+  "MultipartPublishController" when {
 
-    "PUT /services/api/publish" should {
+    "PUT /apis/multipart/publish" should {
 
       "respond with 201 when using master auth key and valid request then do a create" in new Setup {
         val response        = route(app, validApiPublishRequest.withHeaders(masterKeyHeader ++ coreIfPlatformTypeHeader: _*)).get

@@ -122,7 +122,7 @@ class MultipartPublishControllerSpec extends AnyWordSpec with Matchers with Guic
 
   }
 
-  "POST /publish" should {
+  "POST /apis/multipart/publish" should {
 
     "return 201 when valid File payload is sent" in new Setup {
 

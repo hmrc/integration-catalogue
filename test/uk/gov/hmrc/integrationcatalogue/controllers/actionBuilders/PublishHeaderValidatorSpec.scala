@@ -69,7 +69,7 @@ class PublishHeaderValidatorSpec extends AnyWordSpec with Matchers {
     "return error when an invalid platform type header is provided" in new Setup {
       val request = FakeRequest().withHeaders(
         HeaderKeys.publisherRefKey      -> referenceKey,
-        HeaderKeys.platformKey          -> "INVALID_PLATFORM",
+        HeaderKeys.platformKey          -> "INVALID",
         HeaderKeys.specificationTypeKey -> specificationType.toString
       )
 
