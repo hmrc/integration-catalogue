@@ -17,12 +17,11 @@
 package uk.gov.hmrc.integrationcatalogue.config
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.Configuration
-
 import uk.gov.hmrc.integrationcatalogue.config.ContactInformationForPlatform._
 import uk.gov.hmrc.integrationcatalogue.models.PlatformContactResponse
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
+import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType._
 
 @Singleton
 class AppConfig @Inject() (config: Configuration) {
@@ -30,6 +29,33 @@ class AppConfig @Inject() (config: Configuration) {
   val defaultShortDescLength: Int   = 180
   val oldIndexesToDrop: Seq[String] = config.getOptional[Seq[String]]("mongodb.oldIndexesToDrop").getOrElse(Seq.empty)
   val shortDescLength: Int          = config.getOptional[Int]("publish.shortDesc.maxLength").getOrElse(defaultShortDescLength)
+
+  val authorizationKey: String = getString("authorizationKey")
+  val cmaAuthorizationKey: String = getString("auth.authKey.cma")
+  val apiPlatformAuthorizationKey: String = getString("auth.authKey.apiPlatform")
+  val coreIfAuthorizationKey: String = getString("auth.authKey.coreIF")
+  val desAuthorizationKey: String = getString("auth.authKey.DES")
+  val cdsClassicAuthorizationKey: String = getString("auth.authKey.cdsClassic")
+  val transactionEngineAuthorizationKey: String = getString("auth.authKey.transactionEngine")
+  val sdesAuthorizationKey: String = getString("auth.authKey.SDES")
+  val digiAuthorizationKey: String = getString("auth.authKey.DIGI")
+  val dapiAuthorizationKey: String = getString("auth.authKey.DAPI")
+  val cipAuthorizationKey: String = getString("auth.authKey.CIP")
+  val hipAuthorizationKey: String = getString("auth.authKey.HIP")
+
+  val authPlatformMap: Map[PlatformType, String] = Map(
+    CMA -> cmaAuthorizationKey,
+    API_PLATFORM -> apiPlatformAuthorizationKey,
+    CORE_IF -> coreIfAuthorizationKey,
+    DES -> desAuthorizationKey,
+    CDS_CLASSIC -> cdsClassicAuthorizationKey,
+    TRANSACTION_ENGINE -> transactionEngineAuthorizationKey,
+    SDES -> sdesAuthorizationKey,
+    DIGI -> digiAuthorizationKey,
+    DAPI -> dapiAuthorizationKey,
+    CIP -> cipAuthorizationKey,
+    HIP -> hipAuthorizationKey
+  )
 
   def platformContacts: Seq[PlatformContactResponse] = {
     // TODO handle empty config values
@@ -46,5 +72,11 @@ class AppConfig @Inject() (config: Configuration) {
         )
       )
   }
+
+  def getString(key: String) =
+    config.getOptional[String](key).getOrElse(throwConfigNotFoundError(key))
+
+  private def throwConfigNotFoundError(key: String) =
+    throw new RuntimeException(s"Could not find config key '$key'")
 
 }

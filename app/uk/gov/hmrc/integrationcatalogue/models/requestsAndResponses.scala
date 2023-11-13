@@ -17,8 +17,8 @@
 package uk.gov.hmrc.integrationcatalogue.models
 
 import org.joda.time.DateTime
-
-import uk.gov.hmrc.integrationcatalogue.models.common.{ContactInformation, IntegrationId, IntegrationType, PlatformType, SpecificationType}
+import play.api.mvc.{Request, WrappedRequest}
+import uk.gov.hmrc.integrationcatalogue.models.common._
 
 case class IntegrationResponse(count: Int, pagedCount: Option[Int] = None, results: List[IntegrationDetail])
 
@@ -54,10 +54,17 @@ case class PublishError(code: Int, message: String)
 
 case class PublishDetails(isUpdate: Types.IsUpdate, integrationId: IntegrationId, publisherReference: String, platformType: PlatformType)
 
+object PublishDetails {
+
+  def toMultipartPublishResponse(details: PublishDetails): MultipartPublishResponse = {
+    MultipartPublishResponse(details.integrationId, details.publisherReference, details.platformType)
+  }
+}
+
+case class MultipartPublishResponse(id: IntegrationId, publisherReference: String, platformType: PlatformType)
 case class PublishResult(isSuccess: Boolean, publishDetails: Option[PublishDetails] = None, errors: List[PublishError] = List.empty)
 
 sealed trait DeleteApiResult
-
 case object NotFoundDeleteApiResult  extends DeleteApiResult
 case object NoContentDeleteApiResult extends DeleteApiResult
 
@@ -76,3 +83,8 @@ case class IntegrationPlatformReport(platformType: PlatformType, integrationType
 case class FileTransferPlatform(platform: PlatformType)
 case class FileTransferTransportsResponse(_id: FileTransferPlatform, transports: List[String])
 case class FileTransferTransportsForPlatform(platform: PlatformType, transports: List[String])
+
+case class ExtractedHeaders(publisherReference: Option[String], platformType: PlatformType, specificationType: SpecificationType)
+
+case class ValidatedApiPublishRequest[A](publisherReference: Option[String], platformType: PlatformType, specificationType: SpecificationType, request: Request[A])
+    extends WrappedRequest[A](request)
