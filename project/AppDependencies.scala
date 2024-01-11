@@ -4,11 +4,11 @@ object AppDependencies {
 
   lazy val scalaCheckVersion = "1.14.0"
   lazy val enumeratumVersion = "1.6.3"
-  lazy val hmrcMongoVersion = "1.3.0"
-  lazy val bootstrapVersion = "7.19.0"
+  lazy val hmrcMongoVersion = "1.6.0"
+  lazy val bootstrapVersion = "7.23.0"
   lazy val jacksonVersion = "2.12.6"
   lazy val playJsonVersion = "2.9.2"
-  lazy val internalAuthVersion = "1.4.0"
+  lazy val internalAuthVersion = "1.9.0"
 
   val compile = Seq(
     "uk.gov.hmrc"                       %% "bootstrap-backend-play-28"              % bootstrapVersion,
