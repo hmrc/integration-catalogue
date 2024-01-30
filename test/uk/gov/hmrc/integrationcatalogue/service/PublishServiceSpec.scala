@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,24 @@
 
 package uk.gov.hmrc.integrationcatalogue.service
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
-
 import cats.data.Validated._
 import cats.data._
-import org.mockito.scalatest.MockitoSugar
+import org.mockito.ArgumentMatchers.any
+import org.mockito.{ArgumentMatchers, MockitoSugar}
+import org.mockito.MockitoSugar.mock
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-
 import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes._
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.SpecificationType
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASParserService
 import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
 class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData {
 
@@ -63,8 +64,8 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
   "publish" should {
     "return successful publish result on insert" in new Setup {
 
-      when(mockOasParserService.parse(*, *, *, *)).thenReturn(parseSuccess)
-      when(mockApiRepo.findAndModify(*)).thenReturn(Future.successful(apiUpsertSuccessInsert))
+      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockApiRepo.findAndModify(any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
@@ -74,19 +75,19 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       result.publishDetails.get shouldBe expectedPublisDetails
 
       verify(mockOasParserService).parse(
-        eqTo(publishRequest.publisherReference),
-        eqTo(publishRequest.platformType),
-        eqTo(publishRequest.specificationType),
-        eqTo(publishRequest.contents)
+        ArgumentMatchers.eq(publishRequest.publisherReference),
+        ArgumentMatchers.eq(publishRequest.platformType),
+        ArgumentMatchers.eq(publishRequest.specificationType),
+        ArgumentMatchers.eq(publishRequest.contents)
       )
-      verify(mockApiRepo).findAndModify(eqTo(apiDetail0))
+      verify(mockApiRepo).findAndModify(ArgumentMatchers.eq(apiDetail0))
 
     }
 
     "return successful publish result on update" in new Setup {
 
-      when(mockOasParserService.parse(*, *, *, *)).thenReturn(parseSuccess)
-      when(mockApiRepo.findAndModify(*)).thenReturn(Future.successful(apiUpsertSuccessUpdate))
+      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockApiRepo.findAndModify(any())).thenReturn(Future.successful(apiUpsertSuccessUpdate))
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
@@ -96,46 +97,46 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       result.publishDetails.get shouldBe expectedPublisDetails
 
       verify(mockOasParserService).parse(
-        eqTo(publishRequest.publisherReference),
-        eqTo(publishRequest.platformType),
-        eqTo(publishRequest.specificationType),
-        eqTo(publishRequest.contents)
+        ArgumentMatchers.eq(publishRequest.publisherReference),
+        ArgumentMatchers.eq(publishRequest.platformType),
+        ArgumentMatchers.eq(publishRequest.specificationType),
+        ArgumentMatchers.eq(publishRequest.contents)
       )
-      verify(mockApiRepo).findAndModify(eqTo(apiDetail0))
+      verify(mockApiRepo).findAndModify(ArgumentMatchers.eq(apiDetail0))
     }
 
     "return fail when oas parse fails" in new Setup {
 
-      when(mockOasParserService.parse(*, *, *, *)).thenReturn(parseFailure)
+      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseFailure)
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe false
 
       verify(mockOasParserService).parse(
-        eqTo(publishRequest.publisherReference),
-        eqTo(publishRequest.platformType),
-        eqTo(publishRequest.specificationType),
-        eqTo(publishRequest.contents)
+        ArgumentMatchers.eq(publishRequest.publisherReference),
+        ArgumentMatchers.eq(publishRequest.platformType),
+        ArgumentMatchers.eq(publishRequest.specificationType),
+        ArgumentMatchers.eq(publishRequest.contents)
       )
       verifyZeroInteractions(mockApiRepo)
     }
 
     "return fail when api upsert fails" in new Setup {
 
-      when(mockOasParserService.parse(*, *, *, *)).thenReturn(parseSuccess)
-      when(mockApiRepo.findAndModify(*)).thenReturn(Future.successful(apiUpsertFailure))
+      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockApiRepo.findAndModify(any())).thenReturn(Future.successful(apiUpsertFailure))
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe false
       result.errors.head.code shouldBe API_UPSERT_ERROR
 
       verify(mockOasParserService).parse(
-        eqTo(publishRequest.publisherReference),
-        eqTo(publishRequest.platformType),
-        eqTo(publishRequest.specificationType),
-        eqTo(publishRequest.contents)
+        ArgumentMatchers.eq(publishRequest.publisherReference),
+        ArgumentMatchers.eq(publishRequest.platformType),
+        ArgumentMatchers.eq(publishRequest.specificationType),
+        ArgumentMatchers.eq(publishRequest.contents)
       )
-      verify(mockApiRepo).findAndModify(eqTo(apiDetail0))
+      verify(mockApiRepo).findAndModify(ArgumentMatchers.eq(apiDetail0))
 
     }
 

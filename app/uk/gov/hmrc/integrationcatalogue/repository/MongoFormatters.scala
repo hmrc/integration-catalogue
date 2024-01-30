@@ -16,16 +16,17 @@
 
 package uk.gov.hmrc.integrationcatalogue.repository
 
-import org.joda.time.DateTime
+
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common._
-import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
 
-object MongoFormatters extends MongoJodaFormats {
+import java.time.ZonedDateTime
+
+object MongoFormatters {
   implicit val integrationIdFormatter: Format[IntegrationId] = Json.valueFormat[IntegrationId]
-  implicit val dateTimeFormats: Format[DateTime] = MongoJodaFormats.dateTimeFormat
+//  implicit val dateTimeFormats: Format[ZonedDateTime] = Json.format[ZonedDateTime]
 
   implicit val contactInformationFormats: OFormat[ContactInformation] = Json.format[ContactInformation]
   implicit val maintainerFormats: OFormat[Maintainer]                 = Json.format[Maintainer]
@@ -65,8 +66,8 @@ object MongoFormatters extends MongoJodaFormats {
       (JsPath \ "description").read[String] and
       (JsPath \ "platform").read[PlatformType] and
       (JsPath \ "hods").read[List[String]] and
-      (JsPath \ "lastUpdated").read[DateTime] and
-      (JsPath \ "reviewedDate").read[DateTime] and
+      (JsPath \ "lastUpdated").read[ZonedDateTime] and
+      (JsPath \ "reviewedDate").read[ZonedDateTime] and
       (JsPath \ "maintainer").read[Maintainer] and
       (JsPath \ "score").readNullable[Double] and
       (JsPath \ "version").read[String] and

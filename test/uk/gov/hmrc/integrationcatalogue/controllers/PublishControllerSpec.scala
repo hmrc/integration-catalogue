@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.integrationcatalogue.controllers
 
-import org.mockito.scalatest.MockitoSugar
+import org.mockito.ArgumentMatchers.any
+import org.mockito.{ArgumentMatchers, MockitoSugar}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -37,7 +38,7 @@ import scala.concurrent.Future
 
 class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with BeforeAndAfterEach with ApiTestData {
 
-  implicit def mat: akka.stream.Materializer = app.injector.instanceOf[akka.stream.Materializer]
+  implicit def mat: org.apache.pekko.stream.Materializer = app.injector.instanceOf[org.apache.pekko.stream.Materializer]
 
   private val mockPublishService = mock[PublishService]
 
@@ -101,7 +102,7 @@ class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPe
 
   "PUT /apis/publish " should {
     "return 200" in {
-      when(mockPublishService.publishApi(*)(*)).thenReturn(Future.successful(PublishResult(isSuccess = true)))
+      when(mockPublishService.publishApi(any())(any())).thenReturn(Future.successful(PublishResult(isSuccess = true)))
       val result: Future[Result] = controller.publishApi()(
         fakeApiPublishRequest
           .withHeaders(
@@ -114,7 +115,7 @@ class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPe
       val publishResult = contentAsJson(result).as[PublishResult]
       publishResult.isSuccess shouldBe true
 
-      verify(mockPublishService).publishApi(eqTo(publishRequestObj))(*)
+      verify(mockPublishService).publishApi(ArgumentMatchers.eq(publishRequestObj))(any())
 
     }
 
@@ -147,7 +148,7 @@ class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPe
 
   "PUT /filetransfer/publish" should {
     "return 200" in {
-      when(mockPublishService.publishFileTransfer(*)(*)).thenReturn(Future.successful(PublishResult(isSuccess = true)))
+      when(mockPublishService.publishFileTransfer(any())(any())).thenReturn(Future.successful(PublishResult(isSuccess = true)))
       val result: Future[Result] = controller.publishFileTransfer()(
         fakeFileTransferPublishRequest
           .withHeaders(
@@ -161,7 +162,7 @@ class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPe
       val publishResult = contentAsJson(result).as[PublishResult]
       publishResult.isSuccess shouldBe true
 
-      verify(mockPublishService).publishFileTransfer(eqTo(fileTransferPublishRequestObj))(*)
+      verify(mockPublishService).publishFileTransfer(ArgumentMatchers.eq(fileTransferPublishRequestObj))(any())
 
     }
 

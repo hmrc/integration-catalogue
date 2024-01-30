@@ -28,6 +28,9 @@ import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
 
+import java.time.{LocalDate, LocalDateTime, ZoneOffset, ZonedDateTime}
+import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
+import java.time.temporal.ChronoField
 import scala.jdk.CollectionConverters._
 
 trait OASExtensionsAdapter extends ExtensionKeys {
@@ -101,17 +104,25 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     }
   }
 
-  def getReviewedDate(extensions: Map[String, AnyRef]): ValidatedNel[String, DateTime] = {
+  def getReviewedDate(extensions: Map[String, AnyRef]): ValidatedNel[String, ZonedDateTime] = {
     extensions.get(REVIEWED_DATE_EXTENSION_KEY) match {
-      case None            => "Reviewed date must be provided".invalidNel[DateTime]
+      case None            => "Reviewed date must be provided".invalidNel[ZonedDateTime]
       case Some(x: String) =>
-        Try[DateTime] {
-          DateTime.parse(x, ISODateTimeFormat.dateOptionalTimeParser())
+        val customZonedDateTimeFormatter: DateTimeFormatter = new DateTimeFormatterBuilder().appendPattern("yyyy[-MM][-dd['T'HH[:mm[:ss]]]][.SSSXXX]")
+          .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
+          .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+          .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+          .parseDefaulting(ChronoField.NANO_OF_SECOND, 0)
+          .parseDefaulting(ChronoField.OFFSET_SECONDS, ZoneOffset.UTC.getTotalSeconds)
+          .toFormatter();
+
+        Try[ZonedDateTime] {
+          ZonedDateTime.parse(x, customZonedDateTimeFormatter)
         } match {
-          case Success(dateTime) => Validated.valid(dateTime)
-          case Failure(e)        => "Reviewed date is not a valid date".invalidNel[DateTime]
+          case Success(dateTime) => Validated.valid(ZonedDateTime.parse(dateTime.toString))
+          case Failure(e)        => "Reviewed date is not a valid date".invalidNel[ZonedDateTime]
         }
-      case Some(_)         => "Reviewed date is not a valid date".invalidNel[DateTime]
+      case Some(_)         => "Reviewed date is not a valid date".invalidNel[ZonedDateTime]
     }
   }
 
@@ -141,4 +152,4 @@ trait OASExtensionsAdapter extends ExtensionKeys {
   }
 }
 
-case class IntegrationCatalogueExtensions(backends: Seq[String], publisherReference: String, shortDescription: Option[String], status: ApiStatus, reviewedDate: DateTime)
+case class IntegrationCatalogueExtensions(backends: Seq[String], publisherReference: String, shortDescription: Option[String], status: ApiStatus, reviewedDate: ZonedDateTime)

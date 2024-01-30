@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.integrationcatalogue.controllers
 
-import akka.stream.testkit.NoMaterializer
+import org.apache.pekko.stream.testkit.NoMaterializer
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import org.mockito.scalatest.MockitoSugar
+import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -35,7 +35,7 @@ import uk.gov.hmrc.integrationcatalogue.testdata.FakeIdentifierAction
 
 class PlatformControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with BeforeAndAfterEach {
 
-  implicit def mat: akka.stream.Materializer = app.injector.instanceOf[akka.stream.Materializer]
+  implicit def mat: org.apache.pekko.stream.Materializer = app.injector.instanceOf[org.apache.pekko.stream.Materializer]
   private val mockAppConfig                  = mock[AppConfig]
 
   override def beforeEach(): Unit = {

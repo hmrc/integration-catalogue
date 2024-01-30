@@ -17,16 +17,15 @@
 package uk.gov.hmrc.integrationcatalogue.parser.oas
 
 import scala.jdk.CollectionConverters._
-
 import cats.data.Validated._
 import cats.data._
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.parser.core.models.SwaggerParseResult
-import org.mockito.scalatest.MockitoSugar
+import org.mockito.ArgumentMatchers.any
+import org.mockito.{ArgumentMatchers, MockitoSugar}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-
 import uk.gov.hmrc.integrationcatalogue.models.ApiDetail
 import uk.gov.hmrc.integrationcatalogue.models.common.{PlatformType, SpecificationType}
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.OASV3Adapter
@@ -43,7 +42,7 @@ class OasParserServiceSpec extends AnyWordSpec with Matchers with MockitoSugar w
     val errors                         = List("error1", "error2")
     val OASSpecType: SpecificationType = SpecificationType.OAS_V3
     val objInTest                      = new OASParserService(mockFileLoader, mockAdapterService)
-    when(mockFileLoader.parseOasSpec(*)).thenReturn(mockSwaggerParseResult)
+    when(mockFileLoader.parseOasSpec(any())).thenReturn(mockSwaggerParseResult)
 
     def primeSuccessNoWarnings() : Unit = {
       when(mockSwaggerParseResult.getOpenAPI).thenReturn(getOpenAPIObject(withExtensions = false))
@@ -68,14 +67,14 @@ class OasParserServiceSpec extends AnyWordSpec with Matchers with MockitoSugar w
 
       primeSuccessNoWarnings()
 
-      when(mockAdapterService.extractOpenApi(*, *, *, *, *)).thenReturn(Valid(apiDetail0))
+      when(mockAdapterService.extractOpenApi(any(), any(), any(), any(), any())).thenReturn(Valid(apiDetail0))
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(oasContactName))
 
       result match {
         case Valid(parsedObject) =>
           parsedObject shouldBe apiDetail0
-          verify(mockAdapterService).extractOpenApi(eqTo(Some(publisherReference)), eqTo(PlatformType.CORE_IF), eqTo(OASSpecType), *, *)
+          verify(mockAdapterService).extractOpenApi(ArgumentMatchers.eq(Some(publisherReference)), ArgumentMatchers.eq(PlatformType.CORE_IF), ArgumentMatchers.eq(OASSpecType), any(), any())
 
         case _: Invalid[NonEmptyList[List[String]]] => fail()
       }
@@ -89,7 +88,7 @@ class OasParserServiceSpec extends AnyWordSpec with Matchers with MockitoSugar w
       when(mockSwaggerParseResult.getOpenAPI).thenReturn(openApi)
       when(mockSwaggerParseResult.getMessages).thenReturn(new java.util.ArrayList())
 
-      when(mockAdapterService.extractOpenApi(*, *, *, *, *)).thenReturn(Valid(apiDetail0))
+      when(mockAdapterService.extractOpenApi(any(), any(), any(), any(), any())).thenReturn(Valid(apiDetail0))
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(oasContactName))
 
@@ -129,7 +128,7 @@ class OasParserServiceSpec extends AnyWordSpec with Matchers with MockitoSugar w
 
     "handle when OasParser returns null" in new Setup {
 
-      when(mockFileLoader.parseOasSpec(*)).thenReturn(null)
+      when(mockFileLoader.parseOasSpec(any())).thenReturn(null)
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF, OASSpecType, "{Unparseable}")
       result match {
