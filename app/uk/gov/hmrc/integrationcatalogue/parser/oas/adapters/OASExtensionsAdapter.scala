@@ -119,7 +119,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
         Try[ZonedDateTime] {
           ZonedDateTime.parse(x, customZonedDateTimeFormatter)
         } match {
-          case Success(dateTime) => Validated.valid(ZonedDateTime.parse(dateTime.toString))
+          case Success(dateTime) => Validated.valid(dateTime)
           case Failure(e)        => "Reviewed date is not a valid date".invalidNel[ZonedDateTime]
         }
       case Some(_)         => "Reviewed date is not a valid date".invalidNel[ZonedDateTime]
