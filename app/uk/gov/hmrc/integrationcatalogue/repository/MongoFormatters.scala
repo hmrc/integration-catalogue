@@ -22,9 +22,22 @@ import play.api.libs.json._
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common._
 
-import java.time.ZonedDateTime
+import java.time.{Instant, ZoneId, ZonedDateTime}
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 object MongoFormatters {
+
+  final val zonedDateTimeReads: Reads[ZonedDateTime] =
+    Reads.at[String](__ \ "$date" \ "$numberLong")
+      .map(dateTime => ZonedDateTime.ofInstant(Instant.ofEpochMilli(dateTime.toLong), ZoneId.of("UTC")))
+
+  final val zonedDateTimeWrites: Writes[ZonedDateTime] =
+    Writes.at[String](__ \ "$date" \ "$numberLong")
+      .contramap[ZonedDateTime](_.toInstant.toEpochMilli.toString)
+
+  implicit val zonedDateTimeFormat: Format[ZonedDateTime] =
+    Format(zonedDateTimeReads, zonedDateTimeWrites)
+
   implicit val integrationIdFormatter: Format[IntegrationId] = Json.valueFormat[IntegrationId]
 
   implicit val contactInformationFormats: OFormat[ContactInformation] = Json.format[ContactInformation]

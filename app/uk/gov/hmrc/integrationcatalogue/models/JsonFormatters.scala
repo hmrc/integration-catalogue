@@ -16,12 +16,21 @@
 
 package uk.gov.hmrc.integrationcatalogue.models
 
+import play.api.libs.json.Reads.zonedDateTimeReads
+import play.api.libs.json.Writes.temporalWrites
 import play.api.libs.json._
 import uk.gov.hmrc.integrationcatalogue.models.common._
 
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+
 object JsonFormatters {
 
-  val dateFormat                                                  = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+  val jodaDateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+  val zonedDateTimeFormatter = DateTimeFormatter.ofPattern(jodaDateFormat)
+
+  implicit val jodaZonedDateTimeReads: Reads[ZonedDateTime] = zonedDateTimeReads(zonedDateTimeFormatter)
+  implicit val jodaZonedDateTimeWrites: Writes[ZonedDateTime] = temporalWrites[ZonedDateTime, DateTimeFormatter](zonedDateTimeFormatter)
 
   implicit val formatContactInformation: Format[ContactInformation] = Json.format[ContactInformation]
 

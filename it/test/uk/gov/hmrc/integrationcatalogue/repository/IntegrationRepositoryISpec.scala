@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.integrationcatalogue.repository
 
-import org.joda.time.DateTime
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -34,7 +33,7 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import java.time.ZonedDateTime
 import java.util.UUID
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.{Duration, SECONDS}
 
@@ -255,7 +254,9 @@ class IntegrationRepositoryISpec
         val duplicateApi = apiDetail5.copy(publisherReference = apiDetail1.publisherReference)
 
         val updateResult = await(repo.findAndModify(duplicateApi))
+
         updateResult match {
+
           case Right((apiDetail: ApiDetail, isUpdate)) =>
             isUpdate shouldBe true
             apiDetail.id shouldBe savedValue.id
@@ -263,7 +264,7 @@ class IntegrationRepositoryISpec
             apiDetail.title shouldBe apiDetail5.title
             apiDetail.description shouldBe apiDetail5.description
             apiDetail.shortDescription shouldBe apiDetail5.shortDescription
-            apiDetail.lastUpdated.toString shouldBe apiDetail5.lastUpdated.toString
+            apiDetail.lastUpdated.format(JsonFormatters.zonedDateTimeFormatter) shouldBe apiDetail5.lastUpdated.format(JsonFormatters.zonedDateTimeFormatter)
             apiDetail.platform shouldBe apiDetail5.platform
             apiDetail.maintainer shouldBe apiDetail5.maintainer
             apiDetail.version shouldBe apiDetail5.version

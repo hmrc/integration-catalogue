@@ -16,22 +16,20 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
-import java.util
-import scala.util.{Failure, Success, Try}
 import cats.data.Validated._
 import cats.data._
 import cats.implicits._
 import io.swagger.v3.oas.models.info.Info
-import org.joda.time.DateTime
-import org.joda.time.format.ISODateTimeFormat
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
 
-import java.time.{LocalDate, LocalDateTime, ZoneOffset, ZonedDateTime}
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 import java.time.temporal.ChronoField
+import java.time.{ZoneOffset, ZonedDateTime}
+import java.util
 import scala.jdk.CollectionConverters._
+import scala.util.{Failure, Success, Try}
 
 trait OASExtensionsAdapter extends ExtensionKeys {
 

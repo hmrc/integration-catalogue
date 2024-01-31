@@ -16,11 +16,6 @@
 
 package uk.gov.hmrc.integrationcatalogue.service
 
-import org.mockito.ArgumentMatchers.any
-
-import java.util.UUID
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
@@ -30,6 +25,10 @@ import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformType}
 import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
+
+import java.util.UUID
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData with ArgumentMatchersSugar {
 
@@ -99,11 +98,6 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
 
   "findByIntegrationId" should {
     "returns integration detail" in new Setup {
-
-      Console.println(s"mockIntegrationRepo: $mockIntegrationRepo")
-      Console.println(s"apiDetail1.id: ${apiDetail1.id}")
-      Console.println(s"apiDetail1: $apiDetail1")
-
       when(mockIntegrationRepo.findById(any[IntegrationId])).thenReturn(Future.successful(Some(apiDetail1)))
 
       val result: Option[IntegrationDetail] = await(inTest.findById(apiDetail1.id))
