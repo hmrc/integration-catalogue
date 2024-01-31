@@ -34,16 +34,6 @@ object AppDependencies {
     )
   )
 
-//  val test = Seq(
-//    "uk.gov.hmrc"             %% "bootstrap-test-play-30"   % bootstrapVersion    % Test,
-//    "org.pegdown"             %  "pegdown"                  % "1.6.0"             % Test,
-//    "org.mockito"             %% "mockito-scala"            % "1.17.30"           % Test,
-//    "com.vladsch.flexmark"    %  "flexmark-all"             % "0.64.6"            % Test,
-//    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-30"  % hmrcMongoVersion    % Test,
-//    "com.github.tomakehurst"  % "wiremock-jre8-standalone"  % "2.35.0"            % Test,
-//    "org.scalacheck"          %% "scalacheck"               % scalaCheckVersion   % Test
-//  )
-
   val test = Seq(
     "uk.gov.hmrc" %% "bootstrap-test-play-30" % bootstrapVersion % Test,
     "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-30" % hmrcMongoVersion % Test,
@@ -51,6 +41,7 @@ object AppDependencies {
     "org.scalacheck" %% "scalacheck" % "1.17.0" % Test,
     "org.scalatestplus" %% "scalacheck-1-17" % "3.2.17.0" % Test
   )
+
   val it = Seq.empty
 
 }

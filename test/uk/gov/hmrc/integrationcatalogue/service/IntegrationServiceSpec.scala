@@ -21,7 +21,7 @@ import org.mockito.ArgumentMatchers.any
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import org.mockito.{ArgumentMatchers, MockitoSugar}
+import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -31,7 +31,7 @@ import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformTy
 import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 
-class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData {
+class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData with ArgumentMatchersSugar {
 
   val mockIntegrationRepo: IntegrationRepository = mock[IntegrationRepository]
 
@@ -53,18 +53,18 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
   "findWithFilters" should {
     "return list of integration details" in new Setup {
 
-      when(mockIntegrationRepo.findWithFilters(any())).thenReturn(Future.successful(IntegrationResponse(count = expectedList.size, results = expectedList)))
+      when(mockIntegrationRepo.findWithFilters(any)).thenReturn(Future.successful(IntegrationResponse(count = expectedList.size, results = expectedList)))
 
-      val response: IntegrationResponse = await(inTest.findWithFilters(any()))
+      val response: IntegrationResponse = await(inTest.findWithFilters(any))
       response.results shouldBe expectedList
 
-      verify(mockIntegrationRepo).findWithFilters(any())
+      verify(mockIntegrationRepo).findWithFilters(any)
     }
   }
 
   "deleteByPlatform" should {
     "delete the integration if the platform matches" in new Setup {
-      when(mockIntegrationRepo.deleteByPlatform(any())).thenReturn(Future.successful(1))
+      when(mockIntegrationRepo.deleteByPlatform(any)).thenReturn(Future.successful(1))
 
       val result: Int = await(inTest.deleteByPlatform(PlatformType.CORE_IF))
       result shouldBe 1
@@ -108,7 +108,7 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
 
       val result: Option[IntegrationDetail] = await(inTest.findById(apiDetail1.id))
       result shouldBe Some(apiDetail1)
-      verify(mockIntegrationRepo).findById(ArgumentMatchers.eq(apiDetail1.id))
+      verify(mockIntegrationRepo).findById(eqTo(apiDetail1.id))
     }
   }
 
