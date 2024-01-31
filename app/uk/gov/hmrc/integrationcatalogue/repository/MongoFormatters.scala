@@ -26,7 +26,6 @@ import java.time.ZonedDateTime
 
 object MongoFormatters {
   implicit val integrationIdFormatter: Format[IntegrationId] = Json.valueFormat[IntegrationId]
-//  implicit val dateTimeFormats: Format[ZonedDateTime] = Json.format[ZonedDateTime]
 
   implicit val contactInformationFormats: OFormat[ContactInformation] = Json.format[ContactInformation]
   implicit val maintainerFormats: OFormat[Maintainer]                 = Json.format[Maintainer]
