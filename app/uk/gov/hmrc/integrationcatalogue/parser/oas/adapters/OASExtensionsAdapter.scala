@@ -108,7 +108,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     extensions.get(REVIEWED_DATE_EXTENSION_KEY) match {
       case None            => "Reviewed date must be provided".invalidNel[ZonedDateTime]
       case Some(x: String) =>
-        val customZonedDateTimeFormatter: DateTimeFormatter = new DateTimeFormatterBuilder().appendPattern("yyyy[-MM][-dd['T'HH[:mm[:ss]]]][.SSSXXX]")
+        val customZonedDateTimeFormatter: DateTimeFormatter = new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd['T'HH[:mm[:ss]]][.SSSXXX]")
           .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
           .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
           .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
