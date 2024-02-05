@@ -5,63 +5,36 @@ import uk.gov.hmrc.DefaultBuildSettings
 
 val appName = "integration-catalogue"
 
-val silencerVersion = "1.17.13"
+ThisBuild / majorVersion := 0
+ThisBuild / scalaVersion := "2.13.12"
 
-ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
 
-inThisBuild(
-  List(
-    scalaVersion := "2.13.8",
-    semanticdbEnabled := true,
-    semanticdbVersion := scalafixSemanticdb.revision
-  )
-)
 
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
   .settings(
-    majorVersion                     := 0,
-    scalaVersion                     := "2.13.8",
     routesImport                     += "uk.gov.hmrc.integrationcatalogue.controllers.binders._",
     libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test,
-    Test / unmanagedSourceDirectories += baseDirectory(_ / "test-common").value,
-    // ***************
-    // Use the silencer plugin to suppress warnings
-    scalacOptions ++= Seq(
-      "-P:silencer:pathFilters=routes"
-    ),
-    libraryDependencies ++= Seq(
-      compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),
-      "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
-    )
-    // ***************
+    Test / unmanagedSourceDirectories += baseDirectory(_ / "test-common").value
   )
-  .settings(publishingSettings,
-  scoverageSettings)
-  .configs(IntegrationTest)
-  .settings(integrationTestSettings(): _*)
-  .settings(inConfig(IntegrationTest)(BloopDefaults.configSettings))
-  .settings(DefaultBuildSettings.integrationTestSettings())
-  .settings(
-    Defaults.itSettings,
-    IntegrationTest / Keys.fork := false,
-    IntegrationTest / parallelExecution := false,
-    IntegrationTest / unmanagedSourceDirectories += baseDirectory(_ / "it").value,
-    IntegrationTest / unmanagedSourceDirectories += baseDirectory(_ / "test-common").value,
-    IntegrationTest / unmanagedResourceDirectories += baseDirectory(_ / "it" / "resources").value,
-    IntegrationTest / managedClasspath += (Assets / packageBin).value
-  )
+  .settings(scoverageSettings)
   .disablePlugins(sbt.plugins.JUnitXmlReportPlugin)
 
 
 lazy val scoverageSettings = {
-    import scoverage.ScoverageKeys
-    Seq(
-      // Semicolon-separated list of regexs matching classes to exclude
-      ScoverageKeys.coverageExcludedPackages := ";.*\\.domain\\.models\\..*;uk\\.gov\\.hmrc\\.BuildInfo;.*\\.Routes;.*\\.RoutesPrefix;;Module;GraphiteStartUp;.*\\.Reverse[^.]*",
-      ScoverageKeys.coverageMinimumStmtTotal := 96,
-      ScoverageKeys.coverageFailOnMinimum := true,
-      ScoverageKeys.coverageHighlighting := true,
-      Test / parallelExecution := false
+  import scoverage.ScoverageKeys
+  Seq(
+    // Semicolon-separated list of regexs matching classes to exclude
+    ScoverageKeys.coverageExcludedPackages := ";.*\\.domain\\.models\\..*;uk\\.gov\\.hmrc\\.BuildInfo;.*\\.Routes;.*\\.RoutesPrefix;;Module;GraphiteStartUp;.*\\.Reverse[^.]*",
+    ScoverageKeys.coverageMinimumStmtTotal := 96,
+    ScoverageKeys.coverageFailOnMinimum := true,
+    ScoverageKeys.coverageHighlighting := true,
+    Test / parallelExecution := false
   )
 }
+
+lazy val it = (project in file("it"))
+  .enablePlugins(PlayScala)
+  .dependsOn(microservice % "test->test")
+  .settings(DefaultBuildSettings.itSettings())
+  .settings(libraryDependencies ++= AppDependencies.it)

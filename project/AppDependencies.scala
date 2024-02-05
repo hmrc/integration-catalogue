@@ -3,20 +3,20 @@ import sbt._
 object AppDependencies {
 
   lazy val scalaCheckVersion = "1.14.0"
-  lazy val enumeratumVersion = "1.6.3"
-  lazy val hmrcMongoVersion = "1.3.0"
-  lazy val bootstrapVersion = "7.19.0"
-  lazy val jacksonVersion = "2.12.6"
-  lazy val playJsonVersion = "2.9.2"
-  lazy val internalAuthVersion = "1.4.0"
+  lazy val enumeratumVersion = "1.7.2"
+  lazy val hmrcMongoVersion = "1.7.0"
+  lazy val bootstrapVersion = "8.4.0"
+  lazy val jacksonVersion = "2.15.1"
+  lazy val playJsonVersion = "2.10.4"
+  lazy val internalAuthVersion = "1.9.0"
 
   val compile = Seq(
-    "uk.gov.hmrc"                       %% "bootstrap-backend-play-28"              % bootstrapVersion,
+    "uk.gov.hmrc"                       %% "bootstrap-backend-play-30"              % bootstrapVersion,
     "com.typesafe.play"                 %% "play-json"                              % playJsonVersion,
     "com.typesafe.play"                 %% "play-json-joda"                         % playJsonVersion,
     "com.beachape"                      %% "enumeratum-play-json"                   % enumeratumVersion,
-    "uk.gov.hmrc.mongo"                 %% "hmrc-mongo-work-item-repo-play-28"      % hmrcMongoVersion,
-    "uk.gov.hmrc"                       %% "internal-auth-client-play-28"           % internalAuthVersion,
+    "uk.gov.hmrc.mongo"                 %% "hmrc-mongo-work-item-repo-play-30"      % hmrcMongoVersion,
+    "uk.gov.hmrc"                       %% "internal-auth-client-play-30"           % internalAuthVersion,
 
     "com.fasterxml.jackson.module"      %% "jackson-module-scala"           % jacksonVersion,
     "com.fasterxml.jackson.core"        % "jackson-annotations"             % jacksonVersion,
@@ -24,8 +24,8 @@ object AppDependencies {
     "com.fasterxml.jackson.core"        % "jackson-core"                    % jacksonVersion,
     "com.fasterxml.jackson.dataformat"  % "jackson-dataformat-yaml"         % jacksonVersion,
     "com.fasterxml.jackson.datatype"    % "jackson-datatype-jsr310"         % jacksonVersion,
-    "org.typelevel"                     %% "cats-core"                      % "2.4.2",
-    "io.swagger.parser.v3"              % "swagger-parser"                  % "2.1.9"
+    "org.typelevel"                     %% "cats-core" % "2.9.0",
+    "io.swagger.parser.v3"              % "swagger-parser" % "2.1.14"
       excludeAll(
       ExclusionRule("com.fasterxml.jackson.core", "jackson-databind"),
       ExclusionRule("com.fasterxml.jackson.core", "jackson-core"),
@@ -36,12 +36,12 @@ object AppDependencies {
   )
 
   val test = Seq(
-    "uk.gov.hmrc"             %% "bootstrap-test-play-28"   % bootstrapVersion    % "test, it",
-    "org.pegdown"             %  "pegdown"                  % "1.6.0"             % "test, it",
-    "org.mockito"             %% "mockito-scala-scalatest"  % "1.7.1"           % "test, it",
-    "com.vladsch.flexmark"    %  "flexmark-all"             % "0.36.8"            % "test, it",
-    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28"  % hmrcMongoVersion    % "test, it",
-    "com.github.tomakehurst"  % "wiremock-jre8-standalone"  % "2.27.1"            % "test, it",
-    "org.scalacheck"          %% "scalacheck"               % scalaCheckVersion   % "test, it"
+    "uk.gov.hmrc" %% "bootstrap-test-play-30" % bootstrapVersion % Test,
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-30" % hmrcMongoVersion % Test,
+    "org.mockito" %% "mockito-scala" % "1.17.30" % Test,
+    "org.scalacheck" %% "scalacheck" % "1.17.0" % Test,
+    "org.scalatestplus" %% "scalacheck-1-17" % "3.2.17.0" % Test
   )
+
+  val it = Seq.empty
 }
