@@ -24,6 +24,7 @@ import io.swagger.v3.oas.models.PathItem.HttpMethod
 import io.swagger.v3.oas.models.info.Contact
 import io.swagger.v3.oas.models.security.{SecurityRequirement, SecurityScheme}
 import io.swagger.v3.oas.models.{OpenAPI, Operation, PathItem}
+import org.joda.time.DateTime
 import play.api.Logging
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models._
@@ -31,7 +32,6 @@ import uk.gov.hmrc.integrationcatalogue.models.common._
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASV3Validation
 import uk.gov.hmrc.integrationcatalogue.service.{AcronymHelper, UuidService}
 
-import java.time.ZonedDateTime
 import javax.inject.{Inject, Singleton}
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
@@ -73,7 +73,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
                   title = getStringSafe(info.getTitle),
                   description = getStringSafe(info.getDescription),
                   version = getStringSafe(info.getVersion),
-                  lastUpdated = ZonedDateTime.now,
+                  lastUpdated = DateTime.now,
                   endpoints = allEndpoints,
                   maintainer = extractMaintainer(info.getContact),
                   specificationType = specType,

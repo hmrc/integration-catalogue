@@ -16,18 +16,18 @@
 
 package uk.gov.hmrc.integrationcatalogue.testdata
 
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, Maintainer, PlatformType, SpecificationType}
 
-import java.time.format.DateTimeFormatter
-import java.time.{LocalDateTime, ZoneOffset, ZonedDateTime}
 import java.util.UUID
 
 trait ApiTestData {
 
-  val dateValue: ZonedDateTime = LocalDateTime.parse("04/11/2020 20:27:05", DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")).atZone(ZoneOffset.UTC)
-  val reviewedDate: ZonedDateTime = LocalDateTime.parse("25/12/2020 20:27:05", DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")).atZone(ZoneOffset.UTC)
+  val dateValue: DateTime = DateTime.parse("04/11/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"))
+  val reviewedDate: DateTime = DateTime.parse("25/12/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"))
 
   val coreIfPlatform: PlatformType = PlatformType.CORE_IF
   val apiPlatform: PlatformType = PlatformType.API_PLATFORM

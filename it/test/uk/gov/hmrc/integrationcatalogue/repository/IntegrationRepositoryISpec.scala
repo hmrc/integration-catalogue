@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.integrationcatalogue.repository
 
+import org.joda.time.DateTime
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -31,7 +32,6 @@ import uk.gov.hmrc.integrationcatalogue.support.{AwaitTestSupport, MongoApp}
 import uk.gov.hmrc.integrationcatalogue.testdata.OasParsedItTestData
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
-import java.time.ZonedDateTime
 import java.util.UUID
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -264,7 +264,7 @@ class IntegrationRepositoryISpec
             apiDetail.title shouldBe apiDetail5.title
             apiDetail.description shouldBe apiDetail5.description
             apiDetail.shortDescription shouldBe apiDetail5.shortDescription
-            apiDetail.lastUpdated.format(JsonFormatters.zonedDateTimeFormatter) shouldBe apiDetail5.lastUpdated.format(JsonFormatters.zonedDateTimeFormatter)
+            apiDetail.lastUpdated.toString shouldBe apiDetail5.lastUpdated.toString
             apiDetail.platform shouldBe apiDetail5.platform
             apiDetail.maintainer shouldBe apiDetail5.maintainer
             apiDetail.version shouldBe apiDetail5.version
@@ -283,7 +283,7 @@ class IntegrationRepositoryISpec
         await(repo.findAndModify(apiDetail1)) match {
           case Right((persisted: ApiDetail, _)) => {
             val id = UUID.randomUUID()
-            val now = ZonedDateTime.now
+            val now = DateTime.now
             val actual = persisted.copy(id = IntegrationId(id), lastUpdated = now, reviewedDate = now)
             val reference = apiDetail1.copy(id = IntegrationId(id), lastUpdated = now, reviewedDate = now)
 
