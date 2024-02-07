@@ -21,8 +21,8 @@ import cats.data._
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.info.Info
 import org.joda.time.DateTime
-import org.joda.time.format.{DateTimeFormat, ISODateTimeFormat}
-import org.mockito.scalatest.MockitoSugar
+import org.joda.time.format.ISODateTimeFormat
+import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -56,7 +56,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
     val parseFailure: ValidatedNel[List[String], ApiDetail] =
       invalid(NonEmptyList[List[String]](List("Invalid OAS, info item missing from OAS specification"), List()))
 
-    val reviewedDate: DateTime = DateTime.parse("25/12/20", DateTimeFormat.forPattern("dd/MM/yy"))
+    val reviewedDate: DateTime = DateTime.parse("2020-12-25")
   }
 
   "extractOpenApi" should {

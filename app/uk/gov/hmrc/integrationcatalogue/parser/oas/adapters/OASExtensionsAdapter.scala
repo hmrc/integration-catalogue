@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
-import java.util
-import scala.util.{Failure, Success, Try}
 import cats.data.Validated._
 import cats.data._
 import cats.implicits._
@@ -28,7 +26,9 @@ import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
 
+import java.util
 import scala.jdk.CollectionConverters._
+import scala.util.{Failure, Success, Try}
 
 trait OASExtensionsAdapter extends ExtensionKeys {
 

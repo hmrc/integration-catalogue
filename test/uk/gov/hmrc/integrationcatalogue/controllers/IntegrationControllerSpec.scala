@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.integrationcatalogue.controllers
 
-import akka.stream.testkit.NoMaterializer
-import org.mockito.scalatest.MockitoSugar
+import org.apache.pekko.stream.testkit.NoMaterializer
+import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -37,7 +37,7 @@ import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSugar with GuiceOneAppPerSuite with ApiTestData with BeforeAndAfterEach {
+class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSugar with GuiceOneAppPerSuite with ApiTestData with BeforeAndAfterEach with ArgumentMatchersSugar {
 
   private val fakeRequest = FakeRequest("GET", "/apis")
   private val fakeAuthenticatedRequest = fakeRequest.withHeaders(FakeIdentifierAction.fakeAuthorizationHeader)
@@ -83,13 +83,13 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
 
   "GET /integrations" should {
     "return 200" in {
-      when(mockApiService.findWithFilters(*)).thenReturn(Future.successful(IntegrationResponse(count = 1, results = apiList)))
+      when(mockApiService.findWithFilters(any)).thenReturn(Future.successful(IntegrationResponse(count = 1, results = apiList)))
       val result: Future[Result] = controller.findWithFilters(List(""), List(PlatformType.CORE_IF), List.empty, None, None, None)(fakeAuthenticatedRequest)
       status(result) shouldBe Status.OK
     }
 
     "return 200 when no results returned" in {
-      when(mockApiService.findWithFilters(*)).thenReturn(Future.successful(IntegrationResponse(count = 0, results = List.empty)))
+      when(mockApiService.findWithFilters(any)).thenReturn(Future.successful(IntegrationResponse(count = 0, results = List.empty)))
       val result = controller.findWithFilters(List(""), List(PlatformType.CORE_IF), List.empty, None, None, None)(fakeAuthenticatedRequest)
       status(result) shouldBe Status.OK
     }
@@ -102,9 +102,10 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
 
   "GET /integrations/:id" should {
     "return 200" in {
-      when(mockApiService.findById(eqTo(apiDetail0.id))).thenReturn(Future.successful(Some(apiDetail0)))
+      when(mockApiService.findById(apiDetail0.id)).thenReturn(Future.successful(Some(apiDetail0)))
       val result = controller.findById(apiDetail0.id)(fakeAuthenticatedRequest)
       status(result) shouldBe Status.OK
+
     }
 
     "return 401 when the request is not authenticated" in {
@@ -115,7 +116,7 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
 
   "DELETE /integrations/:id" should {
     "return 204 when valid publisherReference and delete is successful" in {
-      when(mockApiService.deleteByIntegrationId(*[IntegrationId])(*)).thenReturn(Future.successful(NoContentDeleteApiResult))
+      when(mockApiService.deleteByIntegrationId(eqTo(exampleApiDetail.id))(any)).thenReturn(Future.successful(NoContentDeleteApiResult))
 
       val result: Future[Result] = controller.deleteByIntegrationId(exampleApiDetail.id)(fakeAuthenticatedDeleteRequest)
       status(result) shouldBe Status.NO_CONTENT
@@ -125,7 +126,7 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
     }
 
     "return 404 when invalid publisherReference and delete is unsuccessful" in {
-      when(mockApiService.deleteByIntegrationId(*[IntegrationId])(*)).thenReturn(Future.successful(NotFoundDeleteApiResult))
+      when(mockApiService.deleteByIntegrationId(any[IntegrationId])(any)).thenReturn(Future.successful(NotFoundDeleteApiResult))
 
       val result: Future[Result] = controller.deleteByIntegrationId(exampleApiDetail.id)(fakeAuthenticatedDeleteRequest)
       status(result) shouldBe Status.NOT_FOUND

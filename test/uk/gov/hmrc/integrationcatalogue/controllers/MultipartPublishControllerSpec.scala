@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.integrationcatalogue.controllers
 
-import akka.stream.Materializer
-import org.mockito.scalatest.MockitoSugar
+import org.apache.pekko.stream.Materializer
+import org.mockito.ArgumentMatchers.any
+import org.mockito.MockitoSugar
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -80,7 +81,7 @@ class MultipartPublishControllerSpec extends AnyWordSpec with Matchers with Guic
     )
 
     def callPublishWithFile(expectedServiceResponse: Option[PublishResult], headers: Seq[(String, String)], filePartKey: String, fileName: String): Future[Result] = {
-      expectedServiceResponse.map(response => when(mockPublishService.publishApi(*)(*)).thenReturn(Future.successful(response)))
+      expectedServiceResponse.map(response => when(mockPublishService.publishApi(any())(any())).thenReturn(Future.successful(response)))
       val tempFile = SingletonTemporaryFileCreator.create("text", "txt")
       tempFile.deleteOnExit()
 
@@ -90,7 +91,7 @@ class MultipartPublishControllerSpec extends AnyWordSpec with Matchers with Guic
 
     def callPublishWithDataPart(expectedServiceResponse: Option[PublishResult], headers: Seq[(String, String)], dataPart: Seq[String]): Future[Result] = {
       if (dataPart.nonEmpty) {
-        expectedServiceResponse.map(response => when(mockPublishService.publishApi(*)(*)).thenReturn(Future.successful(response)))
+        expectedServiceResponse.map(response => when(mockPublishService.publishApi(any())(any())).thenReturn(Future.successful(response)))
       }
 
       val dataWithDataParts = new MultipartFormData[TemporaryFile](Map("selectedFile" -> dataPart), List.empty, List())
@@ -106,7 +107,7 @@ class MultipartPublishControllerSpec extends AnyWordSpec with Matchers with Guic
     }
 
     def callPublishWithFileReturnError(expectedServiceResponse: PublishResult, headers: Seq[(String, String)], filePartKey: String, fileName: String): Future[Result] = {
-      when(mockPublishService.publishApi(*)(*)).thenReturn(Future.successful(expectedServiceResponse))
+      when(mockPublishService.publishApi(any())(any())).thenReturn(Future.successful(expectedServiceResponse))
 
       val tempFile = SingletonTemporaryFileCreator.create("text", "txt")
       tempFile.deleteOnExit()

@@ -20,7 +20,7 @@ import java.util
 
 import cats.data.NonEmptyList
 import io.swagger.v3.oas.models.info.Info
-import org.mockito.scalatest.MockitoSugar
+import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec

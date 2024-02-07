@@ -16,16 +16,23 @@
 
 package uk.gov.hmrc.integrationcatalogue.repository
 
-import org.joda.time.DateTime
+import org.joda.time.{DateTime, DateTimeZone}
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common._
-import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
 
-object MongoFormatters extends MongoJodaFormats {
+object MongoFormatters {
+  implicit val dateTimeReads: Reads[DateTime] =
+    Reads.at[String](__ \ "$date" \ "$numberLong")
+      .map(dateTime => new DateTime(dateTime.toLong, DateTimeZone.UTC))
+
+  implicit val dateTimeWrites: Writes[DateTime] =
+    Writes.at[String](__ \ "$date" \ "$numberLong")
+      .contramap[DateTime](_.getMillis.toString)
+
   implicit val integrationIdFormatter: Format[IntegrationId] = Json.valueFormat[IntegrationId]
-  implicit val dateTimeFormats: Format[DateTime] = MongoJodaFormats.dateTimeFormat
+  implicit val dateTimeFormats: Format[DateTime] = Format(dateTimeReads, dateTimeWrites)
 
   implicit val contactInformationFormats: OFormat[ContactInformation] = Json.format[ContactInformation]
   implicit val maintainerFormats: OFormat[Maintainer]                 = Json.format[Maintainer]

@@ -16,23 +16,21 @@
 
 package uk.gov.hmrc.integrationcatalogue.service
 
+import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformType}
+import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
+import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
+
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import org.mockito.scalatest.MockitoSugar
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-
-import play.api.test.Helpers.{await, defaultAwaitTimeout}
-
-import uk.gov.hmrc.integrationcatalogue.models._
-import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
-import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
-import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
-
-class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData {
+class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData with ArgumentMatchersSugar {
 
   val mockIntegrationRepo: IntegrationRepository = mock[IntegrationRepository]
 
@@ -54,18 +52,18 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
   "findWithFilters" should {
     "return list of integration details" in new Setup {
 
-      when(mockIntegrationRepo.findWithFilters(*)).thenReturn(Future.successful(IntegrationResponse(count = expectedList.size, results = expectedList)))
+      when(mockIntegrationRepo.findWithFilters(any)).thenReturn(Future.successful(IntegrationResponse(count = expectedList.size, results = expectedList)))
 
-      val response: IntegrationResponse = await(inTest.findWithFilters(*))
+      val response: IntegrationResponse = await(inTest.findWithFilters(any))
       response.results shouldBe expectedList
 
-      verify(mockIntegrationRepo).findWithFilters(*)
+      verify(mockIntegrationRepo).findWithFilters(any)
     }
   }
 
   "deleteByPlatform" should {
     "delete the integration if the platform matches" in new Setup {
-      when(mockIntegrationRepo.deleteByPlatform(*)).thenReturn(Future.successful(1))
+      when(mockIntegrationRepo.deleteByPlatform(any)).thenReturn(Future.successful(1))
 
       val result: Int = await(inTest.deleteByPlatform(PlatformType.CORE_IF))
       result shouldBe 1
@@ -93,15 +91,14 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
       result shouldBe NotFoundDeleteApiResult
 
       verify(mockIntegrationRepo).findById(apiDetail0.id)
-      verifyZeroInteractions(mockIntegrationRepo)
+      verifyNoMoreInteractions(mockIntegrationRepo)
 
     }
   }
 
   "findByIntegrationId" should {
     "returns integration detail" in new Setup {
-
-      when(mockIntegrationRepo.findById(eqTo(apiDetail1.id))).thenReturn(Future.successful(Some(apiDetail1)))
+      when(mockIntegrationRepo.findById(any[IntegrationId])).thenReturn(Future.successful(Some(apiDetail1)))
 
       val result: Option[IntegrationDetail] = await(inTest.findById(apiDetail1.id))
       result shouldBe Some(apiDetail1)

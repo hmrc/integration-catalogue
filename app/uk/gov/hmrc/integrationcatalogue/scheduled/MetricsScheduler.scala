@@ -16,18 +16,16 @@
 
 package uk.gov.hmrc.integrationcatalogue.scheduled
 
+import org.apache.pekko.actor.ActorSystem
+
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-
-import akka.actor.ActorSystem
-import com.kenshoo.play.metrics.Metrics
-
 import play.api.{Configuration, Logging}
 import uk.gov.hmrc.mongo.lock.{LockRepository, LockService}
 import uk.gov.hmrc.mongo.metrix.{MetricOrchestrator, MetricRepository}
-
 import uk.gov.hmrc.integrationcatalogue.metrics.{TotalApisCount, TotalEndpointsCount}
+import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
 class MetricsScheduler @Inject() (
     actorSystem: ActorSystem,
