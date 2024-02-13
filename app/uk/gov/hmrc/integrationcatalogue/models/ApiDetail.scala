@@ -17,8 +17,9 @@
 package uk.gov.hmrc.integrationcatalogue.models
 
 import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
-import org.joda.time.DateTime
 import uk.gov.hmrc.integrationcatalogue.models.common._
+
+import java.time.Instant
 
 sealed trait IntegrationDetail {
   def id: IntegrationId
@@ -26,8 +27,8 @@ sealed trait IntegrationDetail {
   def title: String
   def description: String
   def platform: PlatformType
-  def lastUpdated: DateTime
-  def reviewedDate: DateTime
+  def lastUpdated: Instant
+  def reviewedDate: Instant
   def maintainer: Maintainer
   def integrationType: IntegrationType
   def score: Option[Double]
@@ -178,8 +179,8 @@ case class ApiDetail(
                       description: String,
                       platform: PlatformType,
                       hods: List[String] = List.empty,
-                      lastUpdated: DateTime,
-                      reviewedDate: DateTime,
+                      lastUpdated: Instant,
+                      reviewedDate: Instant,
                       maintainer: Maintainer,
                       score: Option[Double] = None,
                       version: String,
@@ -200,8 +201,8 @@ case class FileTransferDetail(
                                title: String,
                                description: String,
                                platform: PlatformType,
-                               lastUpdated: DateTime,
-                               reviewedDate: DateTime,
+                               lastUpdated: Instant,
+                               reviewedDate: Instant,
                                maintainer: Maintainer,
                                score: Option[Double] = None,
                                sourceSystem: List[String],

@@ -21,7 +21,6 @@ import cats.data._
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.info.Info
 import org.joda.time.DateTime
-import org.joda.time.format.ISODateTimeFormat
 import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
@@ -33,6 +32,7 @@ import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.OASV3Adapter
 import uk.gov.hmrc.integrationcatalogue.service.UuidService
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 
+import java.time.Instant
 import java.util.UUID
 
 class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach {
@@ -63,7 +63,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
     "do happy path with extensions" in new Setup {
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
       val hods                                          = List("ITMP", "NPS")
-      val expectedReviewedDate: DateTime                = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser())
+      val expectedReviewedDate: Instant                 = Instant.parse("2021-07-24T00:00:00Z")
       val result: ValidatedNel[List[String], ApiDetail] =
         objInTest.extractOpenApi(
           Some(apiDetail0.publisherReference),
@@ -97,7 +97,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
     "do happy path with extensions but empty content in response and requests" in new Setup {
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
       val hods                                          = List("ITMP", "NPS")
-      val expectedReviewedDate: DateTime                = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser())
+      val expectedReviewedDate: Instant                 = Instant.parse("2021-07-24T00:00:00Z")
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(
         Some(apiDetail0.publisherReference),
         apiDetail0.platform,
@@ -130,7 +130,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
 
     "do happy path with reviewedDate but without backends and publisherRef extensions" in new Setup {
       when(mockUuidService.newUuid()).thenReturn(generatedUuid)
-      val expectedReviewedDate: DateTime                = DateTime.parse("2021-07-24T00:00:00", ISODateTimeFormat.dateOptionalTimeParser())
+      val expectedReviewedDate: Instant                 = Instant.parse("2021-07-24T00:00:00Z")
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.extractOpenApi(
         Some(apiDetail0.publisherReference),
         apiDetail0.platform,

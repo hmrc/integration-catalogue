@@ -20,12 +20,12 @@ import cats.data.Validated._
 import cats.data._
 import cats.implicits._
 import io.swagger.v3.oas.models.info.Info
-import org.joda.time.DateTime
-import org.joda.time.format.ISODateTimeFormat
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
+import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters.dateAndOptionalTimeFormatter
 
+import java.time.Instant
 import java.util
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
@@ -101,17 +101,17 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     }
   }
 
-  def getReviewedDate(extensions: Map[String, AnyRef]): ValidatedNel[String, DateTime] = {
+  def getReviewedDate(extensions: Map[String, AnyRef]): ValidatedNel[String, Instant] = {
     extensions.get(REVIEWED_DATE_EXTENSION_KEY) match {
-      case None            => "Reviewed date must be provided".invalidNel[DateTime]
+      case None            => "Reviewed date must be provided".invalidNel[Instant]
       case Some(x: String) =>
-        Try[DateTime] {
-          DateTime.parse(x, ISODateTimeFormat.dateOptionalTimeParser())
+        Try[Instant] {
+          Instant.from(dateAndOptionalTimeFormatter.parse(x))
         } match {
-          case Success(dateTime) => Validated.valid(dateTime)
-          case Failure(e)        => "Reviewed date is not a valid date".invalidNel[DateTime]
+          case Success(instant) => Validated.valid(instant)
+          case Failure(e)        => "Reviewed date is not a valid date".invalidNel[Instant]
         }
-      case Some(_)         => "Reviewed date is not a valid date".invalidNel[DateTime]
+      case Some(_)         => "Reviewed date is not a valid date".invalidNel[Instant]
     }
   }
 
@@ -141,4 +141,4 @@ trait OASExtensionsAdapter extends ExtensionKeys {
   }
 }
 
-case class IntegrationCatalogueExtensions(backends: Seq[String], publisherReference: String, shortDescription: Option[String], status: ApiStatus, reviewedDate: DateTime)
+case class IntegrationCatalogueExtensions(backends: Seq[String], publisherReference: String, shortDescription: Option[String], status: ApiStatus, reviewedDate: Instant)

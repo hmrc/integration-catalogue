@@ -22,7 +22,7 @@ import java.time.temporal.ChronoField
 
 trait DateTimeFormatters {
 
-  val dateAndOptionalTimeFormatter: DateTimeFormatter = new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd['T'HH:mm:ss[.SSSSSSSSS][.SSSSSS][.SSS][XXX]]")
+  val dateAndOptionalTimeFormatter: DateTimeFormatter = new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd['T'HH:mm:ss[.SSSSSSSSS][.SSSSSS][.SSS][XXX][Z]]")
     .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
     .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
     .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)

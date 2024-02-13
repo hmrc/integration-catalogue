@@ -16,12 +16,11 @@
 
 package uk.gov.hmrc.integrationcatalogue.testdata
 
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, Maintainer, PlatformType, SpecificationType}
 
+import java.time.Instant
 import java.util.UUID
 
 trait OasParsedItTestData {
@@ -29,8 +28,8 @@ trait OasParsedItTestData {
   val filename            = "API10000_Get_Data_1.1.0.yaml"
   val fileContents        = "{}"
   val uuid: UUID          = UUID.fromString("28c0bd67-4176-42c7-be13-53be98a4db58")
-  val dateValue: DateTime = DateTime.parse("04/11/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"))
-  val reviewedDate: DateTime = DateTime.parse("25/12/2020 20:27:05", DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss"))
+  val dateValue: Instant = Instant.parse("2929-11-04T20:27:05Z")
+  val reviewedDate: Instant = Instant.parse("2020-12-25T20:27:05Z")
 
   val apiPlatformMaintainer: Maintainer = Maintainer("API Platform Team", "#team-api-platform-sup")
   val coreIfMaintainer: Maintainer      = Maintainer("IF Team", "N/A", List.empty)

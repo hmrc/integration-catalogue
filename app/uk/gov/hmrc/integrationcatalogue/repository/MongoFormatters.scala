@@ -16,23 +16,24 @@
 
 package uk.gov.hmrc.integrationcatalogue.repository
 
-import org.joda.time.{DateTime, DateTimeZone}
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common._
 
-object MongoFormatters {
-  implicit val dateTimeReads: Reads[DateTime] =
-    Reads.at[String](__ \ "$date" \ "$numberLong")
-      .map(dateTime => new DateTime(dateTime.toLong, DateTimeZone.UTC))
+import java.time.Instant
 
-  implicit val dateTimeWrites: Writes[DateTime] =
+object MongoFormatters {
+  implicit val instantReads: Reads[Instant] =
+    Reads.at[String](__ \ "$date" \ "$numberLong")
+      .map(instant => Instant.ofEpochMilli(instant.toLong))
+
+  implicit val instantWrites: Writes[Instant] =
     Writes.at[String](__ \ "$date" \ "$numberLong")
-      .contramap[DateTime](_.getMillis.toString)
+      .contramap[Instant](_.toEpochMilli.toString)
 
   implicit val integrationIdFormatter: Format[IntegrationId] = Json.valueFormat[IntegrationId]
-  implicit val dateTimeFormats: Format[DateTime] = Format(dateTimeReads, dateTimeWrites)
+  implicit val instantFormats: Format[Instant] = Format(instantReads, instantWrites)
 
   implicit val contactInformationFormats: OFormat[ContactInformation] = Json.format[ContactInformation]
   implicit val maintainerFormats: OFormat[Maintainer]                 = Json.format[Maintainer]
@@ -72,8 +73,8 @@ object MongoFormatters {
       (JsPath \ "description").read[String] and
       (JsPath \ "platform").read[PlatformType] and
       (JsPath \ "hods").read[List[String]] and
-      (JsPath \ "lastUpdated").read[DateTime] and
-      (JsPath \ "reviewedDate").read[DateTime] and
+      (JsPath \ "lastUpdated").read[Instant] and
+      (JsPath \ "reviewedDate").read[Instant] and
       (JsPath \ "maintainer").read[Maintainer] and
       (JsPath \ "score").readNullable[Double] and
       (JsPath \ "version").read[String] and
