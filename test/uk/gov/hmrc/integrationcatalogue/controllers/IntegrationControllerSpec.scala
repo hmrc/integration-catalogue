@@ -146,6 +146,23 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
       val result = controller.deleteWithFilters(List.empty)(FakeRequest())
       status(result) shouldBe Status.UNAUTHORIZED
     }
+
+    "return bad request when more than one platform filter specified" in {
+      val result = controller.deleteWithFilters(List(PlatformType.HIP, PlatformType.DES))(fakeAuthenticatedDeleteRequest)
+      status(result) shouldBe Status.BAD_REQUEST
+    }
+
+    "delete something when exactly one platform filter specified" in {
+      when(mockApiService.deleteByPlatform(eqTo(PlatformType.HIP))).thenReturn(Future.successful(7))
+      val result = controller.deleteWithFilters(List(PlatformType.HIP))(fakeAuthenticatedDeleteRequest)
+      status(result) shouldBe Status.OK
+    }
+
+    "do an error when no platform filters specified" in {
+      val result = controller.deleteWithFilters(List.empty)(fakeAuthenticatedDeleteRequest)
+      status(result) shouldBe Status.BAD_REQUEST
+    }
+
   }
 
 }

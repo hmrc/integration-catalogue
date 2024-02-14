@@ -77,6 +77,12 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
     extensionsWithReviewDatePublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefValue)
     extensionsWithReviewDatePublisherReferenceAndBackends.put(BACKEND_EXTENSION_KEY, backendValues)
 
+    val extensionsWithBadReviewDateString = new util.HashMap[String, Object]()
+    extensionsWithBadReviewDateString.put(REVIEWED_DATE_EXTENSION_KEY, "Cheese")
+
+    val extensionsWithBadReviewDateType = new util.HashMap[String, Object]()
+    extensionsWithBadReviewDateType.put(REVIEWED_DATE_EXTENSION_KEY, Integer.valueOf(12345))
+
     val extensionsWithShortDescAndPublisherReferenceAndBackends = new util.HashMap[String, Object]()
     extensionsWithShortDescAndPublisherReferenceAndBackends.put(REVIEWED_DATE_EXTENSION_KEY, "2020-12-25")
     extensionsWithShortDescAndPublisherReferenceAndBackends.put(SHORT_DESC_EXTENSION_KEY, shortDescription)
@@ -342,6 +348,24 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       result match {
         case Left(errors) => errors.head shouldBe s"Status must be one of ALPHA, BETA, LIVE or DEPRECATED"
         case Right(_)     => fail()
+      }
+    }
+
+    "return Left when status reviewed date is not an accepted iso 8601 format" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithBadReviewDateString), Some(publisherRefValue), mockAppConfig)
+      result match {
+        case Left(errors) => errors.head shouldBe "Reviewed date is not a valid date"
+        case Right(_) => fail()
+      }
+    }
+
+    "return Left when status reviewed date is not a String" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithBadReviewDateType), Some(publisherRefValue), mockAppConfig)
+      result match {
+        case Left(errors) => errors.head shouldBe "Reviewed date is not a valid date"
+        case Right(_) => fail()
       }
     }
 

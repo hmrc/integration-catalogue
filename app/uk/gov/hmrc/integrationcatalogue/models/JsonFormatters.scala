@@ -18,13 +18,31 @@ package uk.gov.hmrc.integrationcatalogue.models
 
 import play.api.libs.json._
 import uk.gov.hmrc.integrationcatalogue.models.common._
+import uk.gov.hmrc.integrationcatalogue.utils.DateTimeFormatters
 
-object JsonFormatters {
+import java.time.format.DateTimeFormatter
+import java.time.{Instant, ZoneId, ZonedDateTime}
 
-  val dateFormat                                                  = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-  implicit val JodaDateReads: Reads[org.joda.time.DateTime]       = JodaReads.jodaDateReads(dateFormat)
-  implicit val JodaDateWrites: Writes[org.joda.time.DateTime]     = JodaWrites.jodaDateWrites(dateFormat)
-  implicit val JodaDateTimeFormat: Format[org.joda.time.DateTime] = Format(JodaDateReads, JodaDateWrites)
+object JsonFormatters extends DateTimeFormatters {
+
+  val dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+  val zonedDateTimeFormatter = DateTimeFormatter.ofPattern(dateFormat)
+  implicit val instantWrites: Writes[Instant] = new Writes[Instant] {
+    override def writes(i: Instant): JsValue = JsString(ZonedDateTime.ofInstant(i, ZoneId.of("Z")).format(zonedDateTimeFormatter))
+  }
+  implicit val instantReads: Reads[Instant] = new Reads[Instant] {
+    override def reads(json: JsValue): JsResult[Instant] =
+      json match {
+        case JsString(s) => parseDate(s) match {
+          case Some(i: Instant) => JsSuccess(i)
+          case _ => JsError(Seq(JsPath() -> Seq(JsonValidationError(s"Could not interpret date[/time] as one of the supported ISO formats: $json"))))
+        }
+        case _ => JsError(Seq(JsPath() -> Seq(JsonValidationError(s"Could not interpret date[/time] as one of the supported ISO formats: $json"))))
+      }
+
+    private def parseDate(input: String): Option[Instant] =
+      scala.util.control.Exception.nonFatalCatch[Instant].opt(Instant.from(dateAndOptionalTimeFormatter.parse(input)))
+  }
 
   implicit val formatContactInformation: Format[ContactInformation] = Json.format[ContactInformation]
 

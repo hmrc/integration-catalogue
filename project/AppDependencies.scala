@@ -23,7 +23,6 @@ object AppDependencies {
     "com.fasterxml.jackson.core"        % "jackson-core"                    % jacksonVersion,
     "com.fasterxml.jackson.dataformat"  % "jackson-dataformat-yaml"         % jacksonVersion,
     "com.fasterxml.jackson.datatype"    % "jackson-datatype-jsr310"         % jacksonVersion,
-    "com.typesafe.play"                 %% "play-json-joda"                 % "2.10.4",
     "org.typelevel"                     %% "cats-core"                      % "2.9.0",
     "io.swagger.parser.v3"              % "swagger-parser"                  % "2.1.14"
       excludeAll(

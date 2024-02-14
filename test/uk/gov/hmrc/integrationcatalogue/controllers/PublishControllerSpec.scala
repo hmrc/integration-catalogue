@@ -35,7 +35,6 @@ import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, FakeIdentifierAct
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-
 class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with BeforeAndAfterEach with ApiTestData {
 
   implicit def mat: org.apache.pekko.stream.Materializer = app.injector.instanceOf[org.apache.pekko.stream.Materializer]
