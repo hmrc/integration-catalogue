@@ -20,9 +20,16 @@ import play.api.libs.json._
 import uk.gov.hmrc.integrationcatalogue.models.common._
 import uk.gov.hmrc.integrationcatalogue.utils.DateTimeFormatters
 
-import java.time.Instant
+import java.time.format.DateTimeFormatter
+import java.time.{Instant, ZoneId, ZonedDateTime}
 
 object JsonFormatters extends DateTimeFormatters {
+
+  val dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+  val zonedDateTimeFormatter = DateTimeFormatter.ofPattern(dateFormat)
+  implicit val instantWrites: Writes[Instant] = new Writes[Instant] {
+    override def writes(i: Instant): JsValue = JsString(ZonedDateTime.ofInstant(i, ZoneId.of("UTC")).format(zonedDateTimeFormatter))
+  }
 
   implicit val formatContactInformation: Format[ContactInformation] = Json.format[ContactInformation]
 
