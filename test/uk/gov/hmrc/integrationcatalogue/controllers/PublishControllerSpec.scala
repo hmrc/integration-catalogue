@@ -32,10 +32,11 @@ import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common._
 import uk.gov.hmrc.integrationcatalogue.service.PublishService
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, FakeIdentifierAction}
+import uk.gov.hmrc.integrationcatalogue.utils.DateTimeFormatters
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-
+import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with BeforeAndAfterEach with ApiTestData {
 
   implicit def mat: org.apache.pekko.stream.Materializer = app.injector.instanceOf[org.apache.pekko.stream.Materializer]
@@ -156,6 +157,10 @@ class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPe
             FakeIdentifierAction.fakeAuthorizationHeader
           )
       )
+
+      Console.println(s"OIYAF: $fileTransferPublishRequest")
+
+      Console.println(s"reviewedDate: $reviewedDate")
 
       status(result) shouldBe Status.OK
 

@@ -18,6 +18,8 @@ package uk.gov.hmrc.integrationcatalogue.utils
 
 import org.scalatest.matchers.must.Matchers.{be, convertToAnyMustWrapper}
 import org.scalatest.wordspec.AnyWordSpec
+import play.api.libs.json.{JsError, JsSuccess, Json}
+import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters.instantReads
 
 import java.time.{Instant, OffsetDateTime, ZoneOffset}
 
@@ -185,6 +187,24 @@ class DateTimeFormattersTest extends AnyWordSpec with DateTimeFormatters {
       val actual = Instant.from(dateAndOptionalTimeFormatter.parse(candidate))
 
       actual must be(expected)
+    }
+  }
+
+  "reads" should {
+    "parse ISO 8601 Date into Instant" in {
+      val expected = Instant.parse("2024-02-12T00:00:00Z")
+      val actual = instantReads.reads(Json.parse("\"2024-02-12\""))
+      actual must be(JsSuccess(expected))
+    }
+
+    "not parse non Iso 8601 strings" in {
+      val actual = instantReads.reads(Json.parse("\"Cheese\""))
+      actual must be(JsError("Could not interpret date[/time] as one of the supported ISO formats: \"Cheese\""))
+    }
+
+    "not parse other json types" in {
+      val actual = instantReads.reads(Json.parse("12345"))
+      actual must be(JsError("Could not interpret date[/time] as one of the supported ISO formats: 12345"))
     }
   }
 }
