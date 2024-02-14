@@ -158,10 +158,6 @@ class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPe
           )
       )
 
-      Console.println(s"OIYAF: $fileTransferPublishRequest")
-
-      Console.println(s"reviewedDate: $reviewedDate")
-
       status(result) shouldBe Status.OK
 
       val publishResult = contentAsJson(result).as[PublishResult]
