@@ -28,7 +28,8 @@ class AppConfig @Inject() (config: Configuration) {
 
   val defaultShortDescLength: Int   = 180
   val oldIndexesToDrop: Seq[String] = config.getOptional[Seq[String]]("mongodb.oldIndexesToDrop").getOrElse(Seq.empty)
-  val shortDescLength: Int          = config.getOptional[Int]("publish.shortDesc.maxLength").getOrElse(defaultShortDescLength)
+  val apiTeamsTtlDays: Int = config.getOptional[Int]("mongodb.apiTeamsTtlDays").getOrElse(180)
+  val shortDescLength: Int = config.getOptional[Int]("publish.shortDesc.maxLength").getOrElse(defaultShortDescLength)
 
   val authorizationKey: String = getString("authorizationKey")
   val cmaAuthorizationKey: String = getString("auth.authKey.cma")
