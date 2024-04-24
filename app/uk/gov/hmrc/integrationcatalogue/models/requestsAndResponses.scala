@@ -47,7 +47,8 @@ case class IntegrationFilter(
     backends: List[String] = List.empty,
     itemsPerPage: Option[Int] = None,
     currentPage: Option[Int] = None,
-    typeFilter: Option[IntegrationType] = None
+    typeFilter: Option[IntegrationType] = None,
+    teamIds: List[String] = List.empty
   )
 
 //TODO remove code from PublishError

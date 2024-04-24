@@ -54,10 +54,11 @@ class IntegrationController @Inject() (
       backendsFilter: List[String],
       itemsPerPage: Option[Int],
       currentPage: Option[Int],
-      integrationType: Option[IntegrationType]
+      integrationType: Option[IntegrationType],
+      teamIds: List[String]
     ): Action[AnyContent] =
     (identify andThen validateQueryParamKeyAction).async {
-      integrationService.findWithFilters(IntegrationFilter(searchTerm, platformFilter, backendsFilter, itemsPerPage, currentPage, integrationType))
+      integrationService.findWithFilters(IntegrationFilter(searchTerm, platformFilter, backendsFilter, itemsPerPage, currentPage, integrationType, teamIds))
         .map(result => {
           logger.warn(s"FindWithFilter results: ${result.count} - SearchTerms: ${valuesOrNone(searchTerm)} PlatformFilters: ${valuesOrNone(platformFilter.map(_.toString))} itemsPerPage: ${itemsPerPage.map(_.toString).getOrElse("Value Not Set")} currentPage: ${currentPage.map(_.toString).getOrElse("Value Not Set")}")
           Ok(Json.toJson(result))
