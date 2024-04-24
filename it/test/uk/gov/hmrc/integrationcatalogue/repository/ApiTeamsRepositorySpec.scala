@@ -23,18 +23,19 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.integrationcatalogue.models.ApiTeam
+import uk.gov.hmrc.integrationcatalogue.repository.ApiTeamsRepository.MongoApiTeam
 import uk.gov.hmrc.integrationcatalogue.support.MdcTesting
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
-import java.time.Instant
+import java.time.{Clock, Instant, ZoneId}
 import java.time.temporal.ChronoUnit
 import scala.concurrent.ExecutionContext
 
 class ApiTeamsRepositorySpec
   extends AnyWordSpec
     with Matchers
-    with DefaultPlayMongoRepositorySupport[ApiTeam]
+    with DefaultPlayMongoRepositorySupport[MongoApiTeam]
     with OptionValues
     with MdcTesting {
 
@@ -43,7 +44,8 @@ class ApiTeamsRepositorySpec
   private lazy val playApplication = {
     new GuiceApplicationBuilder()
       .overrides(
-        bind[MongoComponent].toInstance(mongoComponent)
+        bind[MongoComponent].toInstance(mongoComponent),
+        bind[Clock].toInstance(clock)
       )
       .build()
   }
@@ -61,10 +63,10 @@ class ApiTeamsRepositorySpec
       "insert a record when none exists for the publisher reference" in {
         setMdcData()
 
-        val apiTeam = ApiTeam(publisherReference, teamId1, lastUpdated)
+        val apiTeam = ApiTeam(publisherReference, teamId1)
         val result = repository.upsert(apiTeam).map(ResultWithMdcData(_)).futureValue
 
-        find() shouldBe apiTeam
+        find() shouldBe MongoApiTeam(apiTeam, lastUpdated)
 
         result.mdcData shouldBe testMdcData
       }
@@ -72,15 +74,15 @@ class ApiTeamsRepositorySpec
       "update a record when one exists for the publisher reference" in {
         setMdcData()
 
-        val apiTeam = ApiTeam(publisherReference, teamId1, lastUpdated)
-        insert(apiTeam).futureValue
+        val mongoApiTeam = MongoApiTeam(publisherReference, teamId1, lastUpdated.minusSeconds(1))
+        insert(mongoApiTeam).futureValue
 
-        val updated = apiTeam.copy(
+        val updated = mongoApiTeam.copy(
           teamId = teamId2,
-          lastUpdated = lastUpdated.plusSeconds(1)
+          lastUpdated = lastUpdated
         )
 
-        val result = repository.upsert(updated).map(ResultWithMdcData(_)).futureValue
+        val result = repository.upsert(updated.toApiTeam).map(ResultWithMdcData(_)).futureValue
 
         find() shouldBe updated
 
@@ -92,12 +94,12 @@ class ApiTeamsRepositorySpec
       "return a record when one exists for the publisher reference" in {
         setMdcData()
 
-        val apiTeam = ApiTeam(publisherReference, teamId1, lastUpdated)
-        insert(apiTeam).futureValue
+        val mongoApiTeam = MongoApiTeam(publisherReference, teamId1, lastUpdated)
+        insert(mongoApiTeam).futureValue
 
         val found = repository.findByPublisherReference(publisherReference).map(ResultWithMdcData(_)).futureValue
 
-        found.data shouldBe Some(apiTeam)
+        found.data shouldBe Some(mongoApiTeam.toApiTeam)
         found.mdcData shouldBe testMdcData
       }
 
@@ -112,7 +114,7 @@ class ApiTeamsRepositorySpec
     }
   }
 
-  private def find(): ApiTeam = {
+  private def find(): MongoApiTeam = {
     find(Filters.equal("publisherReference", publisherReference))
       .futureValue
       .headOption
@@ -126,6 +128,7 @@ object ApiTeamsRepositorySpec {
   val publisherReference = "test-publisher-reference"
   val teamId1 = "test-team-id-1"
   val teamId2 = "test-team-id-2"
-  val lastUpdated: Instant = Instant.now().truncatedTo(ChronoUnit.MILLIS) // Micros is beyond the JSON resolution
+  val clock: Clock = Clock.fixed(Instant.now().truncatedTo(ChronoUnit.MILLIS), ZoneId.of("UTC"))
+  val lastUpdated: Instant = Instant.now(clock) //.truncatedTo(ChronoUnit.MILLIS) // Micros is beyond the JSON resolution
 
 }

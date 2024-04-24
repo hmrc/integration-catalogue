@@ -18,21 +18,29 @@ package uk.gov.hmrc.integrationcatalogue.repository
 
 import com.google.inject.{Inject, Singleton}
 import org.mongodb.scala.model._
+import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiTeam
+import uk.gov.hmrc.integrationcatalogue.repository.ApiTeamsRepository.MongoApiTeam
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.play.http.logging.Mdc
 
+import java.time.{Clock, Instant}
 import java.util.concurrent.TimeUnit
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ApiTeamsRepository @Inject()(appConfig: AppConfig, mongoComponent: MongoComponent)(implicit ec: ExecutionContext)
-  extends PlayMongoRepository[ApiTeam](
+class ApiTeamsRepository @Inject()(
+  appConfig: AppConfig,
+  mongoComponent: MongoComponent,
+  clock: Clock
+)(implicit ec: ExecutionContext)
+  extends PlayMongoRepository[MongoApiTeam](
     collectionName = "api-teams",
     mongoComponent = mongoComponent,
-    domainFormat = ApiTeam.formatApiTeam,
+    domainFormat = MongoApiTeam.formatMongoApiTeam,
     indexes = Seq(
       IndexModel(
         Indexes.ascending("publisherReference"),
@@ -54,7 +62,7 @@ class ApiTeamsRepository @Inject()(appConfig: AppConfig, mongoComponent: MongoCo
       collection
         .replaceOne(
           filter = Filters.equal("publisherReference", apiTeam.publisherReference),
-          replacement = apiTeam,
+          replacement = MongoApiTeam(apiTeam, Instant.now(clock)),
           options = ReplaceOptions().upsert(true)
         )
         .toFuture()
@@ -68,7 +76,30 @@ class ApiTeamsRepository @Inject()(appConfig: AppConfig, mongoComponent: MongoCo
           filter = Filters.equal("publisherReference", publisherReference)
         )
         .toFuture()
-    } map(_.headOption)
+    } map(_.headOption.map(_.toApiTeam))
+  }
+
+}
+
+object ApiTeamsRepository {
+
+  case class MongoApiTeam(publisherReference: String, teamId: String, lastUpdated: Instant) {
+
+    def toApiTeam: ApiTeam = {
+      ApiTeam(publisherReference, teamId)
+    }
+
+  }
+
+  object MongoApiTeam {
+
+    def apply(apiTeam: ApiTeam, lastUpdated: Instant): MongoApiTeam = {
+      MongoApiTeam(apiTeam.publisherReference, apiTeam.teamId, lastUpdated)
+    }
+
+    private implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
+    implicit val formatMongoApiTeam: Format[MongoApiTeam] = Json.format[MongoApiTeam]
+
   }
 
 }

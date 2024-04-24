@@ -16,16 +16,4 @@
 
 package uk.gov.hmrc.integrationcatalogue.models
 
-import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
-
-import java.time.Instant
-
-case class ApiTeam(publisherReference: String, teamId: String, lastUpdated: Instant)
-
-object ApiTeam {
-
-  private implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
-  implicit val formatApiTeam: Format[ApiTeam] = Json.format[ApiTeam]
-
-}
+case class ApiTeam(publisherReference: String, teamId: String)
