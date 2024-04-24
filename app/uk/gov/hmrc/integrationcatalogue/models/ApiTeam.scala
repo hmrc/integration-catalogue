@@ -16,4 +16,12 @@
 
 package uk.gov.hmrc.integrationcatalogue.models
 
+import play.api.libs.json.{Format, Json}
+
 case class ApiTeam(publisherReference: String, teamId: String)
+
+object ApiTeam {
+
+  implicit val formatApiTeam: Format[ApiTeam] = Json.format[ApiTeam]
+
+}

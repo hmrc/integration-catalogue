@@ -20,11 +20,14 @@ import com.google.inject.AbstractModule
 import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.{AuthenticatedIdentifierAction, IdentifierAction}
 import uk.gov.hmrc.integrationcatalogue.scheduled.MetricsScheduler
 
+import java.time.Clock
+
 class CustomModule extends AbstractModule {
 
   override def configure(): Unit = {
     bind(classOf[MetricsScheduler]).asEagerSingleton()
     bind(classOf[IdentifierAction]).to(classOf[AuthenticatedIdentifierAction]).asEagerSingleton()
+    bind(classOf[Clock]).toInstance(Clock.systemUTC())
   }
 
 }

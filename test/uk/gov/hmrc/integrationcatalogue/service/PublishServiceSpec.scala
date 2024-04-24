@@ -27,7 +27,7 @@ import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes._
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.SpecificationType
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASParserService
-import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
+import uk.gov.hmrc.integrationcatalogue.repository.{ApiTeamsRepository, IntegrationRepository}
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -38,7 +38,8 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
 
   val mockOasParserService: OASParserService = mock[OASParserService]
   val mockApiRepo: IntegrationRepository     = mock[IntegrationRepository]
-  val mockUuidService                        = mock[UuidService]
+  val mockUuidService: UuidService           = mock[UuidService]
+  val mockApiTeamsRepo: ApiTeamsRepository   = mock[ApiTeamsRepository]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -49,7 +50,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
 
     val rawData = "rawOASData"
 
-    val inTest = new PublishService(mockOasParserService, mockApiRepo, mockUuidService)
+    val inTest = new PublishService(mockOasParserService, mockApiRepo, mockUuidService, mockApiTeamsRepo)
 
     val publishRequest: PublishRequest                                         =
       PublishRequest(publisherReference = Some(apiDetail0.publisherReference), platformType = apiDetail0.platform, specificationType = SpecificationType.OAS_V3, contents = rawData)
@@ -139,6 +140,17 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
 
     }
 
+  }
+
+  "linkApiToTeam" should {
+    "pass the request to the ApiTeam repository" in new Setup {
+      val apiTeam: ApiTeam = ApiTeam("test-publisher-reference", "test-team-id")
+      when(mockApiTeamsRepo.upsert(any())).thenReturn(Future.successful(()))
+
+      Await.result(inTest.linkApiToTeam(apiTeam), Duration.apply(500, MILLISECONDS))
+
+      verify(mockApiTeamsRepo).upsert(ArgumentMatchers.eq(apiTeam))
+    }
   }
 
 }

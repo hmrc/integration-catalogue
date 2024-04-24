@@ -10,10 +10,8 @@ GET           /report                                   uk.gov.hmrc.integrationc
 
 PUT           /apis/publish                             uk.gov.hmrc.integrationcatalogue.controllers.PublishController.publishApi()
 PUT           /apis/multipart/publish                   uk.gov.hmrc.integrationcatalogue.controllers.MultipartPublishController.publishApi()
+POST          /apis/team                                uk.gov.hmrc.integrationcatalogue.controllers.PublishController.linkApiToTeam()
 PUT           /filetransfers/publish                    uk.gov.hmrc.integrationcatalogue.controllers.PublishController.publishFileTransfer()
 GET           /filetransfers/platform/transports        uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.getFileTransferTransportsByPlatform(source: Option[String], target: Option[String])
 
 GET           /platform/contacts                        uk.gov.hmrc.integrationcatalogue.controllers.PlatformController.getPlatformContacts()
-
-
-

@@ -18,20 +18,22 @@ package uk.gov.hmrc.integrationcatalogue.service
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-
 import cats.data.Validated._
 import cats.data._
-
 import play.api.Logging
-
 import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes._
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASParserService
-import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
+import uk.gov.hmrc.integrationcatalogue.repository.{ApiTeamsRepository, IntegrationRepository}
 
 @Singleton
-class PublishService @Inject() (oasParser: OASParserService, integrationRepository: IntegrationRepository, uuidService: UuidService) extends Logging {
+class PublishService @Inject() (
+  oasParser: OASParserService,
+  integrationRepository: IntegrationRepository,
+  uuidService: UuidService,
+  apiTeamsRepository: ApiTeamsRepository
+) extends Logging {
 
   def publishFileTransfer(request: FileTransferPublishRequest)(implicit ec: ExecutionContext): Future[PublishResult] = {
     val integrationId = IntegrationId(uuidService.newUuid())
@@ -44,7 +46,7 @@ class PublishService @Inject() (oasParser: OASParserService, integrationReposito
           isSuccess = true,
           Some(PublishDetails(isUpdate, fileTransfer.id, fileTransfer.publisherReference, fileTransfer.platform))
         ))
-      case Left(error)                     =>
+      case Left(_)                     =>
         Future.successful(PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert file transfer"))))
     }
   }
@@ -61,7 +63,7 @@ class PublishService @Inject() (oasParser: OASParserService, integrationReposito
         integrationRepository.findAndModify(apiDetailParsed).flatMap {
           case Right((api, isUpdate)) =>
             Future.successful(PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, api.id, api.publisherReference, api.platform))))
-          case Left(error)            =>
+          case Left(_)            =>
             Future.successful(PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert api"))))
         }
     }
@@ -70,6 +72,10 @@ class PublishService @Inject() (oasParser: OASParserService, integrationReposito
   def mapErrorsToPublishResult(invalidNel: Invalid[NonEmptyList[List[String]]]): Future[PublishResult] = {
     val flatList = invalidNel.e.toList.flatten
     Future.successful(PublishResult(isSuccess = false, None, flatList.map(err => PublishError(OAS_PARSE_ERROR, err))))
+  }
+
+  def linkApiToTeam(apiTeam: ApiTeam): Future[Unit] = {
+    apiTeamsRepository.upsert(apiTeam)
   }
 
 }
