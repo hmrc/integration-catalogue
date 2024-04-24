@@ -20,12 +20,12 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import play.api.Logging
-import play.api.libs.json.{JsValue, Json, Reads}
+import play.api.libs.json.{JsError, JsValue, Json, Reads}
 import play.api.mvc._
 import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.IdentifierAction
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
-import uk.gov.hmrc.integrationcatalogue.models.{ErrorResponse, ErrorResponseMessage, FileTransferPublishRequest, PublishRequest}
+import uk.gov.hmrc.integrationcatalogue.models.{ApiTeam, ErrorResponse, ErrorResponseMessage, FileTransferPublishRequest, PublishRequest}
 import uk.gov.hmrc.integrationcatalogue.service.PublishService
 
 @Singleton
@@ -59,6 +59,18 @@ class PublishController @Inject() (
       logger.warn("Invalid request body, must be a valid publish request")
       Future.successful(BadRequest(Json.toJson(ErrorResponse(List(ErrorResponseMessage("Invalid request body"))))))
     }
+  }
+
+  def linkApiToTeam(): Action[JsValue] = identify.async(parse.json) {
+    implicit request =>
+      request.body.validate[ApiTeam].fold(
+        invalid => {
+          logger.warn(s"Error parsing request body: ${JsError.toJson(invalid)}")
+          Future.successful(BadRequest(Json.toJson(ErrorResponse(List(ErrorResponseMessage("Invalid request body"))))))
+        },
+        apiTeam =>
+          publishService.linkApiToTeam(apiTeam).map(_ => NoContent)
+      )
   }
 
   private def validateJsonString[T](body: String)(implicit reads: Reads[T]) = {
