@@ -50,7 +50,7 @@ class IntegrationControllerISpec
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-//    dropMongoDb()
+    dropMongoDb()
     prepareDatabase()
     await(apiRepo.ensureIndexes(), Duration.apply(10, SECONDS))
   }
