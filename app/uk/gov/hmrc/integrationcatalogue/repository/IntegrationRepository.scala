@@ -58,7 +58,8 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
           Indexes.text("$**"),
           IndexOptions().weights(new BasicDBObject().append("title", 50).append("description", 25))
             .name("text_index_1_1").background(true)
-        )
+        ),
+        IndexModel(ascending("teamId"), IndexOptions().name("teamId_index").background(true).unique(false).sparse(true))
       ),
       replaceIndexes = false
     )
@@ -86,7 +87,8 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
           set("apiStatus", Codecs.toBson(apiDetail.apiStatus)),
           set("endpoints", apiDetail.endpoints.map(Codecs.toBson(_))),
           set("openApiSpecification", Codecs.toBson(apiDetail.openApiSpecification)),
-          set("scopes", apiDetail.scopes.map(Codecs.toBson(_)))
+          set("scopes", apiDetail.scopes.map(Codecs.toBson(_))),
+          set("teamId", Codecs.toBson(apiDetail.teamId))
         )
       case IntegrationType.FILE_TRANSFER =>
         val fileTransferDetail: FileTransferDetail = integrationDetail.asInstanceOf[FileTransferDetail]
@@ -161,8 +163,9 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
       val targetFilter             = if (filter.backends.nonEmpty) Some(Filters.in("targetSystem", filter.backends: _*)) else None
       val combinedHodsFilters      = Seq(backendsFilter, sourceFilter, targetFilter).flatten
       val hodsFilter               = if (combinedHodsFilters.isEmpty) None else Some(Filters.or(combinedHodsFilters: _*))
+      val teamIdsFilter            = if (filter.teamIds.nonEmpty) Some(Filters.in("teamId", filter.teamIds.map(Codecs.toBson(_)): _*)) else None
 
-      Seq(integrationTypeFilter, textFilter, platformFilter, hodsFilter).flatten
+      Seq(integrationTypeFilter, textFilter, platformFilter, hodsFilter, teamIdsFilter).flatten
     }
 
     val filters = buildFilters()

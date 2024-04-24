@@ -84,18 +84,18 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
   "GET /integrations" should {
     "return 200" in {
       when(mockApiService.findWithFilters(any)).thenReturn(Future.successful(IntegrationResponse(count = 1, results = apiList)))
-      val result: Future[Result] = controller.findWithFilters(List(""), List(PlatformType.CORE_IF), List.empty, None, None, None)(fakeAuthenticatedRequest)
+      val result: Future[Result] = controller.findWithFilters(List(""), List(PlatformType.CORE_IF), List.empty, None, None, None, List.empty)(fakeAuthenticatedRequest)
       status(result) shouldBe Status.OK
     }
 
     "return 200 when no results returned" in {
       when(mockApiService.findWithFilters(any)).thenReturn(Future.successful(IntegrationResponse(count = 0, results = List.empty)))
-      val result = controller.findWithFilters(List(""), List(PlatformType.CORE_IF), List.empty, None, None, None)(fakeAuthenticatedRequest)
+      val result = controller.findWithFilters(List(""), List(PlatformType.CORE_IF), List.empty, None, None, None, List.empty)(fakeAuthenticatedRequest)
       status(result) shouldBe Status.OK
     }
 
     "return 401 when the request is not authenticated" in {
-      val result = controller.findWithFilters(List(""), List(PlatformType.CORE_IF), List.empty, None, None, None)(fakeRequest)
+      val result = controller.findWithFilters(List(""), List(PlatformType.CORE_IF), List.empty, None, None, None, List.empty)(fakeRequest)
       status(result) shouldBe Status.UNAUTHORIZED
     }
   }

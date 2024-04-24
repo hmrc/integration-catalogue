@@ -440,6 +440,11 @@ class IntegrationRepositoryISpec
         validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP"))).results, List("API1003", "API1004", "API1005"))
       }
 
+      "find 2 results when searching for backend CUSTOMS and ETMP with multiple team ids" in new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP"), teamIds = List("team_id_1","team_id_2","team_id_404"))).results, List("API1003", "API1004"))
+      }
+
       "find 1 result when searching for backend source " in new FilterSetup {
         setUpTest()
         validateResults(findWithFilters(IntegrationFilter(backends = List("source"))).results, List("API1002"))

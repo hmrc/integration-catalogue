@@ -153,7 +153,8 @@ trait ApiTestData {
     openApiSpecification = "OAS content for API#1001",
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
-    scopes = Set.empty
+    scopes = Set.empty,
+    teamId = Some("team_id_1")
   )
 
   val apiDetail3: ApiDetail = ApiDetail(
