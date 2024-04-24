@@ -145,6 +145,51 @@ class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPe
     }
   }
 
+  "POST /apis/team" should {
+    "pass the request to the service and return NoContent on success" in {
+      val apiTeam = ApiTeam("test-publisher-reference", "test-team-id")
+
+      when(mockPublishService.linkApiToTeam(any())).thenReturn(Future.successful(()))
+
+      val result = controller.linkApiToTeam()(
+        FakeRequest(routes.PublishController.linkApiToTeam())
+          .withHeaders(
+            HeaderNames.CONTENT_TYPE -> "application/json",
+            FakeIdentifierAction.fakeAuthorizationHeader
+          )
+          .withBody(Json.toJson(apiTeam))
+      )
+
+      status(result) shouldBe NO_CONTENT
+      verify(mockPublishService).linkApiToTeam(ArgumentMatchers.eq(apiTeam))
+    }
+
+    "return 400 BadRequest when the request body is not a valid ApiTeam" in {
+      val result = controller.linkApiToTeam()(
+        FakeRequest(routes.PublishController.linkApiToTeam())
+          .withHeaders(
+            HeaderNames.CONTENT_TYPE -> "application/json",
+            FakeIdentifierAction.fakeAuthorizationHeader
+          )
+          .withBody(Json.obj())
+      )
+
+      status(result) shouldBe BAD_REQUEST
+    }
+
+    "return 401 when the request is not authenticated" in {
+      val result = controller.linkApiToTeam()(
+        FakeRequest(routes.PublishController.linkApiToTeam())
+          .withHeaders(
+            HeaderNames.CONTENT_TYPE -> "application/json"
+          )
+          .withBody(Json.obj())
+      )
+
+      status(result) shouldBe UNAUTHORIZED
+    }
+  }
+
   "PUT /filetransfer/publish" should {
     "return 200" in {
       when(mockPublishService.publishFileTransfer(any())(any())).thenReturn(Future.successful(PublishResult(isSuccess = true)))
