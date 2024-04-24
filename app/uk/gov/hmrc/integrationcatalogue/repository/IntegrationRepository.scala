@@ -59,7 +59,7 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
           IndexOptions().weights(new BasicDBObject().append("title", 50).append("description", 25))
             .name("text_index_1_1").background(true)
         ),
-        IndexModel(ascending("teamId"), IndexOptions().name("teamId_index").background(true).unique(false))
+        IndexModel(ascending("teamId"), IndexOptions().name("teamId_index").background(true).unique(false).sparse(true))
       ),
       replaceIndexes = false
     )
