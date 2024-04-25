@@ -314,7 +314,7 @@ class IntegrationRepositoryISpec
         val all = getAll
         all.size shouldBe 1
         val head = all.head.asInstanceOf[ApiDetail]
-        head.teamId shouldBe ("a_team_id")
+        head.teamId shouldBe (Some("a_team_id"))
       }
 
       "maintain the original team id on update" in {
