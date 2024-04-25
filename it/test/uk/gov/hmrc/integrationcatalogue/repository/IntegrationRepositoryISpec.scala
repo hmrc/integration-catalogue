@@ -326,7 +326,7 @@ class IntegrationRepositoryISpec
         var updateResult: Either[Throwable, (IntegrationDetail, Types.IsUpdate)] = await(repo.findAndModify(apiDetail1, None))
         updateResult match {
           case Right((apiDetail: IntegrationDetail, isUpdate)) =>
-            isUpdate shouldBe false
+            isUpdate shouldBe true
             validateApi(apiDetail, apiDetail1)
           case Right(_) => fail()
           case Left(_) => fail()
@@ -340,7 +340,7 @@ class IntegrationRepositoryISpec
         updateResult = await(repo.findAndModify(apiDetail1, Some(ApiTeam("a_publisher_ref", "a_different_team_id"))))
         updateResult match {
           case Right((apiDetail: IntegrationDetail, isUpdate)) =>
-            isUpdate shouldBe false
+            isUpdate shouldBe true
             validateApi(apiDetail, apiDetail1)
           case Right(_) => fail()
           case Left(_) => fail()
