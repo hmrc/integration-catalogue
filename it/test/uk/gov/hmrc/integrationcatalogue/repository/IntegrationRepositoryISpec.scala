@@ -50,12 +50,13 @@ class IntegrationRepositoryISpec
   lazy val repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
   val indexNameToDrop = "please_delete_me__let_me_go"
 
-  protected def appBuilder: GuiceApplicationBuilder =
+  protected def appBuilder: GuiceApplicationBuilder = {
     new GuiceApplicationBuilder()
       .configure(
         "mongodb.uri" -> s"mongodb://127.0.0.1:27017/test-${this.getClass.getSimpleName}",
         "mongodb.oldIndexesToDrop" -> Seq(indexNameToDrop, "text_index_1_0")
       )
+  }
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -113,8 +114,8 @@ class IntegrationRepositoryISpec
         for {
           matchInTitle <- repo.findAndModify(apiDetail1)
           matchInDescription <- repo.findAndModify(apiDetail5)
-          matchInHods <- repo.findAndModify(apiDetail3)
-          matchOnDesPlatform <- repo.findAndModify(apiDetail4)
+          matchInHods <- repo.findAndModify(apiDetail3, Some(ApiTeam("a_publisher_ref", "team_id_1")))
+          matchOnDesPlatform <- repo.findAndModify(apiDetail4, Some(ApiTeam("another_publisher_ref", "team_id_2")))
           matchOnFileTransferPlatformOne <- repo.findAndModify(fileTransfer2)
           matchOnFileTransferPlatformTwo <- repo.findAndModify(fileTransfer7)
         } yield (
@@ -349,7 +350,7 @@ class IntegrationRepositoryISpec
         all = getAll
         all.size shouldBe 1
         apiDetail = all.head.asInstanceOf[ApiDetail]
-        apiDetail.teamId shouldBe ("a_team_id")
+        apiDetail.teamId shouldBe (Some("a_team_id"))
 
       }
     }
