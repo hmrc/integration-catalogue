@@ -67,11 +67,9 @@ class PublishService @Inject() (
           apiDetail <- integrationRepository.findAndModify(apiDetailParsed, maybeApiTeam)
         } yield apiDetail match {
           case Right((api, isUpdate)) =>
-            val eventualResult = PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, api.id, api.publisherReference, api.platform)))
-            eventualResult
+            PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, api.id, api.publisherReference, api.platform)))
           case Left(_) =>
-            val eventualResult = PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert api")))
-            eventualResult
+            PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert api")))
         }
     }
   }
