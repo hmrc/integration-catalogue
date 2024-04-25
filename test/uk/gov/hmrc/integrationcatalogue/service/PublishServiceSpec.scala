@@ -65,8 +65,8 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
     "return successful publish result on insert" in new Setup {
 
       when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
-      when(mockApiRepo.findAndModify(any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
-
+      when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
+      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(Option.empty))
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
 
@@ -80,14 +80,15 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
         ArgumentMatchers.eq(publishRequest.specificationType),
         ArgumentMatchers.eq(publishRequest.contents)
       )
-      verify(mockApiRepo).findAndModify(ArgumentMatchers.eq(apiDetail0))
+      verify(mockApiRepo).findAndModify(ArgumentMatchers.eq(apiDetail0), ArgumentMatchers.eq(Option.empty))
 
     }
 
     "return successful publish result on update" in new Setup {
 
       when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
-      when(mockApiRepo.findAndModify(any())).thenReturn(Future.successful(apiUpsertSuccessUpdate))
+      when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessUpdate))
+      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(Option.empty))
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
@@ -102,7 +103,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
         ArgumentMatchers.eq(publishRequest.specificationType),
         ArgumentMatchers.eq(publishRequest.contents)
       )
-      verify(mockApiRepo).findAndModify(ArgumentMatchers.eq(apiDetail0))
+      verify(mockApiRepo).findAndModify(ArgumentMatchers.eq(apiDetail0), ArgumentMatchers.eq(Option.empty))
     }
 
     "return fail when oas parse fails" in new Setup {
@@ -124,7 +125,9 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
     "return fail when api upsert fails" in new Setup {
 
       when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
-      when(mockApiRepo.findAndModify(any())).thenReturn(Future.successful(apiUpsertFailure))
+      when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertFailure))
+      when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertFailure))
+      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(Option.empty))
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe false
@@ -136,7 +139,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
         ArgumentMatchers.eq(publishRequest.specificationType),
         ArgumentMatchers.eq(publishRequest.contents)
       )
-      verify(mockApiRepo).findAndModify(ArgumentMatchers.eq(apiDetail0))
+      verify(mockApiRepo).findAndModify(ArgumentMatchers.eq(apiDetail0), ArgumentMatchers.eq(Option.empty))
 
     }
 
