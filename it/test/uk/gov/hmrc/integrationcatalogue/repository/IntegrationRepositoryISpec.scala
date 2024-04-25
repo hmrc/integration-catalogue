@@ -335,7 +335,7 @@ class IntegrationRepositoryISpec
         var all = getAll
         all.size shouldBe 1
         var apiDetail = all.head.asInstanceOf[ApiDetail]
-        apiDetail.teamId shouldBe ("a_team_id")
+        apiDetail.teamId shouldBe (Some("a_team_id"))
 
         updateResult = await(repo.findAndModify(apiDetail1, Some(ApiTeam("a_publisher_ref", "a_different_team_id"))))
         updateResult match {
