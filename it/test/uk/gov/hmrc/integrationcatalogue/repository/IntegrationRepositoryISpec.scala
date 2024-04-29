@@ -50,12 +50,13 @@ class IntegrationRepositoryISpec
   lazy val repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
   val indexNameToDrop = "please_delete_me__let_me_go"
 
-  protected def appBuilder: GuiceApplicationBuilder =
+  protected def appBuilder: GuiceApplicationBuilder = {
     new GuiceApplicationBuilder()
       .configure(
-        "mongodb.uri"              -> s"mongodb://127.0.0.1:27017/test-${this.getClass.getSimpleName}",
+        "mongodb.uri" -> s"mongodb://127.0.0.1:27017/test-${this.getClass.getSimpleName}",
         "mongodb.oldIndexesToDrop" -> Seq(indexNameToDrop, "text_index_1_0")
       )
+  }
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -111,10 +112,10 @@ class IntegrationRepositoryISpec
     def createTestData(): Unit = {
       val combinedFuture =
         for {
-          matchInTitle                   <- repo.findAndModify(apiDetail1)
-          matchInDescription             <- repo.findAndModify(apiDetail5)
-          matchInHods                    <- repo.findAndModify(apiDetail3)
-          matchOnDesPlatform             <- repo.findAndModify(apiDetail4)
+          matchInTitle <- repo.findAndModify(apiDetail1)
+          matchInDescription <- repo.findAndModify(apiDetail5)
+          matchInHods <- repo.findAndModify(apiDetail3, Some(ApiTeam("a_publisher_ref", "team_id_1")))
+          matchOnDesPlatform <- repo.findAndModify(apiDetail4, Some(ApiTeam("another_publisher_ref", "team_id_2")))
           matchOnFileTransferPlatformOne <- repo.findAndModify(fileTransfer2)
           matchOnFileTransferPlatformTwo <- repo.findAndModify(fileTransfer7)
         } yield (
@@ -165,7 +166,7 @@ class IntegrationRepositoryISpec
             val result2 = await(repo.findById(integration.id))
             validateApi(result2.get, apiDetail1)
           }
-          case Left(_)                 => fail()
+          case Left(_) => fail()
         }
 
       }
@@ -215,8 +216,8 @@ class IntegrationRepositoryISpec
           case Right((apiDetail: IntegrationDetail, isUpdate)) =>
             isUpdate shouldBe false
             validateApi(apiDetail, apiDetail1)
-          case Right(_)                                        => fail()
-          case Left(_)                                         => fail()
+          case Right(_) => fail()
+          case Left(_) => fail()
         }
 
         getAll.size shouldBe 1
@@ -232,8 +233,8 @@ class IntegrationRepositoryISpec
           case Right((details: FileTransferDetail, isUpdate)) =>
             isUpdate shouldBe false
             validateFileTransfer(details, fileTransfer2)
-          case Right(_)                                       => fail()
-          case Left(_)                                        => fail()
+          case Right(_) => fail()
+          case Left(_) => fail()
         }
 
         getAll.size shouldBe 1
@@ -271,8 +272,8 @@ class IntegrationRepositoryISpec
             apiDetail.specificationType shouldBe apiDetail5.specificationType
             apiDetail.hods shouldBe apiDetail5.hods
             apiDetail.openApiSpecification shouldBe apiDetail5.openApiSpecification
-          case Right(_)                                => fail()
-          case Left(_)                                 => fail()
+          case Right(_) => fail()
+          case Left(_) => fail()
         }
 
         getAll.size shouldBe 1
@@ -287,15 +288,70 @@ class IntegrationRepositoryISpec
             val actual = persisted.copy(id = IntegrationId(id), lastUpdated = now, reviewedDate = now)
             val reference = apiDetail1.copy(id = IntegrationId(id), lastUpdated = now, reviewedDate = now)
 
-            classOf[ApiDetail].getDeclaredFields foreach(f => {
+            classOf[ApiDetail].getDeclaredFields foreach (f => {
               f.setAccessible(true)
-              f.get(actual) shouldBe(f.get(reference))
+              f.get(actual) shouldBe (f.get(reference))
             })
           }
           case _ => fail()
         }
 
-        getAll.size shouldBe  1
+        getAll.size shouldBe 1
+      }
+
+      "apply and save the supplied ApiTeam team id when no duplicate exists in collection" in {
+        val result = getAll
+        result shouldBe List.empty
+
+        val insertResult: Either[Throwable, (IntegrationDetail, Types.IsUpdate)] = await(repo.findAndModify(apiDetail1, Some(ApiTeam("a_publisher_ref", "a_team_id"))))
+        insertResult match {
+          case Right((apiDetail: IntegrationDetail, isUpdate)) =>
+            isUpdate shouldBe false
+            validateApi(apiDetail, apiDetail1)
+          case Right(_) => fail()
+          case Left(_) => fail()
+        }
+
+        val all = getAll
+        all.size shouldBe 1
+        val head = all.head.asInstanceOf[ApiDetail]
+        head.teamId shouldBe (Some("a_team_id"))
+      }
+
+      "maintain the original team id on update" in {
+        val result = getAll
+        result shouldBe List.empty
+
+        await(repo.findAndModify(apiDetail1, Some(ApiTeam("a_publisher_ref", "a_team_id"))))
+
+        var updateResult: Either[Throwable, (IntegrationDetail, Types.IsUpdate)] = await(repo.findAndModify(apiDetail1, None))
+        updateResult match {
+          case Right((apiDetail: IntegrationDetail, isUpdate)) =>
+            isUpdate shouldBe true
+            validateApi(apiDetail, apiDetail1)
+          case Right(_) => fail()
+          case Left(_) => fail()
+        }
+
+        var all = getAll
+        all.size shouldBe 1
+        var apiDetail = all.head.asInstanceOf[ApiDetail]
+        apiDetail.teamId shouldBe (Some("a_team_id"))
+
+        updateResult = await(repo.findAndModify(apiDetail1, Some(ApiTeam("a_publisher_ref", "a_different_team_id"))))
+        updateResult match {
+          case Right((apiDetail: IntegrationDetail, isUpdate)) =>
+            isUpdate shouldBe true
+            validateApi(apiDetail, apiDetail1)
+          case Right(_) => fail()
+          case Left(_) => fail()
+        }
+
+        all = getAll
+        all.size shouldBe 1
+        apiDetail = all.head.asInstanceOf[ApiDetail]
+        apiDetail.teamId shouldBe (Some("a_team_id"))
+
       }
     }
 
@@ -343,7 +399,7 @@ class IntegrationRepositoryISpec
         await(repo.findAndModify(apiDetail5))
         val result = await(repo.findAndModify(apiDetail1))
         result match {
-          case Left(_)                                    => fail()
+          case Left(_) => fail()
           case Right((integration: IntegrationDetail, _)) =>
             val result2 = getAll
             result2.size shouldBe 2
@@ -442,7 +498,7 @@ class IntegrationRepositoryISpec
 
       "find 2 results when searching for backend CUSTOMS and ETMP with multiple team ids" in new FilterSetup {
         setUpTest()
-        validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP"), teamIds = List("team_id_1","team_id_2","team_id_404"))).results, List("API1003", "API1004"))
+        validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS", "ETMP"), teamIds = List("team_id_1", "team_id_2", "team_id_404"))).results, List("API1003", "API1004"))
       }
 
       "find 1 result when searching for backend source " in new FilterSetup {
@@ -480,7 +536,7 @@ class IntegrationRepositoryISpec
     "getCatalogueReport" should {
       "return List of results when entries exist in the database" in new FilterSetup {
         setUpTest()
-        val expectedList                            = List(
+        val expectedList = List(
           IntegrationPlatformReport(API_PLATFORM, FILE_TRANSFER, 1),
           IntegrationPlatformReport(CORE_IF, API, 3),
           IntegrationPlatformReport(CORE_IF, FILE_TRANSFER, 1),
@@ -505,7 +561,7 @@ class IntegrationRepositoryISpec
 
       "return all transports when no source and target are provided" in {
         setupFileTransfers()
-        val expectedResults                                 = List(
+        val expectedResults = List(
           FileTransferTransportsForPlatform(API_PLATFORM, List("AB", "S3", "WTM")),
           FileTransferTransportsForPlatform(CORE_IF, List("UTM"))
         )
@@ -515,7 +571,7 @@ class IntegrationRepositoryISpec
 
       "return all transports when only source is provided" in {
         setupFileTransfers()
-        val expectedResults                                 = List(
+        val expectedResults = List(
           FileTransferTransportsForPlatform(API_PLATFORM, List("AB", "S3", "WTM")),
           FileTransferTransportsForPlatform(CORE_IF, List("UTM"))
         )
@@ -525,7 +581,7 @@ class IntegrationRepositoryISpec
 
       "return all transports when only target is provided" in {
         setupFileTransfers()
-        val expectedResults                                 = List(
+        val expectedResults = List(
           FileTransferTransportsForPlatform(API_PLATFORM, List("AB", "S3", "WTM")),
           FileTransferTransportsForPlatform(CORE_IF, List("UTM"))
         )
@@ -535,7 +591,7 @@ class IntegrationRepositoryISpec
 
       "return CORE_IF transports when source=source and target=target" in {
         setupFileTransfers()
-        val expectedResults                                 = List(
+        val expectedResults = List(
           FileTransferTransportsForPlatform(CORE_IF, List("UTM"))
         )
         val result: List[FileTransferTransportsForPlatform] = await(repo.getFileTransferTransportsByPlatform(Some("source"), Some("target")))

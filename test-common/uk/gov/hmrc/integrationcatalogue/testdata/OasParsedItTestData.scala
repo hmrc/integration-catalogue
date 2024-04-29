@@ -148,8 +148,7 @@ trait OasParsedItTestData {
     openApiSpecification = "OAS file contents 2",
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
-    scopes = Set.empty,
-    teamId = Some("team_id_1")
+    scopes = Set.empty
   )
 
   val apiDetail4: ApiDetail = ApiDetail(
@@ -168,8 +167,7 @@ trait OasParsedItTestData {
     openApiSpecification = "OAS file contents 3 BOOP",
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
-    scopes = Set.empty,
-    teamId = Some("team_id_2")
+    scopes = Set.empty
   )
 
   val apiDetail5: ApiDetail = ApiDetail(
