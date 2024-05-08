@@ -190,7 +190,9 @@ case class ApiDetail(
                       openApiSpecification: String,
                       apiStatus: ApiStatus,
                       scopes: Set[Scope],
-                      teamId: Option[String] = None
+                      teamId: Option[String] = None,
+                      domain: Option[String] = None,
+                      subDomain: Option[String] = None
                     ) extends IntegrationDetail {
   override val integrationType: IntegrationType = IntegrationType.API
 }

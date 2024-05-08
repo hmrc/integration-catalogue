@@ -272,6 +272,8 @@ class IntegrationRepositoryISpec
             apiDetail.specificationType shouldBe apiDetail5.specificationType
             apiDetail.hods shouldBe apiDetail5.hods
             apiDetail.openApiSpecification shouldBe apiDetail5.openApiSpecification
+            apiDetail.domain shouldBe apiDetail5.domain
+            apiDetail.subDomain shouldBe apiDetail5.subDomain
           case Right(_) => fail()
           case Left(_) => fail()
         }
