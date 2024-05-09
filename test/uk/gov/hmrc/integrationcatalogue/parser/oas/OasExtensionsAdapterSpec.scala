@@ -16,15 +16,13 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas
 
-import java.util
-
+import java.{lang, util}
 import cats.data.NonEmptyList
 import io.swagger.v3.oas.models.info.Info
 import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.{ExtensionKeys, IntegrationCatalogueExtensions, OASExtensionsAdapter}
@@ -34,11 +32,13 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
     with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach with ExtensionKeys with OASExtensionsAdapter {
 
   trait Setup {
-    val publisherRefValue  = "SOMEREFERENCE"
-    val publisherRefInt    = java.lang.Integer.valueOf(1234)
-    val publisherRefDouble = java.lang.Double.valueOf(1.5)
-    val publisherRefList   = new util.ArrayList[Object]()
-    val shortDescription   = "I am a short description"
+    val publisherRefValue               = "SOMEREFERENCE"
+    val publisherRefInt: Integer        = java.lang.Integer.valueOf(1234)
+    val publisherRefDouble: lang.Double = java.lang.Double.valueOf(1.5)
+    val publisherRefList                = new util.ArrayList[Object]()
+    val shortDescription                = "I am a short description"
+    val domain                          = "test-domain"
+    val subDomain                       = "test-sub-domain"
 
     val mockAppConfig: AppConfig = mock[AppConfig]
 
@@ -92,6 +92,11 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     val extensionsWithReviewDateAndTime = new util.HashMap[String, Object]()
     extensionsWithReviewDateAndTime.put(REVIEWED_DATE_EXTENSION_KEY, "2020-12-25T12:00:00")
+
+    val extensionsWithDomainInfo = new util.HashMap[String, Object]()
+    extensionsWithDomainInfo.putAll(extensionsWithReviewDateAndPublisherReference)
+    extensionsWithDomainInfo.put(DOMAIN_EXTENSION_KEY, domain)
+    extensionsWithDomainInfo.put(SUB_DOMAIN_EXTENSION_KEY, subDomain)
 
     def generateInfoObject(extensionsValues: util.HashMap[String, Object]): Info = {
       val info       = new Info()
@@ -307,7 +312,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
         parseExtensions(generateInfoObject(extensionsWithReviewDateAndStatus), Some(publisherRefValue), mockAppConfig)
       result match {
-        case Left(e)           => fail()
+        case Left(_)           => fail()
         case Right(extensions) =>
           extensions.status shouldBe ApiStatus.ALPHA
           extensions.backends shouldBe List.empty
@@ -369,5 +374,27 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       }
     }
 
+    "return Right when domain and sub-domain are populated" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithDomainInfo), Some(publisherRefValue), mockAppConfig)
+      result match {
+        case Left(_) => fail()
+        case Right(extensions) =>
+          extensions.domain shouldBe Some(domain)
+          extensions.subDomain shouldBe Some(subDomain)
+      }
+    }
+
+    "return Right when domain and sub-domain are not populated" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithReviewDateAndPublisherReference), Some(publisherRefValue), mockAppConfig)
+      result match {
+        case Left(_) => fail()
+        case Right(extensions) =>
+          extensions.domain shouldBe None
+          extensions.subDomain shouldBe None
+      }
+    }
   }
+
 }

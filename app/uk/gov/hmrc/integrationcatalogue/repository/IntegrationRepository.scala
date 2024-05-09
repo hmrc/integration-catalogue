@@ -87,7 +87,9 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
           set("apiStatus", Codecs.toBson(apiDetail.apiStatus)),
           set("endpoints", apiDetail.endpoints.map(Codecs.toBson(_))),
           set("openApiSpecification", Codecs.toBson(apiDetail.openApiSpecification)),
-          set("scopes", apiDetail.scopes.map(Codecs.toBson(_)))
+          set("scopes", apiDetail.scopes.map(Codecs.toBson(_))),
+          set("domain", Codecs.toBson(apiDetail.domain)),
+          set("subDomain", Codecs.toBson(apiDetail.subDomain))
         )
       case IntegrationType.FILE_TRANSFER =>
         val fileTransferDetail: FileTransferDetail = integrationDetail.asInstanceOf[FileTransferDetail]

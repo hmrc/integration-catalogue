@@ -23,4 +23,6 @@ trait ExtensionKeys {
   val SHORT_DESC_EXTENSION_KEY    = "short-description"
   val STATUS_EXTENSION_KEY        = "status"
   val REVIEWED_DATE_EXTENSION_KEY = "reviewed-date"
+  val DOMAIN_EXTENSION_KEY        = "domain"
+  val SUB_DOMAIN_EXTENSION_KEY    = "sub-domain"
 }

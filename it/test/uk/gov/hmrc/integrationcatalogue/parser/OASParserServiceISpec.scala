@@ -152,6 +152,8 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
           parsedObject.hods shouldBe List("ITMP", "NPS")
           parsedObject.shortDescription.isDefined shouldBe true
           parsedObject.shortDescription shouldBe Some("I am a short description")
+          parsedObject.domain shouldBe Some("test-domain")
+          parsedObject.subDomain shouldBe Some("test-sub-domain")
 
         case _: Invalid[NonEmptyList[List[String]]] => fail()
       }

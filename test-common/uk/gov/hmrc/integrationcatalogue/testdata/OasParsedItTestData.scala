@@ -129,7 +129,9 @@ trait OasParsedItTestData {
     openApiSpecification = "OAS file contents 1",
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
-    scopes = Set(Scope("scopename", Some("Scope definition")))
+    scopes = Set(Scope("scopename", Some("Scope definition"))),
+    domain = Some("test-domain-1"),
+    subDomain = Some("test-sub-domain-1")
   )
 
   val apiDetail3: ApiDetail = ApiDetail(
@@ -186,7 +188,9 @@ trait OasParsedItTestData {
     openApiSpecification = "OAS file contents 4",
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
-    scopes = Set.empty
+    scopes = Set.empty,
+    domain = Some("test-domain-5"),
+    subDomain = Some("test-sub-domain-5")
   )
 
   val apiDetail6: ApiDetail = ApiDetail(

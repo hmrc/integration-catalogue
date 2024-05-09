@@ -84,7 +84,9 @@ object MongoFormatters {
       (JsPath \ "openApiSpecification").read[String] and
       (JsPath \ "apiStatus").read[ApiStatus] and
       (JsPath \ "scopes").readWithDefault[Set[Scope]](Set.empty) and
-      (JsPath \ "teamId").readNullable[String]
+      (JsPath \ "teamId").readNullable[String] and
+      (JsPath \ "domain").readNullable[String] and
+      (JsPath \ "subDomain").readNullable[String]
     )(ApiDetail.apply _)
 
   private val apiDetailWrites: Writes[ApiDetail] = Json.writes[ApiDetail]

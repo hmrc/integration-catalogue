@@ -73,6 +73,8 @@ trait OasTestData extends ExtensionKeys {
                         withExtensions: Boolean,
                         backendsExtension: List[String] = List.empty,
                         reviewedDateExtension: Option[String] = None,
+                        domainExtension: Option[String] = None,
+                        subDomainExtension: Option[String] = None,
                         hasEmptyReqRespContent: Boolean = false,
                         oAuth2SecuritySchemeName: Option[String] = None,
                         globalScopes: List[String] = List.empty,
@@ -92,6 +94,9 @@ trait OasTestData extends ExtensionKeys {
         }
         sublevelExtensions.put(BACKEND_EXTENSION_KEY, backends)
         sublevelExtensions.put(PUBLISHER_REF_EXTENSION_KEY, "self-assessment-api")
+
+        domainExtension.foreach(domain => sublevelExtensions.put(DOMAIN_EXTENSION_KEY, domain))
+        subDomainExtension.foreach(subDomain => sublevelExtensions.put(SUB_DOMAIN_EXTENSION_KEY, subDomain))
       }
 
       if (reviewedDateExtension.isDefined) {
@@ -280,6 +285,8 @@ trait OasTestData extends ExtensionKeys {
                                               |    backends:
                                               |      - ITMP
                                               |      - NPS
+                                              |    domain: test-domain
+                                              |    sub-domain: test-sub-domain
                                               |servers:
                                               |  - url: 'https://{hostname}:{port}'
                                               |    description: >-

@@ -32,7 +32,11 @@ import scala.util.{Failure, Success, Try}
 
 trait OASExtensionsAdapter extends ExtensionKeys {
 
-  def parseExtensions(info: Info, publisherReference: Option[String], appConfig: AppConfig): Either[cats.data.NonEmptyList[String], IntegrationCatalogueExtensions] = {
+  def parseExtensions(
+    info: Info,
+    publisherReference: Option[String],
+    appConfig: AppConfig
+  ): Either[cats.data.NonEmptyList[String], IntegrationCatalogueExtensions] = {
     getIntegrationCatalogueExtensionsMap(getExtensions(info))
       .andThen(integrationCatalogueExtensions => {
         {
@@ -41,10 +45,12 @@ trait OASExtensionsAdapter extends ExtensionKeys {
             getPublisherReference(integrationCatalogueExtensions, publisherReference),
             getShortDescription(integrationCatalogueExtensions, appConfig),
             getStatus(integrationCatalogueExtensions),
-            getReviewedDate(integrationCatalogueExtensions)
+            getReviewedDate(integrationCatalogueExtensions),
+            getDomain(integrationCatalogueExtensions),
+            getSubDomain(integrationCatalogueExtensions)
           )
-        }.mapN((backends, publisherReference, shortDescription, status, reviewedDate) => {
-          IntegrationCatalogueExtensions(backends, publisherReference, shortDescription, status, reviewedDate)
+        }.mapN((backends, publisherReference, shortDescription, status, reviewedDate, domain, subDomain) => {
+          IntegrationCatalogueExtensions(backends, publisherReference, shortDescription, status, reviewedDate, domain, subDomain)
         })
       })
       .toEither
@@ -59,13 +65,13 @@ trait OASExtensionsAdapter extends ExtensionKeys {
 
   private def getIntegrationCatalogueExtensionsMap(extensions: Map[String, AnyRef]): ValidatedNel[String, Map[String, AnyRef]] =
     extensions.get(EXTENSIONS_KEY) match {
-      case None                                                     => Validated.valid(Map.empty)
+      case None => Validated.valid(Map.empty)
       case Some(e: java.util.Map[String, AnyRef]) =>
         Validated.valid(e
           .asScala
           .toMap
           .filter { case (k, _) => k != null })
-      case Some(_)                                                  => "attribute x-integration-catalogue is not of type `object`".invalidNel[Map[String, AnyRef]]
+      case Some(_) => "attribute x-integration-catalogue is not of type `object`".invalidNel[Map[String, AnyRef]]
     }
 
   private def getBackends(extensions: Map[String, AnyRef]): ValidatedNel[String, Seq[String]] = {
@@ -83,7 +89,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
       case Some(x: String) => if (x.length > appConfig.shortDescLength) {
           s"Short Description cannot be more than ${appConfig.shortDescLength} characters long.".invalidNel[Option[String]]
         } else Validated.valid(Some(x))
-      case unknown         => "Short Description must be a String".invalidNel[Option[String]]
+      case _               => "Short Description must be a String".invalidNel[Option[String]]
 
     }
   }
@@ -91,11 +97,10 @@ trait OASExtensionsAdapter extends ExtensionKeys {
   def getStatus(extensions: Map[String, AnyRef]): ValidatedNel[String, ApiStatus] = {
     extensions.get(STATUS_EXTENSION_KEY) match {
       case None            => Validated.valid(LIVE)
-      case Some(x: String) => {
+      case Some(x: String) =>
         if (ApiStatus.values.toList.map(_.entryName).contains(x.toUpperCase)) {
           Validated.valid(ApiStatus.withName(x))
         } else "Status must be one of ALPHA, BETA, LIVE or DEPRECATED".invalidNel[ApiStatus]
-      }
       case Some(_)         => "Status must be one of ALPHA, BETA, LIVE or DEPRECATED".invalidNel[ApiStatus]
 
     }
@@ -109,7 +114,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
           Instant.from(dateAndOptionalTimeFormatter.parse(x))
         } match {
           case Success(instant) => Validated.valid(instant)
-          case Failure(e)        => "Reviewed date is not a valid date".invalidNel[Instant]
+          case Failure(_)        => "Reviewed date is not a valid date".invalidNel[Instant]
         }
       case Some(_)         => "Reviewed date is not a valid date".invalidNel[Instant]
     }
@@ -125,7 +130,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     def handleMultiplePublisherReferences(publisherReference: Option[String], extractedPublisherRef: String) = {
       publisherReference match {
         case None                                                   => Validated.valid(extractedPublisherRef)
-        case Some(x) if (x.equalsIgnoreCase(extractedPublisherRef)) => Validated.valid(extractedPublisherRef)
+        case Some(x) if x.equalsIgnoreCase(extractedPublisherRef)   => Validated.valid(extractedPublisherRef)
         case Some(_)                                                => "Publisher reference provided twice but they do not match".invalidNel[String]
       }
     }
@@ -139,6 +144,31 @@ trait OASExtensionsAdapter extends ExtensionKeys {
         s"Invalid value. Expected a string, integer or double but found value: $o of type ${o.getClass.toString}".invalidNel[String]
     }
   }
+
+  def getDomain(extensions: Map[String, AnyRef]): ValidatedNel[String, Option[String]] = {
+    extensions.get(DOMAIN_EXTENSION_KEY) match {
+      case None            => Validated.valid(None)
+      case Some(x: String) => Validated.valid(Some(x))
+      case _               => "Domain must be a String".invalidNel[Option[String]]
+    }
+  }
+
+  def getSubDomain(extensions: Map[String, AnyRef]): ValidatedNel[String, Option[String]] = {
+    extensions.get(SUB_DOMAIN_EXTENSION_KEY) match {
+      case None            => Validated.valid(None)
+      case Some(x: String) => Validated.valid(Some(x))
+      case _               => "Sub-domain must be a String".invalidNel[Option[String]]
+    }
+  }
+
 }
 
-case class IntegrationCatalogueExtensions(backends: Seq[String], publisherReference: String, shortDescription: Option[String], status: ApiStatus, reviewedDate: Instant)
+case class IntegrationCatalogueExtensions(
+  backends: Seq[String],
+  publisherReference: String,
+  shortDescription: Option[String],
+  status: ApiStatus,
+  reviewedDate: Instant,
+  domain: Option[String],
+  subDomain: Option[String]
+)

@@ -83,7 +83,9 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
                   openApiSpecification = openApiSpecificationContent,
                   apiStatus = extensions.status,
                   reviewedDate = extensions.reviewedDate,
-                  scopes = allScopeDefinitions
+                  scopes = allScopeDefinitions,
+                  domain = extensions.domain,
+                  subDomain = extensions.subDomain
                 ))
               case Left(x)                                           => x.toList.invalidNel[ApiDetail]
             }
