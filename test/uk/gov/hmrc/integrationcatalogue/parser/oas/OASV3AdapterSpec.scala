@@ -57,6 +57,9 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
       invalid(NonEmptyList[List[String]](List("Invalid OAS, info item missing from OAS specification"), List()))
 
     val reviewedDate: DateTime = DateTime.parse("2020-12-25")
+
+    val domain = "test-domain"
+    val subDomain = "test-sub-domain"
   }
 
   "extractOpenApi" should {
@@ -69,7 +72,13 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           Some(apiDetail0.publisherReference),
           apiDetail0.platform,
           apiDetail0.specificationType,
-          getOpenAPIObject(withExtensions = true, hods, reviewedDateExtension = Some("2021-07-24")),
+          getOpenAPIObject(
+            withExtensions = true,
+            hods,
+            reviewedDateExtension = Some("2021-07-24"),
+            domainExtension = Some(domain),
+            subDomainExtension = Some(subDomain)
+          ),
           openApiSpecificationContent = apiDetail0.openApiSpecification
         )
       result match {
@@ -88,6 +97,8 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           contact.emailAddress.getOrElse("") shouldBe oasContactEMail
           parsedObject.hods shouldBe hods
 
+          parsedObject.domain shouldBe Some(domain)
+          parsedObject.subDomain shouldBe Some(subDomain)
         case _: Invalid[NonEmptyList[List[String]]] =>
           fail()
       }
@@ -102,7 +113,14 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         Some(apiDetail0.publisherReference),
         apiDetail0.platform,
         apiDetail0.specificationType,
-        getOpenAPIObject(withExtensions = true, backendsExtension = hods, reviewedDateExtension = Some("2021-07-24"), hasEmptyReqRespContent = true),
+        getOpenAPIObject(
+          withExtensions = true,
+          backendsExtension = hods,
+          reviewedDateExtension = Some("2021-07-24"),
+          domainExtension = Some(domain),
+          subDomainExtension = Some(subDomain),
+          hasEmptyReqRespContent = true
+        ),
         openApiSpecificationContent = apiDetail0.openApiSpecification
       )
 
@@ -123,6 +141,8 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           contact.emailAddress.getOrElse("") shouldBe oasContactEMail
           parsedObject.hods shouldBe hods
 
+          parsedObject.domain shouldBe Some(domain)
+          parsedObject.subDomain shouldBe Some(subDomain)
         case _: Invalid[NonEmptyList[List[String]]] => fail()
       }
 
@@ -155,6 +175,8 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           contact.emailAddress.getOrElse("") shouldBe oasContactEMail
           parsedObject.hods shouldBe Nil
 
+          parsedObject.domain shouldBe None
+          parsedObject.subDomain shouldBe None
         case _: Invalid[NonEmptyList[List[String]]] => fail()
       }
 
