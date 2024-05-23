@@ -3,12 +3,12 @@ import sbt._
 object AppDependencies {
 
   lazy val scalaCheckVersion = "1.14.0"
-  lazy val enumeratumVersion = "1.7.2"
-  lazy val hmrcMongoVersion = "1.7.0"
-  lazy val bootstrapVersion = "8.4.0"
-  lazy val jacksonVersion = "2.15.1"
-  lazy val playJsonVersion = "2.9.4"
-  lazy val internalAuthVersion = "1.9.0"
+  lazy val enumeratumVersion = "1.8.0"
+  lazy val hmrcMongoVersion = "1.9.0"
+  lazy val bootstrapVersion = "8.6.0"
+  lazy val jacksonVersion = "2.17.1"
+  lazy val playJsonVersion = "2.10.5"
+  lazy val internalAuthVersion = "2.0.0"
 
   val compile = Seq(
     "uk.gov.hmrc"                       %% "bootstrap-backend-play-30"              % bootstrapVersion,
@@ -23,8 +23,8 @@ object AppDependencies {
     "com.fasterxml.jackson.core"        % "jackson-core"                    % jacksonVersion,
     "com.fasterxml.jackson.dataformat"  % "jackson-dataformat-yaml"         % jacksonVersion,
     "com.fasterxml.jackson.datatype"    % "jackson-datatype-jsr310"         % jacksonVersion,
-    "org.typelevel"                     %% "cats-core"                      % "2.9.0",
-    "io.swagger.parser.v3"              % "swagger-parser"                  % "2.1.14"
+    "org.typelevel"                     %% "cats-core"                      % "2.10.0",
+    "io.swagger.parser.v3"              % "swagger-parser"                  % "2.1.22"
       excludeAll(
       ExclusionRule("com.fasterxml.jackson.core", "jackson-databind"),
       ExclusionRule("com.fasterxml.jackson.core", "jackson-core"),
@@ -37,9 +37,9 @@ object AppDependencies {
   val test = Seq(
     "uk.gov.hmrc" %% "bootstrap-test-play-30" % bootstrapVersion % Test,
     "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-30" % hmrcMongoVersion % Test,
-    "org.mockito" %% "mockito-scala" % "1.17.30" % Test,
-    "org.scalacheck" %% "scalacheck" % "1.17.0" % Test,
-    "org.scalatestplus" %% "scalacheck-1-17" % "3.2.17.0" % Test
+    "org.mockito" %% "mockito-scala" % "1.17.31" % Test,
+    "org.scalacheck" %% "scalacheck" % "1.18.0" % Test,
+    "org.scalatestplus" %% "scalacheck-1-17" % "3.2.18.0" % Test
   )
 
   val it = Seq.empty
