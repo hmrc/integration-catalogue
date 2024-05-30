@@ -170,6 +170,10 @@ class IntegrationControllerISpec
         )
       }
 
+      "respond with 200 and return 1 Api for the first page when no currentPage is passed in with teamIds filter" in {
+        setupFilterTestDataAndRunTest("teamIds=team1&teamIds=team2", OK, List(apiDetail1.publisherReference), Some(1))
+      }
+
       "respond with 400 when invalid platform param sent" in {
         val result = callGetEndpoint(s"$url/integrations?platformFilter=UNKNOWN")
         result.status mustBe BAD_REQUEST
