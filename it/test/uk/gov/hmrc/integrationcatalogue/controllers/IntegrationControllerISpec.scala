@@ -26,7 +26,7 @@ import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.IdentifierAct
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType.{API, FILE_TRANSFER}
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.{API_PLATFORM, CDS_CLASSIC, CORE_IF, DES}
-import uk.gov.hmrc.integrationcatalogue.models.{ApiDetail, FileTransferTransportsForPlatform, IntegrationDetail, IntegrationPlatformReport, IntegrationResponse}
+import uk.gov.hmrc.integrationcatalogue.models.{ApiDetail, ApiTeam, FileTransferTransportsForPlatform, IntegrationDetail, IntegrationPlatformReport, IntegrationResponse}
 import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 import uk.gov.hmrc.integrationcatalogue.support.{AwaitTestSupport, MongoApp, ServerBaseISpec}
 import uk.gov.hmrc.integrationcatalogue.testdata.{FakeIdentifierAction, OasParsedItTestData}
@@ -94,9 +94,9 @@ class IntegrationControllerISpec
     "GET /integrations" should {
 
       def setupFilterTestDataAndRunTest(searchTerm: String, expectedResult: Int, expectedReferences: List[String], expectedCount: Option[Int] = None): Unit = {
-        await(apiRepo.findAndModify(apiDetail1))
-        await(apiRepo.findAndModify(apiDetail5))
-        await(apiRepo.findAndModify(apiDetail4))
+        await(apiRepo.findAndModify(apiDetail1, Some(ApiTeam("publisher_ref1","team1"))))
+        await(apiRepo.findAndModify(apiDetail5, Some(ApiTeam("publisher_ref5","team5"))))
+        await(apiRepo.findAndModify(apiDetail4, Some(ApiTeam("publisher_ref4","team4"))))
         await(apiRepo.findAndModify(fileTransfer2))
 
         val result = callGetEndpoint(s"$url/integrations?$searchTerm")
@@ -168,6 +168,10 @@ class IntegrationControllerISpec
           OK,
           List(fileTransfer2.publisherReference, apiDetail1.publisherReference, apiDetail5.publisherReference)
         )
+      }
+
+      "respond with 200 and return 1 Api for the first page when no currentPage is passed in with teamIds filter" in {
+        setupFilterTestDataAndRunTest("teamIds=team1&teamIds=team2", OK, List(apiDetail1.publisherReference), Some(1))
       }
 
       "respond with 400 when invalid platform param sent" in {

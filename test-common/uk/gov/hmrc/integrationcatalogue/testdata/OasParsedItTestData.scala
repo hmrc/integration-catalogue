@@ -131,7 +131,8 @@ trait OasParsedItTestData {
     reviewedDate = reviewedDate,
     scopes = Set(Scope("scopename", Some("Scope definition"))),
     domain = Some("test-domain-1"),
-    subDomain = Some("test-sub-domain-1")
+    subDomain = Some("test-sub-domain-1"),
+    teamId = Some("team1")
   )
 
   val apiDetail3: ApiDetail = ApiDetail(

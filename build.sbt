@@ -11,7 +11,7 @@ ThisBuild / scalaVersion := "2.13.12"
 
 
 lazy val microservice = Project(appName, file("."))
-  .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
+  .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
   .settings(
     routesImport                     += "uk.gov.hmrc.integrationcatalogue.controllers.binders._",
     libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test,

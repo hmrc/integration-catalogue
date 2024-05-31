@@ -283,7 +283,7 @@ class IntegrationRepositoryISpec
       }
 
       "Save API should serialize all fields in APIDetail" in {
-        await(repo.findAndModify(apiDetail1)) match {
+        await(repo.findAndModify(apiDetail1, Some(ApiTeam("a_publisher_ref", "team1")))) match {
           case Right((persisted: ApiDetail, _)) => {
             val id = UUID.randomUUID()
             val now = Instant.now
