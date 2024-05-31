@@ -37,8 +37,15 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
     val publisherRefDouble: lang.Double = java.lang.Double.valueOf(1.5)
     val publisherRefList                = new util.ArrayList[Object]()
     val shortDescription                = "I am a short description"
+
     val domain                          = "test-domain"
     val subDomain                       = "test-sub-domain"
+
+    val domainAsInteger: Integer        = Integer.valueOf(101)
+    val subDomainAsInteger: Integer     = Integer.valueOf(102)
+
+    val domainAsDouble: lang.Double     = lang.Double.valueOf(101.1)
+    val subDomainAsDouble: lang.Double  = lang.Double.valueOf(101.2)
 
     val mockAppConfig: AppConfig = mock[AppConfig]
 
@@ -97,6 +104,16 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
     extensionsWithDomainInfo.putAll(extensionsWithReviewDateAndPublisherReference)
     extensionsWithDomainInfo.put(DOMAIN_EXTENSION_KEY, domain)
     extensionsWithDomainInfo.put(SUB_DOMAIN_EXTENSION_KEY, subDomain)
+
+    val extensionsWithDomainInfoAsInteger = new util.HashMap[String, Object]()
+    extensionsWithDomainInfoAsInteger.putAll(extensionsWithReviewDateAndPublisherReference)
+    extensionsWithDomainInfoAsInteger.put(DOMAIN_EXTENSION_KEY, domainAsInteger)
+    extensionsWithDomainInfoAsInteger.put(SUB_DOMAIN_EXTENSION_KEY, subDomainAsInteger)
+
+    val extensionsWithDomainInfoAsDouble = new util.HashMap[String, Object]()
+    extensionsWithDomainInfoAsDouble.putAll(extensionsWithReviewDateAndPublisherReference)
+    extensionsWithDomainInfoAsDouble.put(DOMAIN_EXTENSION_KEY, domainAsDouble)
+    extensionsWithDomainInfoAsDouble.put(SUB_DOMAIN_EXTENSION_KEY, subDomainAsDouble)
 
     def generateInfoObject(extensionsValues: util.HashMap[String, Object]): Info = {
       val info       = new Info()
@@ -374,7 +391,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       }
     }
 
-    "return Right when domain and sub-domain are populated" in new Setup {
+    "return Right when domain and sub-domain are populated as String" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
         parseExtensions(generateInfoObject(extensionsWithDomainInfo), Some(publisherRefValue), mockAppConfig)
       result match {
@@ -382,6 +399,28 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
         case Right(extensions) =>
           extensions.domain shouldBe Some(domain)
           extensions.subDomain shouldBe Some(subDomain)
+      }
+    }
+
+    "return Right when domain and sub-domain are populated as Integer" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithDomainInfoAsInteger), Some(publisherRefValue), mockAppConfig)
+      result match {
+        case Left(_) => fail()
+        case Right(extensions) =>
+          extensions.domain shouldBe Some(domainAsInteger.toString)
+          extensions.subDomain shouldBe Some(subDomainAsInteger.toString)
+      }
+    }
+
+    "return Right when domain and sub-domain are populated as Double" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithDomainInfoAsDouble), Some(publisherRefValue), mockAppConfig)
+      result match {
+        case Left(_) => fail()
+        case Right(extensions) =>
+          extensions.domain shouldBe Some(domainAsDouble.toString)
+          extensions.subDomain shouldBe Some(subDomainAsDouble.toString)
       }
     }
 

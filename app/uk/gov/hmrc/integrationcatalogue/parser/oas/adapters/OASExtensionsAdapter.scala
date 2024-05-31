@@ -147,17 +147,21 @@ trait OASExtensionsAdapter extends ExtensionKeys {
 
   def getDomain(extensions: Map[String, AnyRef]): ValidatedNel[String, Option[String]] = {
     extensions.get(DOMAIN_EXTENSION_KEY) match {
-      case None            => Validated.valid(None)
-      case Some(x: String) => Validated.valid(Some(x))
-      case _               => "Domain must be a String".invalidNel[Option[String]]
+      case None                       => Validated.valid(None)
+      case Some(x: String)            => Validated.valid(Some(x))
+      case Some(x: Integer)           => Validated.valid(Some(x.toString))
+      case Some(x: java.lang.Double)  => Validated.valid(Some(x.toString))
+      case _                          => "Domain must be a string, integer or double".invalidNel[Option[String]]
     }
   }
 
   def getSubDomain(extensions: Map[String, AnyRef]): ValidatedNel[String, Option[String]] = {
     extensions.get(SUB_DOMAIN_EXTENSION_KEY) match {
-      case None            => Validated.valid(None)
-      case Some(x: String) => Validated.valid(Some(x))
-      case _               => "Sub-domain must be a String".invalidNel[Option[String]]
+      case None                       => Validated.valid(None)
+      case Some(x: String)            => Validated.valid(Some(x))
+      case Some(x: Integer)           => Validated.valid(Some(x.toString))
+      case Some(x: java.lang.Double)  => Validated.valid(Some(x.toString))
+      case _                          => "Sub-domain must be a string, integer or double".invalidNel[Option[String]]
     }
   }
 
