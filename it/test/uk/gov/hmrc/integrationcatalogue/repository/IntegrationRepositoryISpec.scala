@@ -205,6 +205,29 @@ class IntegrationRepositoryISpec
 
     }
 
+    "findByPublisherRef" should {
+      "return an integration when it exists" in {
+        val result = getAll
+        result shouldBe List.empty
+
+        await(repo.findAndModify(apiDetail1))
+        await(repo.findAndModify(apiDetail5))
+
+        val result2 = await(repo.findByPublisherRef(apiDetail1.platform, apiDetail1.publisherReference))
+        validateApi(result2.get, apiDetail1)
+      }
+
+      "return None when the integration does not exist" in {
+        val result = getAll
+        result shouldBe List.empty
+
+        await(repo.findAndModify(apiDetail5))
+
+        val result2 = await(repo.findByPublisherRef(apiDetail1.platform, apiDetail1.publisherReference))
+        result2 shouldBe None
+      }
+    }
+
     "findAndModify" should {
 
       "save api when no duplicate exists in collection" in {

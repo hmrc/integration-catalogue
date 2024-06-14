@@ -16,10 +16,6 @@
 
 package uk.gov.hmrc.integrationcatalogue.repository
 
-import java.util.UUID
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-
 import com.mongodb.BasicDBObject
 import org.bson.BsonValue
 import org.mongodb.scala.bson.collection.immutable.Document
@@ -30,19 +26,21 @@ import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Indexes._
 import org.mongodb.scala.model.Updates.{set, setOnInsert}
 import org.mongodb.scala.model._
-
 import play.api.Logging
-import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
-
-import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.Types.IsUpdate
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, IntegrationType, PlatformType}
 import uk.gov.hmrc.integrationcatalogue.repository.MongoFormatters._
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
+//noinspection AccessorLikeMethodIsEmptyParen
 @Singleton
-class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)(implicit ec: ExecutionContext)
+class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[IntegrationDetail](
       collectionName = "integrations",
       mongoComponent = mongo,
@@ -110,7 +108,10 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
 
   }
 
-  def findAndModify(integrationDetail: IntegrationDetail, maybeApiTeam: Option[ApiTeam] = Option.empty): Future[Either[Exception, (IntegrationDetail, IsUpdate)]] = {
+  def findAndModify(
+    integrationDetail: IntegrationDetail,
+    maybeApiTeam: Option[ApiTeam] = Option.empty
+  ): Future[Either[Exception, (IntegrationDetail, IsUpdate)]] = {
     for {
       isUpdate <- collection.find(and(
                     equal("publisherReference", integrationDetail.publisherReference),
@@ -121,7 +122,11 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
     } yield result
   }
 
-  private def findAndModify2(integrationDetail: IntegrationDetail, isUpsert: Boolean, maybeApiTeam: Option[ApiTeam]): Future[Either[Exception, (IntegrationDetail, IsUpdate)]] = {
+  private def findAndModify2(
+    integrationDetail: IntegrationDetail,
+    isUpsert: Boolean,
+    maybeApiTeam: Option[ApiTeam]
+  ): Future[Either[Exception, (IntegrationDetail, IsUpdate)]] = {
 
     val query = and(equal("platform", Codecs.toBson(integrationDetail.platform)), equal("publisherReference", integrationDetail.publisherReference))
 
@@ -152,26 +157,11 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
 
   def findWithFilters(filter: IntegrationFilter): Future[IntegrationResponse] = {
     // total count, per page, current page
-    // TODO handle / fix if we get multiple search terms
     def sendPagedResults(results: List[IntegrationDetail], perPageFilter: Option[Int]) = {
       if (perPageFilter.isDefined) Some(results.size) else None
     }
 
-    def buildFilters(): Seq[Bson] = {
-      val integrationTypeFilter    = filter.typeFilter.map(typeVal => Filters.equal("_type", typeVal.integrationType))
-      val textFilter: Option[Bson] = filter.searchText.headOption.map(searchText => Filters.text(searchText))
-      val platformFilter           = if (filter.platforms.nonEmpty) Some(Filters.in("platform", filter.platforms.map(Codecs.toBson(_)): _*)) else None
-      val backendsFilter           = if (filter.backends.nonEmpty) Some(Filters.in("hods", filter.backends: _*)) else None
-      val sourceFilter             = if (filter.backends.nonEmpty) Some(Filters.in("sourceSystem", filter.backends: _*)) else None
-      val targetFilter             = if (filter.backends.nonEmpty) Some(Filters.in("targetSystem", filter.backends: _*)) else None
-      val combinedHodsFilters      = Seq(backendsFilter, sourceFilter, targetFilter).flatten
-      val hodsFilter               = if (combinedHodsFilters.isEmpty) None else Some(Filters.or(combinedHodsFilters: _*))
-      val teamIdsFilter            = if (filter.teamIds.nonEmpty) Some(Filters.in("teamId", filter.teamIds.map(Codecs.toBson(_)): _*)) else None
-
-      Seq(integrationTypeFilter, textFilter, platformFilter, hodsFilter, teamIdsFilter).flatten
-    }
-
-    val filters = buildFilters()
+    val filters = buildFilters(filter)
 
     val sortByScore          = Sorts.metaTextScore("score")
     val mayBeScoreProjection = filter.searchText.headOption.map(_ => Projections.metaTextScore("score"))
@@ -203,6 +193,20 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
             .map(_.toList)
       } yield IntegrationResponse(count.toInt, sendPagedResults(results, filter.itemsPerPage), results)
     }
+  }
+
+  private def buildFilters(filter: IntegrationFilter): Seq[Bson] = {
+    val integrationTypeFilter    = filter.typeFilter.map(typeVal => Filters.equal("_type", typeVal.integrationType))
+    val textFilter: Option[Bson] = filter.searchText.headOption.map(searchText => Filters.text(searchText))
+    val platformFilter           = if (filter.platforms.nonEmpty) Some(Filters.in("platform", filter.platforms.map(Codecs.toBson(_)): _*)) else None
+    val backendsFilter           = if (filter.backends.nonEmpty) Some(Filters.in("hods", filter.backends: _*)) else None
+    val sourceFilter             = if (filter.backends.nonEmpty) Some(Filters.in("sourceSystem", filter.backends: _*)) else None
+    val targetFilter             = if (filter.backends.nonEmpty) Some(Filters.in("targetSystem", filter.backends: _*)) else None
+    val combinedHodsFilters      = Seq(backendsFilter, sourceFilter, targetFilter).flatten
+    val hodsFilter               = if (combinedHodsFilters.isEmpty) None else Some(Filters.or(combinedHodsFilters: _*))
+    val teamIdsFilter            = if (filter.teamIds.nonEmpty) Some(Filters.in("teamId", filter.teamIds.map(Codecs.toBson(_)): _*)) else None
+
+    Seq(integrationTypeFilter, textFilter, platformFilter, hodsFilter, teamIdsFilter).flatten
   }
 
   def getCatalogueReport(): Future[List[IntegrationPlatformReport]] = {
@@ -245,6 +249,22 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
       }
   }
 
+  def findByPublisherRef(platformType: PlatformType, publisherReference: String): Future[Option[IntegrationDetail]] = {
+    collection
+      .find(
+        and(
+          equal("platform", Codecs.toBson(platformType)),
+          equal("publisherReference", publisherReference)
+        )
+      )
+      .headOption()
+  }
+
+  def exists(platformType: PlatformType, publisherReference: String):Future[Boolean] = {
+    findByPublisherRef(platformType, publisherReference)
+      .map(_.isDefined)
+  }
+
   def deleteById(id: IntegrationId): Future[Boolean] = {
     collection.deleteOne(equal("id", Codecs.toBson(id))).toFuture().map(x => x.getDeletedCount == 1)
   }
@@ -257,6 +277,7 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
     collection.countDocuments(equal("_type", Codecs.toBson("uk.gov.hmrc.integrationcatalogue.models.ApiDetail"))).toFuture()
   }
 
+  //noinspection ScalaStyle
   def getTotalEndpointsCount(): Future[Int] = {
     val totalEndpointsCountAggregation = Seq(
       `match`(equal("_type", "uk.gov.hmrc.integrationcatalogue.models.ApiDetail")),
@@ -268,6 +289,7 @@ class IntegrationRepository @Inject() (config: AppConfig, mongo: MongoComponent)
     collection.aggregate[BsonValue](totalEndpointsCountAggregation)
       .head()
       .map { result => result.asDocument().get("totalEndpointsCount").asNumber().intValue() }
-      .recover { case e: Exception => 0 }
+      .recover { case _: Exception => 0 }
   }
+
 }
