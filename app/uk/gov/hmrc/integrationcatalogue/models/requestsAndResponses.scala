@@ -38,7 +38,7 @@ object PublishRequest {
     publisherReference: Option[String],
     platformType: PlatformType,
     specificationType: SpecificationType,
-    contents: String,
+    contents: String
   ): PublishRequest = {
     PublishRequest(publisherReference, platformType, specificationType, contents, autopublish = false)
   }
