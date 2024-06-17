@@ -17,13 +17,33 @@
 package uk.gov.hmrc.integrationcatalogue.models
 
 import play.api.mvc.{Request, WrappedRequest}
+import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes
 import uk.gov.hmrc.integrationcatalogue.models.common._
 
 import java.time.Instant
 
 case class IntegrationResponse(count: Int, pagedCount: Option[Int] = None, results: List[IntegrationDetail])
 
-case class PublishRequest(publisherReference: Option[String], platformType: PlatformType, specificationType: SpecificationType, contents: String)
+case class PublishRequest(
+  publisherReference: Option[String],
+  platformType: PlatformType,
+  specificationType: SpecificationType,
+  contents: String,
+  autopublish: Boolean
+)
+
+object PublishRequest {
+
+  def apply(
+    publisherReference: Option[String],
+    platformType: PlatformType,
+    specificationType: SpecificationType,
+    contents: String
+  ): PublishRequest = {
+    PublishRequest(publisherReference, platformType, specificationType, contents, autopublish = false)
+  }
+
+}
 
 case class FileTransferPublishRequest(
     fileTransferSpecificationVersion: String, // Set to 0.1?
@@ -40,7 +60,6 @@ case class FileTransferPublishRequest(
     fileTransferPattern: String
   )
 
-// TODO : Move me
 case class IntegrationFilter(
     searchText: List[String] = List.empty,
     platforms: List[PlatformType] = List.empty,
@@ -51,8 +70,15 @@ case class IntegrationFilter(
     teamIds: List[String] = List.empty
   )
 
-//TODO remove code from PublishError
 case class PublishError(code: Int, message: String)
+
+object PublishError {
+
+  def missingTeamLink(): PublishError = {
+    PublishError(ErrorCodes.MISSING_TEAM_LINK, "A team link must exist when auto-publishing")
+  }
+
+}
 
 case class PublishDetails(isUpdate: Types.IsUpdate, integrationId: IntegrationId, publisherReference: String, platformType: PlatformType)
 
@@ -88,5 +114,9 @@ case class FileTransferTransportsForPlatform(platform: PlatformType, transports:
 
 case class ExtractedHeaders(publisherReference: Option[String], platformType: PlatformType, specificationType: SpecificationType)
 
-case class ValidatedApiPublishRequest[A](publisherReference: Option[String], platformType: PlatformType, specificationType: SpecificationType, request: Request[A])
-    extends WrappedRequest[A](request)
+case class ValidatedApiPublishRequest[A](
+  publisherReference: Option[String],
+  platformType: PlatformType,
+  specificationType: SpecificationType,
+  request: Request[A]
+) extends WrappedRequest[A](request)

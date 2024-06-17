@@ -20,5 +20,6 @@ object ErrorCodes {
 
   val OAS_PARSE_ERROR  = 1000
   val API_UPSERT_ERROR = 1001
+  val MISSING_TEAM_LINK = 1002
 
 }

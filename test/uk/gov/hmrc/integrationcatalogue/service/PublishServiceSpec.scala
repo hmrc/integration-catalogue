@@ -20,7 +20,7 @@ import cats.data.Validated._
 import cats.data._
 import org.mockito.ArgumentMatchers.any
 import org.mockito.{ArgumentMatchers, MockitoSugar}
-import org.scalatest.BeforeAndAfterEach
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes._
@@ -34,7 +34,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData {
+class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData with OptionValues {
 
   val mockOasParserService: OASParserService = mock[OASParserService]
   val mockApiRepo: IntegrationRepository     = mock[IntegrationRepository]
@@ -43,7 +43,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(mockOasParserService, mockApiRepo)
+    reset(mockOasParserService, mockApiRepo, mockApiTeamsRepo)
   }
 
   trait Setup {
@@ -52,8 +52,11 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
 
     val inTest = new PublishService(mockOasParserService, mockApiRepo, mockUuidService, mockApiTeamsRepo)
 
-    val publishRequest: PublishRequest                                         =
-      PublishRequest(publisherReference = Some(apiDetail0.publisherReference), platformType = apiDetail0.platform, specificationType = SpecificationType.OAS_V3, contents = rawData)
+    val publishRequest: PublishRequest = PublishRequest(
+      publisherReference = Some(apiDetail0.publisherReference),
+      platformType = apiDetail0.platform, specificationType = SpecificationType.OAS_V3, contents = rawData
+    )
+
     val parseSuccess: ValidatedNel[List[String], ApiDetail]                    = valid(apiDetail0)
     val parseFailure: ValidatedNel[List[String], ApiDetail]                    = invalid(NonEmptyList[List[String]](List("Oas Parser returned null"), List()))
     val apiUpsertSuccessInsert: Either[Exception, (ApiDetail, Types.IsUpdate)] = Right((apiDetail0, false))
@@ -66,11 +69,10 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
 
       when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
-      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(Option.empty))
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
 
-      val expectedPublisDetails: PublishDetails = PublishDetails(false, apiDetail0.id, apiDetail0.publisherReference, apiDetail0.platform)
+      val expectedPublisDetails: PublishDetails = PublishDetails(isUpdate = false, apiDetail0.id, apiDetail0.publisherReference, apiDetail0.platform)
       result.publishDetails.isDefined shouldBe true
       result.publishDetails.get shouldBe expectedPublisDetails
 
@@ -81,19 +83,18 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
         ArgumentMatchers.eq(publishRequest.contents)
       )
       verify(mockApiRepo).findAndModify(ArgumentMatchers.eq(apiDetail0), ArgumentMatchers.eq(Option.empty))
-
+      verify(mockApiTeamsRepo, never).findByPublisherReference(any())
     }
 
     "return successful publish result on update" in new Setup {
 
       when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessUpdate))
-      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(Option.empty))
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
 
-      val expectedPublisDetails: PublishDetails = PublishDetails(true, apiDetail0.id, apiDetail0.publisherReference, apiDetail0.platform)
+      val expectedPublisDetails: PublishDetails = PublishDetails(isUpdate =  true, apiDetail0.id, apiDetail0.publisherReference, apiDetail0.platform)
       result.publishDetails.isDefined shouldBe true
       result.publishDetails.get shouldBe expectedPublisDetails
 
@@ -127,7 +128,6 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertFailure))
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertFailure))
-      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(Option.empty))
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe false
@@ -143,6 +143,60 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
 
     }
 
+    "return success when auto-publishing a new API and the team link exists" in new Setup {
+      val request: PublishRequest = publishRequest.copy(autopublish = true)
+      val apiTeam: ApiTeam = ApiTeam(request.publisherReference.value, "test-team-id")
+
+      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockApiRepo.exists(any(), any())).thenReturn(Future.successful(false))
+      when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
+      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(Some(apiTeam)))
+
+      val result: PublishResult = Await.result(inTest.publishApi(request), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe true
+
+      val expectedPublishDetails: PublishDetails = PublishDetails(isUpdate = false, apiDetail0.id, apiDetail0.publisherReference, apiDetail0.platform)
+      result.publishDetails.value shouldBe expectedPublishDetails
+
+      verify(mockApiRepo).exists(
+        ArgumentMatchers.eq(request.platformType),
+        ArgumentMatchers.eq(request.publisherReference.value)
+      )
+      verify(mockApiTeamsRepo).findByPublisherReference(ArgumentMatchers.eq(apiTeam.publisherReference))
+    }
+
+    "return success when auto-publishing an existing API and ignore the existence of a team link" in new Setup {
+      val request: PublishRequest = publishRequest.copy(autopublish = true)
+
+      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockApiRepo.exists(any(), any())).thenReturn(Future.successful(true))
+      when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessUpdate))
+
+      val result: PublishResult = Await.result(inTest.publishApi(request), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe true
+
+      val expectedPublishDetails: PublishDetails = PublishDetails(isUpdate = true, apiDetail0.id, apiDetail0.publisherReference, apiDetail0.platform)
+      result.publishDetails.value shouldBe expectedPublishDetails
+
+      verify(mockApiTeamsRepo, never).findByPublisherReference(any())
+    }
+
+    "return errors when auto-publishing a new API and the team link does not exist" in new Setup {
+      val request: PublishRequest = publishRequest.copy(autopublish = true)
+
+      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockApiRepo.exists(any(), any())).thenReturn(Future.successful(false))
+      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(None))
+
+      val result: PublishResult = Await.result(inTest.publishApi(request), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe false
+
+      val error: PublishError = PublishError.missingTeamLink()
+
+      result.errors should contain only error
+
+      verify(mockApiRepo, never).findAndModify(any(), any())
+    }
   }
 
   "linkApiToTeam" should {

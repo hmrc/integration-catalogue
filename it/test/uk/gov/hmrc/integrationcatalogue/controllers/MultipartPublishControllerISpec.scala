@@ -25,7 +25,6 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import play.api.test.Helpers.{BAD_REQUEST, _}
 import play.api.test.{FakeRequest, Helpers}
-import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common._
@@ -40,10 +39,8 @@ import scala.concurrent.Future
 
 class MultipartPublishControllerISpec extends ServerBaseISpec with DefaultPlayMongoRepositorySupport[IntegrationDetail] {
 
-  val appConfig = app.injector.instanceOf[AppConfig]
-
   override protected lazy val repository: IntegrationRepository = {
-    new IntegrationRepository(appConfig, mongoComponent)
+    new IntegrationRepository(mongoComponent)
   }
 
   protected override def appBuilder: GuiceApplicationBuilder =
@@ -128,17 +125,17 @@ class MultipartPublishControllerISpec extends ServerBaseISpec with DefaultPlayMo
     "PUT /apis/multipart/publish" should {
 
       "respond with 201 when using master auth key and valid request then do a create" in new Setup {
-        val response        = route(app, validApiPublishRequest.withHeaders(masterKeyHeader ++ coreIfPlatformTypeHeader: _*)).get
+        private val response = route(app, validApiPublishRequest.withHeaders(masterKeyHeader ++ coreIfPlatformTypeHeader: _*)).get
         status(response) mustBe CREATED
-        val publishResponse = Json.parse(contentAsString(response)).as[MultipartPublishResponse]
+        private val publishResponse = Json.parse(contentAsString(response)).as[MultipartPublishResponse]
         publishResponse.platformType mustBe PlatformType.CORE_IF
         publishResponse.publisherReference mustBe "1234"
       }
 
       "respond with 201 when using CORE_IF platform auth key and valid request then do a create" in new Setup {
-        val response        = route(app, validApiPublishRequest.withHeaders(coreIfAuthHeader ++ coreIfPlatformTypeHeader: _*)).get
+        private val response = route(app, validApiPublishRequest.withHeaders(coreIfAuthHeader ++ coreIfPlatformTypeHeader: _*)).get
         status(response) mustBe CREATED
-        val publishResponse = Json.parse(contentAsString(response)).as[MultipartPublishResponse]
+        private val publishResponse = Json.parse(contentAsString(response)).as[MultipartPublishResponse]
         publishResponse.platformType mustBe PlatformType.CORE_IF
         publishResponse.publisherReference mustBe "1234"
       }

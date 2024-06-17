@@ -58,20 +58,42 @@ class PublishService @Inject() (
 
     parseResult match {
       case x: Invalid[NonEmptyList[List[String]]] => mapErrorsToPublishResult(x)
-      case Valid(apiDetailParsed)                 =>
-        // TODO: validate parsed api model
-        for {
-          maybeApiTeam <- request.publisherReference.map(pubRef => apiTeamsRepository.findByPublisherReference(pubRef))
-            .getOrElse(Future.successful(Option.empty))
-
-          apiDetail <- integrationRepository.findAndModify(apiDetailParsed, maybeApiTeam)
-        } yield apiDetail match {
-          case Right((api, isUpdate)) =>
-            PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, api.id, api.publisherReference, api.platform)))
-          case Left(_) =>
-            PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert api")))
+      case Valid(apiDetailParsed) =>
+        fetchTeam(request).flatMap {
+          case Right(maybeApiTeam) =>
+            integrationRepository.findAndModify(apiDetailParsed, maybeApiTeam).map {
+              case Right((api, isUpdate)) =>
+                PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, api.id, api.publisherReference, api.platform)))
+              case Left(_) =>
+                PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert api")))
+            }
+          case Left(publishResult) => Future.successful(publishResult)
         }
     }
+  }
+
+  private def fetchTeam(request: PublishRequest)(implicit ec: ExecutionContext): Future[Either[PublishResult, Option[ApiTeam]]] = {
+    request match {
+      case PublishRequest(Some(publisherReference), _, _, _, true) =>
+        integrationRepository.exists(request.platformType, publisherReference).flatMap {
+          case false =>
+            apiTeamsRepository.findByPublisherReference(publisherReference).map {
+              case Some(team) => Right(Some(team))
+              case _ => Left(missingTeamLink())
+            }
+          case _ => Future.successful(Right(None))
+        }
+      case PublishRequest(_, _, _, _, true) => Future.successful(Left(missingTeamLink()))
+      case _ => Future.successful(Right(None))
+    }
+  }
+
+  private def missingTeamLink(): PublishResult = {
+    PublishResult(
+      isSuccess = false,
+      publishDetails =  None,
+      errors = List(PublishError.missingTeamLink())
+    )
   }
 
   def mapErrorsToPublishResult(invalidNel: Invalid[NonEmptyList[List[String]]]): Future[PublishResult] = {
