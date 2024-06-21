@@ -17,7 +17,6 @@
 package uk.gov.hmrc.integrationcatalogue.models
 
 import play.api.mvc.{Request, WrappedRequest}
-import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes
 import uk.gov.hmrc.integrationcatalogue.models.common._
 
 import java.time.Instant
@@ -71,14 +70,6 @@ case class IntegrationFilter(
   )
 
 case class PublishError(code: Int, message: String)
-
-object PublishError {
-
-  def missingTeamLink(): PublishError = {
-    PublishError(ErrorCodes.MISSING_TEAM_LINK, "A team link must exist when auto-publishing")
-  }
-
-}
 
 case class PublishDetails(isUpdate: Types.IsUpdate, integrationId: IntegrationId, publisherReference: String, platformType: PlatformType)
 

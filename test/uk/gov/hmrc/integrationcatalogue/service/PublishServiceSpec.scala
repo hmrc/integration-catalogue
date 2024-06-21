@@ -165,6 +165,27 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       verify(mockApiTeamsRepo).findByPublisherReference(ArgumentMatchers.eq(apiTeam.publisherReference))
     }
 
+    "return success when auto-publishing a new API and the team link does not exist" in new Setup {
+      val request: PublishRequest = publishRequest.copy(autopublish = true)
+
+      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockApiRepo.exists(any(), any())).thenReturn(Future.successful(false))
+      when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
+      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(None))
+
+      val result: PublishResult = Await.result(inTest.publishApi(request), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe true
+
+      val expectedPublishDetails: PublishDetails = PublishDetails(isUpdate = false, apiDetail0.id, apiDetail0.publisherReference, apiDetail0.platform)
+      result.publishDetails.value shouldBe expectedPublishDetails
+
+      verify(mockApiRepo).exists(
+        ArgumentMatchers.eq(request.platformType),
+        ArgumentMatchers.eq(request.publisherReference.value)
+      )
+      verify(mockApiTeamsRepo).findByPublisherReference(ArgumentMatchers.eq(request.publisherReference.value))
+    }
+
     "return success when auto-publishing an existing API and ignore the existence of a team link" in new Setup {
       val request: PublishRequest = publishRequest.copy(autopublish = true)
 
@@ -179,23 +200,6 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       result.publishDetails.value shouldBe expectedPublishDetails
 
       verify(mockApiTeamsRepo, never).findByPublisherReference(any())
-    }
-
-    "return errors when auto-publishing a new API and the team link does not exist" in new Setup {
-      val request: PublishRequest = publishRequest.copy(autopublish = true)
-
-      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
-      when(mockApiRepo.exists(any(), any())).thenReturn(Future.successful(false))
-      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(None))
-
-      val result: PublishResult = Await.result(inTest.publishApi(request), Duration.apply(500, MILLISECONDS))
-      result.isSuccess shouldBe false
-
-      val error: PublishError = PublishError.missingTeamLink()
-
-      result.errors should contain only error
-
-      verify(mockApiRepo, never).findAndModify(any(), any())
     }
   }
 
