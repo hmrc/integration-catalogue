@@ -77,23 +77,11 @@ class PublishService @Inject() (
       case PublishRequest(Some(publisherReference), _, _, _, true) =>
         integrationRepository.exists(request.platformType, publisherReference).flatMap {
           case false =>
-            apiTeamsRepository.findByPublisherReference(publisherReference).map {
-              case Some(team) => Right(Some(team))
-              case _ => Left(missingTeamLink())
-            }
+            apiTeamsRepository.findByPublisherReference(publisherReference).map(Right(_))
           case _ => Future.successful(Right(None))
         }
-      case PublishRequest(_, _, _, _, true) => Future.successful(Left(missingTeamLink()))
       case _ => Future.successful(Right(None))
     }
-  }
-
-  private def missingTeamLink(): PublishResult = {
-    PublishResult(
-      isSuccess = false,
-      publishDetails =  None,
-      errors = List(PublishError.missingTeamLink())
-    )
   }
 
   def mapErrorsToPublishResult(invalidNel: Invalid[NonEmptyList[List[String]]]): Future[PublishResult] = {
