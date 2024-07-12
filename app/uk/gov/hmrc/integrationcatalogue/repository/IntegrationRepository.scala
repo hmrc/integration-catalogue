@@ -292,4 +292,14 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
       .recover { case _: Exception => 0 }
   }
 
+  def updateTeamId(integrationId: IntegrationId, teamId: String): Future[Option[IntegrationDetail]] = {
+    collection.findOneAndUpdate(
+      equal("id", Codecs.toBson(integrationId)),
+      set("teamId", teamId),
+      FindOneAndUpdateOptions().upsert(false).returnDocument(ReturnDocument.AFTER)
+    ).toFuture() map {
+        case integrationDetail: IntegrationDetail => Some(integrationDetail)
+        case _ => None
+    }
+  }
 }

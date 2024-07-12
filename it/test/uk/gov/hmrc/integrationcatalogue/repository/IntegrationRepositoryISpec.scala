@@ -648,5 +648,24 @@ class IntegrationRepositoryISpec
         await(repo.getTotalEndpointsCount()) shouldBe 0
       }
     }
+
+    "updateTeamId" should {
+      val teamId = "myTeam123"
+
+      "return updated API if it already exists" in new FilterSetup {
+        val (apiDetail, _) = await(repo.findAndModify(apiDetail1)).toOption.get
+
+        await(repo.updateTeamId(apiDetail.id, teamId)) match {
+          case Some(updatedApi: ApiDetail) =>
+            updatedApi.teamId shouldBe Some(teamId)
+            updatedApi.id shouldBe apiDetail.id
+          case _ => fail()
+        }
+      }
+
+      "return None when specified API does not exist" in new FilterSetup {
+        await(repo.updateTeamId(IntegrationId(UUID.randomUUID()), teamId)) shouldBe None
+      }
+    }
   }
 }

@@ -107,4 +107,11 @@ class IntegrationController @Inject() (
       integrationService.getFileTransferTransportsByPlatform(source, target)
         .map(result => Ok(Json.toJson(result)))
     }
+
+  def updateApiTeam(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId, teamId: String): Action[AnyContent] = identify.async {
+    integrationService.updateApiTeam(integrationId, teamId).map {
+      case Some(result) => Ok(Json.toJson(result))
+      case None         => NotFound
+    }
+  }
 }

@@ -61,4 +61,7 @@ class IntegrationService @Inject() (integrationRepository: IntegrationRepository
     integrationRepository.getCatalogueReport()
   }
 
+  def updateApiTeam(integrationId: IntegrationId, teamId: String): Future[Option[IntegrationDetail]] = {
+    integrationRepository.updateTeamId(integrationId, teamId)
+  }
 }
