@@ -165,4 +165,27 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
 
   }
 
+  "PUT /apis/:integrationId/teams/:teamId" should {
+    val apiId = IntegrationId(UUID.randomUUID())
+    val teamId = "team-id"
+
+    "return 401 when the request is not authenticated" in {
+      val result = controller.updateApiTeam(apiId, teamId)(FakeRequest())
+      status(result) shouldBe Status.UNAUTHORIZED
+    }
+
+    "return Not Found when the API does not exist" in {
+      when(mockApiService.updateApiTeam(eqTo(apiId), eqTo(teamId))).thenReturn(Future.successful(None))
+      val result = controller.updateApiTeam(apiId, teamId)(FakeRequest().withHeaders(FakeIdentifierAction.fakeAuthorizationHeader))
+      status(result) shouldBe Status.NOT_FOUND
+    }
+
+    "return Ok when API exists and update is successful" in {
+      when(mockApiService.updateApiTeam(eqTo(apiId), eqTo(teamId))).thenReturn(Future.successful(Some(exampleApiDetail)))
+      val result = controller.updateApiTeam(apiId, teamId)(FakeRequest().withHeaders(FakeIdentifierAction.fakeAuthorizationHeader))
+      status(result) shouldBe Status.OK
+    }
+
+  }
+
 }

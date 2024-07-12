@@ -11,6 +11,7 @@ GET           /report                                   uk.gov.hmrc.integrationc
 PUT           /apis/publish                             uk.gov.hmrc.integrationcatalogue.controllers.PublishController.publishApi()
 PUT           /apis/multipart/publish                   uk.gov.hmrc.integrationcatalogue.controllers.MultipartPublishController.publishApi()
 POST          /apis/team                                uk.gov.hmrc.integrationcatalogue.controllers.PublishController.linkApiToTeam()
+PUT           /apis/:integrationId/teams/:teamId        uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.updateApiTeam(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId, teamId: String)
 PUT           /filetransfers/publish                    uk.gov.hmrc.integrationcatalogue.controllers.PublishController.publishFileTransfer()
 GET           /filetransfers/platform/transports        uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.getFileTransferTransportsByPlatform(source: Option[String], target: Option[String])
 

@@ -124,4 +124,17 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
     }
   }
 
+  "updateApiTeam" should {
+    "perform an update on the repository" in new Setup {
+      val teamId = "a team id"
+      val apiId = IntegrationId(UUID.randomUUID())
+      when(mockIntegrationRepo.updateTeamId(eqTo(apiId), eqTo(teamId))).thenReturn(Future.successful(Some(apiDetail1)))
+
+      val result = await(inTest.updateApiTeam(apiId, teamId))
+
+      result shouldBe Some(apiDetail1)
+      verify(mockIntegrationRepo).updateTeamId(eqTo(apiId), eqTo(teamId))
+    }
+  }
+
 }
