@@ -18,9 +18,10 @@ package uk.gov.hmrc.integrationcatalogue.controllers
 
 import org.apache.pekko.stream.Materializer
 import org.mockito.ArgumentMatchers.any
-import org.mockito.MockitoSugar
+import org.mockito.Mockito.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.HeaderNames
 import play.api.libs.Files.{SingletonTemporaryFileCreator, TemporaryFile}
@@ -230,7 +231,7 @@ class MultipartPublishControllerSpec extends AnyWordSpec with Matchers with Guic
       contentAsString(result) shouldBe """{"errors":[{"message":"selectedFile is missing from requestBody"}]}"""
       result shouldBeResult BAD_REQUEST
 
-      verifyZeroInteractions(mockPublishService)
+      verifyNoInteractions(mockPublishService)
     }
 
     "return 400 when plaform not set in header" in new Setup {

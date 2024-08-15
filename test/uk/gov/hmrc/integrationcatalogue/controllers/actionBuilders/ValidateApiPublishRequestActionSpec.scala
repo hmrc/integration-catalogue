@@ -17,10 +17,11 @@
 package uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders
 
 import cats.syntax.validated._
-import org.mockito.MockitoSugar
+import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._

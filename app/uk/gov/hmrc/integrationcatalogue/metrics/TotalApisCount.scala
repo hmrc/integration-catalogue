@@ -30,7 +30,7 @@ import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 class TotalApisCount @Inject() (val integrationRepository: IntegrationRepository) extends MetricSource with Logging {
 
   override def metrics(implicit ec: ExecutionContext): Future[Map[String, Int]] = {
-    integrationRepository.getTotalApisCount().map { apisCount =>
+    integrationRepository.getTotalApisCount().map { (apisCount: Long) =>
       logger.info(s"[METRIC] Collecting metrics for Total APIs Count - $apisCount")
       Map("totalApisCount" -> apisCount.toInt)
     }

@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.integrationcatalogue.controllers
 
-import org.mockito.ArgumentMatchers.any
-import org.mockito.{ArgumentMatchers, MockitoSugar}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.Json
 import play.api.mvc.Result
@@ -114,7 +115,7 @@ class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPe
       val publishResult = contentAsJson(result).as[PublishResult]
       publishResult.isSuccess shouldBe true
 
-      verify(mockPublishService).publishApi(ArgumentMatchers.eq(publishRequestObj))(any())
+      verify(mockPublishService).publishApi(eqTo(publishRequestObj))(any())
 
     }
 
@@ -161,7 +162,7 @@ class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPe
       )
 
       status(result) shouldBe NO_CONTENT
-      verify(mockPublishService).linkApiToTeam(ArgumentMatchers.eq(apiTeam))
+      verify(mockPublishService).linkApiToTeam(eqTo(apiTeam))
     }
 
     "return 400 BadRequest when the request body is not a valid ApiTeam" in {
@@ -206,7 +207,7 @@ class PublishControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPe
       val publishResult = contentAsJson(result).as[PublishResult]
       publishResult.isSuccess shouldBe true
 
-      verify(mockPublishService).publishFileTransfer(ArgumentMatchers.eq(fileTransferPublishRequestObj))(any())
+      verify(mockPublishService).publishFileTransfer(eqTo(fileTransferPublishRequestObj))(any())
 
     }
 

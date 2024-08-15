@@ -6,7 +6,7 @@ import uk.gov.hmrc.DefaultBuildSettings
 val appName = "integration-catalogue"
 
 ThisBuild / majorVersion := 0
-ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / scalaVersion := "3.3.3"
 
 
 
@@ -18,6 +18,7 @@ lazy val microservice = Project(appName, file("."))
     Test / unmanagedSourceDirectories += baseDirectory(_ / "test-common").value
   )
   .settings(scoverageSettings)
+  .settings(scalacOptions := scalacOptions.value.diff(Seq("-Wunused:all")))
   .disablePlugins(sbt.plugins.JUnitXmlReportPlugin)
 
 

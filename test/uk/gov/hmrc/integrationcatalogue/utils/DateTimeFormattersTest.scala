@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.integrationcatalogue.utils
 
-import org.scalatest.matchers.must.Matchers.{be, convertToAnyMustWrapper}
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.must.Matchers
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters.instantReads
 
 import java.time.{Instant, OffsetDateTime, ZoneOffset}
 
-class DateTimeFormattersTest extends AnyWordSpec with DateTimeFormatters {
+class DateTimeFormattersTest extends AnyWordSpec with DateTimeFormatters with Matchers {
 
   "dateAndOptionalTimeFormatter" should {
     "parse ISO 8601 Date Time With Z offset and nanos" in {

@@ -21,11 +21,12 @@ import cats.data.Validated._
 import cats.data._
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.parser.core.models.SwaggerParseResult
-import org.mockito.ArgumentMatchers.any
-import org.mockito.{ArgumentMatchers, MockitoSugar}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.integrationcatalogue.models.ApiDetail
 import uk.gov.hmrc.integrationcatalogue.models.common.{PlatformType, SpecificationType}
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.OASV3Adapter
@@ -74,7 +75,7 @@ class OasParserServiceSpec extends AnyWordSpec with Matchers with MockitoSugar w
       result match {
         case Valid(parsedObject) =>
           parsedObject shouldBe apiDetail0
-          verify(mockAdapterService).extractOpenApi(ArgumentMatchers.eq(Some(publisherReference)), ArgumentMatchers.eq(PlatformType.CORE_IF), ArgumentMatchers.eq(OASSpecType), any(), any())
+          verify(mockAdapterService).extractOpenApi(eqTo(Some(publisherReference)), eqTo(PlatformType.CORE_IF), eqTo(OASSpecType), any(), any())
 
         case _: Invalid[NonEmptyList[List[String]]] => fail()
       }

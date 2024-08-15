@@ -4,11 +4,11 @@ object AppDependencies {
 
   lazy val scalaCheckVersion = "1.14.0"
   lazy val enumeratumVersion = "1.8.0"
-  lazy val hmrcMongoVersion = "1.9.0"
-  lazy val bootstrapVersion = "8.6.0"
+  lazy val hmrcMongoVersion = "2.2.0"
+  lazy val bootstrapVersion = "9.0.0"
   lazy val jacksonVersion = "2.17.1"
   lazy val playJsonVersion = "2.10.5"
-  lazy val internalAuthVersion = "2.0.0"
+  lazy val internalAuthVersion = "3.0.0"
 
   val compile = Seq(
     "uk.gov.hmrc"                       %% "bootstrap-backend-play-30"              % bootstrapVersion,
@@ -37,8 +37,8 @@ object AppDependencies {
   val test = Seq(
     "uk.gov.hmrc" %% "bootstrap-test-play-30" % bootstrapVersion % Test,
     "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-30" % hmrcMongoVersion % Test,
-    "org.mockito" %% "mockito-scala" % "1.17.31" % Test,
     "org.scalacheck" %% "scalacheck" % "1.18.0" % Test,
+    "org.scalatestplus" %% "mockito-4-11" % "3.2.17.0" % Test,
     "org.scalatestplus" %% "scalacheck-1-17" % "3.2.18.0" % Test
   )
 

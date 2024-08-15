@@ -18,6 +18,7 @@ package uk.gov.hmrc.integrationcatalogue.repository
 
 import com.google.inject.{Inject, Singleton}
 import org.mongodb.scala.model._
+import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiTeam

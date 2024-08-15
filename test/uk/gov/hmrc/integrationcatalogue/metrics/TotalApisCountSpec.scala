@@ -19,9 +19,10 @@ package uk.gov.hmrc.integrationcatalogue.metrics
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import org.mockito.MockitoSugar.{mock, verify, when}
+import org.mockito.Mockito.{verify, when}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar.mock
 
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 
@@ -35,7 +36,7 @@ class TotalApisCountSpec extends AnyWordSpec with Matchers {
   "metric refresh" should {
 
     "produce a metric of total number of apis in database" in {
-      val expectedCount = 1
+      val expectedCount = 1L
       when(mockIntegrationRepository.getTotalApisCount()).thenReturn(Future.successful(expectedCount))
 
       await(underTest.metrics) shouldBe Map("totalApisCount" -> expectedCount)

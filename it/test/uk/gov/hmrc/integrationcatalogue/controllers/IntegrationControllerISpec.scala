@@ -21,6 +21,7 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
+import play.api.libs.ws.DefaultBodyReadables.readableAsString
 import play.api.test.Helpers.{BAD_REQUEST, NOT_FOUND, OK}
 import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.IdentifierAction
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
@@ -45,7 +46,7 @@ class IntegrationControllerISpec
     with DefaultPlayMongoRepositorySupport[IntegrationDetail]
     with MongoSupport {
 
-  val repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
+  override val repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
   val apiRepo: IntegrationRepository = repository.asInstanceOf[IntegrationRepository]
 
   override def beforeEach(): Unit = {

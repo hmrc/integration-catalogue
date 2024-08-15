@@ -26,6 +26,7 @@ import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Indexes._
 import org.mongodb.scala.model.Updates.{set, setOnInsert}
 import org.mongodb.scala.model._
+import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 import play.api.Logging
 import uk.gov.hmrc.integrationcatalogue.models.Types.IsUpdate
 import uk.gov.hmrc.integrationcatalogue.models._
@@ -299,7 +300,7 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
       FindOneAndUpdateOptions().upsert(false).returnDocument(ReturnDocument.AFTER)
     ).toFuture() map {
         case integrationDetail: IntegrationDetail => Some(integrationDetail)
-        case _ => None
+        case null => None
     }
   }
 }

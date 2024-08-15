@@ -54,7 +54,7 @@ object MultipartFormDataWriteable {
   }
 
   val writeable: Writeable[MultipartFormData[TemporaryFile]] = Writeable[MultipartFormData[TemporaryFile]](
-    transform = { form: MultipartFormData[TemporaryFile] =>
+    transform = { (form: MultipartFormData[TemporaryFile]) =>
       formatDataParts(form.dataParts) ++
         form.files.map { file =>
           val fileBytes = Files.readAllBytes(Paths.get(file.ref.path.toFile.getAbsolutePath))
