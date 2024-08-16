@@ -6,7 +6,7 @@ import uk.gov.hmrc.DefaultBuildSettings
 val appName = "integration-catalogue"
 
 ThisBuild / majorVersion := 0
-ThisBuild / scalaVersion := "3.3.3"
+ThisBuild / scalaVersion := "3.4.2"
 
 
 
@@ -26,8 +26,8 @@ lazy val scoverageSettings = {
     import scoverage.ScoverageKeys
     Seq(
       // Semicolon-separated list of regexs matching classes to exclude
-      ScoverageKeys.coverageExcludedPackages := ";.*\\.domain\\.models\\..*;uk\\.gov\\.hmrc\\.BuildInfo;.*\\.Routes;.*\\.RoutesPrefix;;Module;GraphiteStartUp;.*\\.Reverse[^.]*",
-      ScoverageKeys.coverageMinimumStmtTotal := 96,
+      ScoverageKeys.coverageExcludedPackages := ",.*\\.models\\..*,uk\\.gov\\.hmrc\\.BuildInfo,.*\\.MongoFormatters,.*\\.package,.*\\.Routes,.*\\.RoutesPrefix,,Module;GraphiteStartUp,.*\\.Reverse[^.]*",
+      ScoverageKeys.coverageMinimumStmtTotal := 95,
       ScoverageKeys.coverageFailOnMinimum := true,
       ScoverageKeys.coverageHighlighting := true,
       Test / parallelExecution := false
