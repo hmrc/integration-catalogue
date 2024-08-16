@@ -39,7 +39,7 @@ import scala.concurrent.Future
 
 class MultipartPublishControllerISpec extends ServerBaseISpec with DefaultPlayMongoRepositorySupport[IntegrationDetail] {
 
-  override protected lazy val repository: IntegrationRepository = {
+  override protected val repository: IntegrationRepository = {
     new IntegrationRepository(mongoComponent)
   }
 

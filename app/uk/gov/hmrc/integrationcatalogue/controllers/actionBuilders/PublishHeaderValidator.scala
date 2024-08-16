@@ -31,7 +31,7 @@ class PublishHeaderValidator {
 
   def validateHeaders[A](request: Request[A]): ValidationResult[ExtractedHeaders] = {
     (validatePublisherReference(request), validatePlatformType(request), validateSpecificationType(request))
-      .mapN(ExtractedHeaders)
+      .mapN(ExtractedHeaders.apply)
   }
 
   private def validatePlatformType[A](request: Request[A]): ValidationResult[PlatformType] = {

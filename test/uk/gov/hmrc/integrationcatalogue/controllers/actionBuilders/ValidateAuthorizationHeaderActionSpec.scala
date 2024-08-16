@@ -36,7 +36,7 @@ class ValidateAuthorizationHeaderActionSpec extends AnyWordSpec with Matchers {
     def globalEc = scala.concurrent.ExecutionContext.Implicits.global
 
     def sourceAction(anyContentParser: BodyParser[AnyContent], validateAction: ValidateAuthorizationHeaderAction)
-                    (implicit ec: ExecutionContext) =
+                    (implicit ec: ExecutionContext): ActionBuilder[Request, AnyContent] =
       new ActionBuilderImpl[AnyContent](anyContentParser)(ec) andThen validateAction
 
     val applicationBuilder = new GuiceApplicationBuilder()
@@ -59,8 +59,9 @@ class ValidateAuthorizationHeaderActionSpec extends AnyWordSpec with Matchers {
         new ValidateAuthorizationHeaderAction(application.injector.instanceOf[AppConfig])(globalEc)
 
       running(application) {
-        val action = sourceAction(anyContentParser, validateAction)(globalEc) { _ => Results.Ok }
-        status(action.apply(request)) shouldBe OK
+        val action = sourceAction(anyContentParser, validateAction)(globalEc)
+        val result = action(_ => Results.Ok).apply(request)
+        status(result) shouldBe OK
       }
     }
 
@@ -78,8 +79,9 @@ class ValidateAuthorizationHeaderActionSpec extends AnyWordSpec with Matchers {
         new ValidateAuthorizationHeaderAction(application.injector.instanceOf[AppConfig])(globalEc)
 
       running(application) {
-        val action = sourceAction(anyContentParser, validateAction)(globalEc) { _ => Results.Ok }
-        status(action.apply(request)) shouldBe OK
+        val action = sourceAction(anyContentParser, validateAction)(globalEc)
+        val result = action(_ => Results.Ok).apply(request)
+        status(result) shouldBe OK
       }
     }
 
@@ -96,8 +98,9 @@ class ValidateAuthorizationHeaderActionSpec extends AnyWordSpec with Matchers {
         new ValidateAuthorizationHeaderAction(application.injector.instanceOf[AppConfig])(globalEc)
 
       running(application) {
-        val action = sourceAction(anyContentParser, validateAction)(globalEc) { _ => Results.Ok }
-        status(action.apply(request)) shouldBe BAD_REQUEST
+        val action = sourceAction(anyContentParser, validateAction)(globalEc)
+        val result = action(_ => Results.Ok).apply(request)
+        status(result) shouldBe BAD_REQUEST
       }
     }
 
@@ -115,8 +118,9 @@ class ValidateAuthorizationHeaderActionSpec extends AnyWordSpec with Matchers {
         new ValidateAuthorizationHeaderAction(application.injector.instanceOf[AppConfig])(globalEc)
 
       running(application) {
-        val action = sourceAction(anyContentParser, validateAction)(globalEc) { _ => Results.Ok }
-        status(action.apply(request)) shouldBe UNAUTHORIZED
+        val action = sourceAction(anyContentParser, validateAction)(globalEc)
+        val result = action(_ => Results.Ok).apply(request)
+        status(result) shouldBe UNAUTHORIZED
       }
     }
 
@@ -131,8 +135,9 @@ class ValidateAuthorizationHeaderActionSpec extends AnyWordSpec with Matchers {
         new ValidateAuthorizationHeaderAction(application.injector.instanceOf[AppConfig])(globalEc)
 
       running(application) {
-        val action = sourceAction(anyContentParser, validateAction)(globalEc) { _ => Results.Ok }
-        status(action.apply(request)) shouldBe BAD_REQUEST
+        val action = sourceAction(anyContentParser, validateAction)(globalEc)
+        val result = action(_ => Results.Ok).apply(request)
+        status(result) shouldBe BAD_REQUEST
       }
     }
   }

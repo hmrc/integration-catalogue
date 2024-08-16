@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.integrationcatalogue.service
 
-import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.{reset, verify, verifyNoMoreInteractions, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformType}
@@ -30,7 +32,7 @@ import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData with ArgumentMatchersSugar {
+class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData {
 
   val mockIntegrationRepo: IntegrationRepository = mock[IntegrationRepository]
 
@@ -102,7 +104,7 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
 
       val result: Option[IntegrationDetail] = await(inTest.findById(apiDetail1.id))
       result shouldBe Some(apiDetail1)
-      verify(mockIntegrationRepo).findById(eqTo(apiDetail1.id))
+      verify(mockIntegrationRepo).findById(apiDetail1.id)
     }
   }
 
@@ -128,12 +130,12 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
     "perform an update on the repository" in new Setup {
       val teamId = "a team id"
       val apiId = IntegrationId(UUID.randomUUID())
-      when(mockIntegrationRepo.updateTeamId(eqTo(apiId), eqTo(teamId))).thenReturn(Future.successful(Some(apiDetail1)))
+      when(mockIntegrationRepo.updateTeamId(apiId, teamId)).thenReturn(Future.successful(Some(apiDetail1)))
 
       val result = await(inTest.updateApiTeam(apiId, teamId))
 
       result shouldBe Some(apiDetail1)
-      verify(mockIntegrationRepo).updateTeamId(eqTo(apiId), eqTo(teamId))
+      verify(mockIntegrationRepo).updateTeamId(apiId, teamId)
     }
   }
 

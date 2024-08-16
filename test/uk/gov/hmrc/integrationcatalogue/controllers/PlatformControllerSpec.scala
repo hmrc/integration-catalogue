@@ -18,11 +18,11 @@ package uk.gov.hmrc.integrationcatalogue.controllers
 
 import org.apache.pekko.stream.testkit.NoMaterializer
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import org.mockito.MockitoSugar
+import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
 import play.api.test.Helpers._
@@ -32,6 +32,8 @@ import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 import uk.gov.hmrc.integrationcatalogue.models.PlatformContactResponse
 import uk.gov.hmrc.integrationcatalogue.models.common.{ContactInformation, PlatformType}
 import uk.gov.hmrc.integrationcatalogue.testdata.FakeIdentifierAction
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class PlatformControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with BeforeAndAfterEach {
 

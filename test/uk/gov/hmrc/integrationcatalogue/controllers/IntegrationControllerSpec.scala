@@ -17,10 +17,12 @@
 package uk.gov.hmrc.integrationcatalogue.controllers
 
 import org.apache.pekko.stream.testkit.NoMaterializer
-import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo, same}
+import org.mockito.Mockito.{reset, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.mvc.Result
@@ -37,7 +39,7 @@ import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSugar with GuiceOneAppPerSuite with ApiTestData with BeforeAndAfterEach with ArgumentMatchersSugar {
+class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSugar with GuiceOneAppPerSuite with ApiTestData with BeforeAndAfterEach {
 
   private val fakeRequest = FakeRequest("GET", "/apis")
   private val fakeAuthenticatedRequest = fakeRequest.withHeaders(FakeIdentifierAction.fakeAuthorizationHeader)
@@ -116,7 +118,7 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
 
   "DELETE /integrations/:id" should {
     "return 204 when valid publisherReference and delete is successful" in {
-      when(mockApiService.deleteByIntegrationId(eqTo(exampleApiDetail.id))(any)).thenReturn(Future.successful(NoContentDeleteApiResult))
+      when(mockApiService.deleteByIntegrationId(exampleApiDetail.id)(global)).thenReturn(Future.successful(NoContentDeleteApiResult))
 
       val result: Future[Result] = controller.deleteByIntegrationId(exampleApiDetail.id)(fakeAuthenticatedDeleteRequest)
       status(result) shouldBe Status.NO_CONTENT
@@ -175,13 +177,13 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
     }
 
     "return Not Found when the API does not exist" in {
-      when(mockApiService.updateApiTeam(eqTo(apiId), eqTo(teamId))).thenReturn(Future.successful(None))
+      when(mockApiService.updateApiTeam(apiId, teamId)).thenReturn(Future.successful(None))
       val result = controller.updateApiTeam(apiId, teamId)(FakeRequest().withHeaders(FakeIdentifierAction.fakeAuthorizationHeader))
       status(result) shouldBe Status.NOT_FOUND
     }
 
     "return Ok when API exists and update is successful" in {
-      when(mockApiService.updateApiTeam(eqTo(apiId), eqTo(teamId))).thenReturn(Future.successful(Some(exampleApiDetail)))
+      when(mockApiService.updateApiTeam(apiId, teamId)).thenReturn(Future.successful(Some(exampleApiDetail)))
       val result = controller.updateApiTeam(apiId, teamId)(FakeRequest().withHeaders(FakeIdentifierAction.fakeAuthorizationHeader))
       status(result) shouldBe Status.OK
     }

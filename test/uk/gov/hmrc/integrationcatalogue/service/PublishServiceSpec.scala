@@ -18,11 +18,12 @@ package uk.gov.hmrc.integrationcatalogue.service
 
 import cats.data.Validated._
 import cats.data._
-import org.mockito.ArgumentMatchers.any
-import org.mockito.{ArgumentMatchers, MockitoSugar}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.*
 import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes._
 import uk.gov.hmrc.integrationcatalogue.models._
 import uk.gov.hmrc.integrationcatalogue.models.common.SpecificationType
@@ -77,12 +78,12 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       result.publishDetails.get shouldBe expectedPublisDetails
 
       verify(mockOasParserService).parse(
-        ArgumentMatchers.eq(publishRequest.publisherReference),
-        ArgumentMatchers.eq(publishRequest.platformType),
-        ArgumentMatchers.eq(publishRequest.specificationType),
-        ArgumentMatchers.eq(publishRequest.contents)
+        eqTo(publishRequest.publisherReference),
+        eqTo(publishRequest.platformType),
+        eqTo(publishRequest.specificationType),
+        eqTo(publishRequest.contents)
       )
-      verify(mockApiRepo).findAndModify(ArgumentMatchers.eq(apiDetail0), ArgumentMatchers.eq(Option.empty))
+      verify(mockApiRepo).findAndModify(eqTo(apiDetail0), eqTo(Option.empty))
       verify(mockApiTeamsRepo, never).findByPublisherReference(any())
     }
 
@@ -99,12 +100,12 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       result.publishDetails.get shouldBe expectedPublisDetails
 
       verify(mockOasParserService).parse(
-        ArgumentMatchers.eq(publishRequest.publisherReference),
-        ArgumentMatchers.eq(publishRequest.platformType),
-        ArgumentMatchers.eq(publishRequest.specificationType),
-        ArgumentMatchers.eq(publishRequest.contents)
+        eqTo(publishRequest.publisherReference),
+        eqTo(publishRequest.platformType),
+        eqTo(publishRequest.specificationType),
+        eqTo(publishRequest.contents)
       )
-      verify(mockApiRepo).findAndModify(ArgumentMatchers.eq(apiDetail0), ArgumentMatchers.eq(Option.empty))
+      verify(mockApiRepo).findAndModify(eqTo(apiDetail0), eqTo(Option.empty))
     }
 
     "return fail when oas parse fails" in new Setup {
@@ -115,12 +116,12 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       result.isSuccess shouldBe false
 
       verify(mockOasParserService).parse(
-        ArgumentMatchers.eq(publishRequest.publisherReference),
-        ArgumentMatchers.eq(publishRequest.platformType),
-        ArgumentMatchers.eq(publishRequest.specificationType),
-        ArgumentMatchers.eq(publishRequest.contents)
+        eqTo(publishRequest.publisherReference),
+        eqTo(publishRequest.platformType),
+        eqTo(publishRequest.specificationType),
+        eqTo(publishRequest.contents)
       )
-      verifyZeroInteractions(mockApiRepo)
+      verifyNoInteractions(mockApiRepo)
     }
 
     "return fail when api upsert fails" in new Setup {
@@ -134,12 +135,12 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       result.errors.head.code shouldBe API_UPSERT_ERROR
 
       verify(mockOasParserService).parse(
-        ArgumentMatchers.eq(publishRequest.publisherReference),
-        ArgumentMatchers.eq(publishRequest.platformType),
-        ArgumentMatchers.eq(publishRequest.specificationType),
-        ArgumentMatchers.eq(publishRequest.contents)
+        eqTo(publishRequest.publisherReference),
+        eqTo(publishRequest.platformType),
+        eqTo(publishRequest.specificationType),
+        eqTo(publishRequest.contents)
       )
-      verify(mockApiRepo).findAndModify(ArgumentMatchers.eq(apiDetail0), ArgumentMatchers.eq(Option.empty))
+      verify(mockApiRepo).findAndModify(eqTo(apiDetail0), eqTo(Option.empty))
 
     }
 
@@ -159,10 +160,10 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       result.publishDetails.value shouldBe expectedPublishDetails
 
       verify(mockApiRepo).exists(
-        ArgumentMatchers.eq(request.platformType),
-        ArgumentMatchers.eq(request.publisherReference.value)
+        eqTo(request.platformType),
+        eqTo(request.publisherReference.value)
       )
-      verify(mockApiTeamsRepo).findByPublisherReference(ArgumentMatchers.eq(apiTeam.publisherReference))
+      verify(mockApiTeamsRepo).findByPublisherReference(eqTo(apiTeam.publisherReference))
     }
 
     "return success when auto-publishing a new API and the team link does not exist" in new Setup {
@@ -180,10 +181,10 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       result.publishDetails.value shouldBe expectedPublishDetails
 
       verify(mockApiRepo).exists(
-        ArgumentMatchers.eq(request.platformType),
-        ArgumentMatchers.eq(request.publisherReference.value)
+        eqTo(request.platformType),
+        eqTo(request.publisherReference.value)
       )
-      verify(mockApiTeamsRepo).findByPublisherReference(ArgumentMatchers.eq(request.publisherReference.value))
+      verify(mockApiTeamsRepo).findByPublisherReference(eqTo(request.publisherReference.value))
     }
 
     "return success when auto-publishing an existing API and ignore the existence of a team link" in new Setup {
@@ -210,7 +211,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
 
       Await.result(inTest.linkApiToTeam(apiTeam), Duration.apply(500, MILLISECONDS))
 
-      verify(mockApiTeamsRepo).upsert(ArgumentMatchers.eq(apiTeam))
+      verify(mockApiTeamsRepo).upsert(eqTo(apiTeam))
     }
   }
 

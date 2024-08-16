@@ -19,6 +19,7 @@ package uk.gov.hmrc.integrationcatalogue.controllers
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.{WSClient, WSResponse}
+import play.api.libs.ws.DefaultBodyReadables.readableAsString
 import uk.gov.hmrc.integrationcatalogue.support.ServerBaseISpec
 import uk.gov.hmrc.integrationcatalogue.support.AwaitTestSupport
 import play.api.test.Helpers._
@@ -65,7 +66,7 @@ class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
         val result = callGetEndpoint(s"$url/platform/contacts")
 
         result.status mustBe OK
-        result.body mustBe """[{"platformType":"API_PLATFORM","overrideOasContacts":false},{"platformType":"CDS_CLASSIC","overrideOasContacts":false},{"platformType":"CMA","overrideOasContacts":false},{"platformType":"CORE_IF","overrideOasContacts":false},{"platformType":"DAPI","overrideOasContacts":false},{"platformType":"DES","contactInfo":{"name":"DES Platform support hot line","emailAddress":"des@mail.com"},"overrideOasContacts":true},{"platformType":"DIGI","overrideOasContacts":false},{"platformType":"SDES","overrideOasContacts":false},{"platformType":"TRANSACTION_ENGINE","overrideOasContacts":false},{"platformType":"CIP","overrideOasContacts":false},{"platformType":"HIP","overrideOasContacts":false}]"""
+        result.body mustBe """[{"platformType":"API_PLATFORM","overrideOasContacts":false},{"platformType":"CDS_CLASSIC","overrideOasContacts":false},{"platformType":"CMA","overrideOasContacts":false},{"platformType":"CORE_IF","overrideOasContacts":false},{"platformType":"DAPI","overrideOasContacts":false},{"platformType":"DES","overrideOasContacts":true,"contactInfo":{"name":"DES Platform support hot line","emailAddress":"des@mail.com"}},{"platformType":"DIGI","overrideOasContacts":false},{"platformType":"SDES","overrideOasContacts":false},{"platformType":"TRANSACTION_ENGINE","overrideOasContacts":false},{"platformType":"CIP","overrideOasContacts":false},{"platformType":"HIP","overrideOasContacts":false}]"""
       }
 
     }

@@ -28,6 +28,7 @@ import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters.dateAndOptionalTim
 import java.time.Instant
 import java.util
 import scala.jdk.CollectionConverters._
+import scala.reflect.runtime.universe.*
 import scala.util.{Failure, Success, Try}
 
 trait OASExtensionsAdapter extends ExtensionKeys {
@@ -66,7 +67,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
   private def getIntegrationCatalogueExtensionsMap(extensions: Map[String, AnyRef]): ValidatedNel[String, Map[String, AnyRef]] =
     extensions.get(EXTENSIONS_KEY) match {
       case None => Validated.valid(Map.empty)
-      case Some(e: java.util.Map[String, AnyRef]) =>
+      case Some(e: java.util.Map[String, AnyRef] @unchecked) =>
         Validated.valid(e
           .asScala
           .toMap
@@ -77,7 +78,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
   private def getBackends(extensions: Map[String, AnyRef]): ValidatedNel[String, Seq[String]] = {
     extensions.get(BACKEND_EXTENSION_KEY) match {
       case None                                         => Validated.valid(Seq.empty)
-      case Some(listOfBackends: util.ArrayList[AnyRef]) =>
+      case Some(listOfBackends: util.ArrayList[AnyRef] @unchecked) =>
         Validated.valid(listOfBackends.asScala.toList.map(_.toString))
       case unknown                                      => s"backends must be a list but was: $unknown".invalidNel[Seq[String]]
     }

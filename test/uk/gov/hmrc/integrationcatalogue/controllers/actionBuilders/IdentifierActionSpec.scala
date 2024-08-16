@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders
 
-import org.mockito.{ArgumentMatchers, MockitoSugar}
+import org.mockito.Mockito.when
+import org.mockito.ArgumentMatchers.{eq => eqTo}
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -32,8 +33,9 @@ import uk.gov.hmrc.internalauth.client.test.{BackendAuthComponentsStub, StubBeha
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import org.scalatest.matchers.must.Matchers
 
-class IdentifierActionSpec extends AnyFreeSpec with MockitoSugar {
+class IdentifierActionSpec extends AnyFreeSpec with MockitoSugar with Matchers {
 
   class Harness(authAction: IdentifierAction) {
     def onPageLoad(): Action[AnyContent] = authAction { _ => Results.Ok }
@@ -82,7 +84,7 @@ class IdentifierActionSpec extends AnyFreeSpec with MockitoSugar {
             IAAction("READ")
           )
 
-          when (mockStubBehaviour.stubAuth(ArgumentMatchers.eq(Some(canAccessPredicate)), ArgumentMatchers.eq(Retrieval.EmptyRetrieval)))
+          when (mockStubBehaviour.stubAuth(eqTo(Some(canAccessPredicate)), eqTo(Retrieval.EmptyRetrieval)))
             .thenReturn(Future.unit)
 
           val result = authAction.invokeBlock(
@@ -121,7 +123,7 @@ class IdentifierActionSpec extends AnyFreeSpec with MockitoSugar {
             IAAction("READ")
           )
 
-          when(mockStubBehaviour.stubAuth(ArgumentMatchers.eq(Some(canAccessPredicate)), ArgumentMatchers.eq(Retrieval.EmptyRetrieval)))
+          when(mockStubBehaviour.stubAuth(eqTo(Some(canAccessPredicate)), eqTo(Retrieval.EmptyRetrieval)))
             .thenReturn(Future.failed(UpstreamErrorResponse("Unauthorized", Status.UNAUTHORIZED)))
 
           val result = authAction.invokeBlock(

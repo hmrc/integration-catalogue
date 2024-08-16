@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.integrationcatalogue.support
 
+import org.mongodb.scala.SingleObservableFuture
 import org.scalatest.{BeforeAndAfterEach, Suite, TestSuite}
 import uk.gov.hmrc.integrationcatalogue.models.IntegrationDetail
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport

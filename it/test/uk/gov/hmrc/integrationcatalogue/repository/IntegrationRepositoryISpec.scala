@@ -23,7 +23,7 @@ import org.scalatest.{Assertion, BeforeAndAfterEach}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.*
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType.{API, FILE_TRANSFER}
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.{API_PLATFORM, CMA, CORE_IF, DES}
@@ -47,8 +47,8 @@ class IntegrationRepositoryISpec
     with OasParsedItTestData
     with AwaitTestSupport {
 
-  lazy val repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
-  val indexNameToDrop = "please_delete_me__let_me_go"
+  override val repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
+  lazy val indexNameToDrop = "please_delete_me__let_me_go"
 
   protected def appBuilder: GuiceApplicationBuilder = {
     new GuiceApplicationBuilder()
