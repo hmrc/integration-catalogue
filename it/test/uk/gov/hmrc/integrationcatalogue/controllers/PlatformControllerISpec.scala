@@ -18,13 +18,18 @@ package uk.gov.hmrc.integrationcatalogue.controllers
 
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.libs.ws.DefaultBodyReadables.readableAsString
 import uk.gov.hmrc.integrationcatalogue.support.ServerBaseISpec
 import uk.gov.hmrc.integrationcatalogue.support.AwaitTestSupport
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.IdentifierAction
+import uk.gov.hmrc.integrationcatalogue.models.PlatformContactResponse
+import uk.gov.hmrc.integrationcatalogue.models.common.ContactInformation
+import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.*
 import uk.gov.hmrc.integrationcatalogue.testdata.FakeIdentifierAction
+import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
 
 class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
 
@@ -37,9 +42,6 @@ class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
         "mongodb.uri"                       -> s"mongodb://127.0.0.1:27017/test-${this.getClass.getSimpleName}",
         "auditing.consumer.baseUri.host"    -> wireMockHost,
         "auditing.consumer.baseUri.port"    -> wireMockPort,
-        "platforms.DES.email"               -> "des@mail.com",
-        "platforms.DES.name"                -> "DES Platform support hot line",
-        "platforms.DES.overrideOasContacts" -> true,
         "platforms.SOMENEW.email"           -> "des@mail.com",
         "platforms.SOMENEW.name"            -> "DES Platform support hot line"
       )
@@ -65,8 +67,68 @@ class PlatformControllerISpec extends ServerBaseISpec with AwaitTestSupport {
       "return platform with contacts when both email and name are in config" in {
         val result = callGetEndpoint(s"$url/platform/contacts")
 
+        val platforms = Seq(
+          PlatformContactResponse(
+            platformType = API_PLATFORM,
+            contactInfo = Some(ContactInformation(name = Some("API_Platform"), emailAddress = Some("API_Platform@test.com"))),
+            overrideOasContacts = false
+          ),
+          PlatformContactResponse(
+            platformType = CDS_CLASSIC,
+            contactInfo = Some(ContactInformation(name = Some("CDS"), emailAddress = Some("CDS@test.com"))),
+            overrideOasContacts = false
+          ),
+          PlatformContactResponse(
+            platformType = CMA,
+            contactInfo = Some(ContactInformation(name = Some("CMA"), emailAddress = Some("CMA@test.com"))),
+            overrideOasContacts = false
+          ),
+          PlatformContactResponse(
+            platformType = CORE_IF,
+            contactInfo = Some(ContactInformation(name = Some("Integration_Framework"), emailAddress = Some("Integration_Framework@test.com"))),
+            overrideOasContacts = true
+          ),
+          PlatformContactResponse(
+            platformType = DAPI,
+            contactInfo = Some(ContactInformation(name = Some("DAPI"), emailAddress = Some("DAPI@test.com"))),
+            overrideOasContacts = false
+          ),
+          PlatformContactResponse(
+            platformType = DES,
+            contactInfo = Some(ContactInformation(name = Some("DES"), emailAddress = Some("DES@test.com"))),
+            overrideOasContacts = false
+          ),
+          PlatformContactResponse(
+            platformType = DIGI,
+            contactInfo = Some(ContactInformation(name = Some("DIGI"), emailAddress = Some("DIGI@test.com"))),
+            overrideOasContacts = false
+          ),
+          PlatformContactResponse(
+            platformType = SDES,
+            contactInfo = Some(ContactInformation(name = Some("SDES"), emailAddress = Some("SDES@test.com"))),
+            overrideOasContacts = false
+          ),
+          PlatformContactResponse(
+            platformType = TRANSACTION_ENGINE,
+            contactInfo = Some(ContactInformation(name = Some("TRANSACTION_ENGINE"), emailAddress = Some("TRANSACTION_ENGINE@test.com"))),
+            overrideOasContacts = false
+          ),
+          PlatformContactResponse(
+            platformType = CIP,
+            contactInfo = Some(ContactInformation(name = Some("CIP"), emailAddress = Some("CIP@test.com"))),
+            overrideOasContacts = false
+          ),
+          PlatformContactResponse(
+            platformType = HIP,
+            contactInfo = Some(ContactInformation(name = Some("HIP"), emailAddress = Some("HIP@test.com"))),
+            overrideOasContacts = false
+          )
+        )
+
+        val expected = Json.toJson(platforms).toString
+
         result.status mustBe OK
-        result.body mustBe """[{"platformType":"API_PLATFORM","overrideOasContacts":false},{"platformType":"CDS_CLASSIC","overrideOasContacts":false},{"platformType":"CMA","overrideOasContacts":false},{"platformType":"CORE_IF","overrideOasContacts":false},{"platformType":"DAPI","overrideOasContacts":false},{"platformType":"DES","overrideOasContacts":true,"contactInfo":{"name":"DES Platform support hot line","emailAddress":"des@mail.com"}},{"platformType":"DIGI","overrideOasContacts":false},{"platformType":"SDES","overrideOasContacts":false},{"platformType":"TRANSACTION_ENGINE","overrideOasContacts":false},{"platformType":"CIP","overrideOasContacts":false},{"platformType":"HIP","overrideOasContacts":false}]"""
+        result.body mustBe expected
       }
 
     }
