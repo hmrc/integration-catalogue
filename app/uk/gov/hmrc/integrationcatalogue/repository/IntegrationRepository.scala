@@ -52,7 +52,7 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
         IndexModel(ascending("hods"), IndexOptions().name("hods_index").background(true).unique(false)),
         IndexModel(ascending("sourceSystem"), IndexOptions().name("sourceSystem_index").background(true).unique(false)),
         IndexModel(ascending("targetSystem"), IndexOptions().name("targetSystem_index").background(true).unique(false)),
-        IndexModel(ascending(List("platform", "publisherReference"): _*), IndexOptions().name("platform_pub_ref_idx").background(true).unique(true)),
+        IndexModel(ascending(List("platform", "publisherReference")*), IndexOptions().name("platform_pub_ref_idx").background(true).unique(true)),
         IndexModel(
           Indexes.text("$**"),
           IndexOptions().weights(new BasicDBObject().append("title", 50).append("description", 25))
@@ -145,7 +145,7 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
 
     collection.findOneAndUpdate(
       filter = query,
-      update = Updates.combine(allOps: _*),
+      update = Updates.combine(allOps*),
       options = FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
     ).toFuture()
       .map(x => Right((x, isUpsert)))// not sure how we get is upserted / updated now))
@@ -182,11 +182,11 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
       } yield IntegrationResponse(count.toInt, sendPagedResults(results, filter.itemsPerPage), results)
     } else {
       for {
-        count   <- collection.countDocuments(and(filters: _*)).toFuture()
+        count   <- collection.countDocuments(and(filters*)).toFuture()
         results <-
           (mayBeScoreProjection match {
-            case None          => collection.find(and(filters: _*))
-            case Some(x: Bson) => collection.find(and(filters: _*)).projection(x)
+            case None          => collection.find(and(filters*))
+            case Some(x: Bson) => collection.find(and(filters*)).projection(x)
           }).sort(sortOp)
             .skip(skipAmount)
             .limit(perPage)
@@ -199,13 +199,13 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
   private def buildFilters(filter: IntegrationFilter): Seq[Bson] = {
     val integrationTypeFilter    = filter.typeFilter.map(typeVal => Filters.equal("_type", typeVal.integrationType))
     val textFilter: Option[Bson] = filter.searchText.headOption.map(searchText => Filters.text(searchText))
-    val platformFilter           = if (filter.platforms.nonEmpty) Some(Filters.in("platform", filter.platforms.map(Codecs.toBson(_)): _*)) else None
-    val backendsFilter           = if (filter.backends.nonEmpty) Some(Filters.in("hods", filter.backends: _*)) else None
-    val sourceFilter             = if (filter.backends.nonEmpty) Some(Filters.in("sourceSystem", filter.backends: _*)) else None
-    val targetFilter             = if (filter.backends.nonEmpty) Some(Filters.in("targetSystem", filter.backends: _*)) else None
+    val platformFilter           = if (filter.platforms.nonEmpty) Some(Filters.in("platform", filter.platforms.map(Codecs.toBson(_))*)) else None
+    val backendsFilter           = if (filter.backends.nonEmpty) Some(Filters.in("hods", filter.backends*)) else None
+    val sourceFilter             = if (filter.backends.nonEmpty) Some(Filters.in("sourceSystem", filter.backends*)) else None
+    val targetFilter             = if (filter.backends.nonEmpty) Some(Filters.in("targetSystem", filter.backends*)) else None
     val combinedHodsFilters      = Seq(backendsFilter, sourceFilter, targetFilter).flatten
-    val hodsFilter               = if (combinedHodsFilters.isEmpty) None else Some(Filters.or(combinedHodsFilters: _*))
-    val teamIdsFilter            = if (filter.teamIds.nonEmpty) Some(Filters.in("teamId", filter.teamIds.map(Codecs.toBson(_)): _*)) else None
+    val hodsFilter               = if (combinedHodsFilters.isEmpty) None else Some(Filters.or(combinedHodsFilters*))
+    val teamIdsFilter            = if (filter.teamIds.nonEmpty) Some(Filters.in("teamId", filter.teamIds.map(Codecs.toBson(_))*)) else None
 
     Seq(integrationTypeFilter, textFilter, platformFilter, hodsFilter, teamIdsFilter).flatten
   }
