@@ -177,13 +177,13 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
     }
 
     "return Not Found when the API does not exist" in {
-      when(mockApiService.updateApiTeam(apiId, teamId)).thenReturn(Future.successful(None))
+      when(mockApiService.updateApiTeam(apiId, Some(teamId))).thenReturn(Future.successful(None))
       val result = controller.updateApiTeam(apiId, teamId)(FakeRequest().withHeaders(FakeIdentifierAction.fakeAuthorizationHeader))
       status(result) shouldBe Status.NOT_FOUND
     }
 
     "return Ok when API exists and update is successful" in {
-      when(mockApiService.updateApiTeam(apiId, teamId)).thenReturn(Future.successful(Some(exampleApiDetail)))
+      when(mockApiService.updateApiTeam(apiId, Some(teamId))).thenReturn(Future.successful(Some(exampleApiDetail)))
       val result = controller.updateApiTeam(apiId, teamId)(FakeRequest().withHeaders(FakeIdentifierAction.fakeAuthorizationHeader))
       status(result) shouldBe Status.OK
     }
@@ -199,17 +199,18 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
     }
 
     "return Not Found when the API does not exist" in {
-      when(mockApiService.updateApiTeam(apiId, null)).thenReturn(Future.successful(None))
+      when(mockApiService.updateApiTeam(apiId, None)).thenReturn(Future.successful(None))
       val result = controller.removeApiTeam(apiId)(FakeRequest().withHeaders(FakeIdentifierAction.fakeAuthorizationHeader))
       status(result) shouldBe Status.NOT_FOUND
     }
 
     "return Ok when API exists and update is successful" in {
-      when(mockApiService.updateApiTeam(apiId, null)).thenReturn(Future.successful(Some(exampleApiDetail)))
+      when(mockApiService.updateApiTeam(apiId, None)).thenReturn(Future.successful(Some(exampleApiDetail)))
       val result = controller.removeApiTeam(apiId)(FakeRequest().withHeaders(FakeIdentifierAction.fakeAuthorizationHeader))
       status(result) shouldBe Status.OK
     }
 
   }
+
 
 }

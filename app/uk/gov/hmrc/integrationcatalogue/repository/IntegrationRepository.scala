@@ -20,18 +20,18 @@ import com.mongodb.BasicDBObject
 import org.bson.BsonValue
 import org.mongodb.scala.bson.collection.immutable.Document
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.Accumulators._
-import org.mongodb.scala.model.Aggregates._
-import org.mongodb.scala.model.Filters._
-import org.mongodb.scala.model.Indexes._
+import org.mongodb.scala.model.Accumulators.*
+import org.mongodb.scala.model.Aggregates.*
+import org.mongodb.scala.model.Filters.*
+import org.mongodb.scala.model.Indexes.*
 import org.mongodb.scala.model.Updates.{set, setOnInsert}
-import org.mongodb.scala.model._
+import org.mongodb.scala.model.{Updates, *}
 import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 import play.api.Logging
 import uk.gov.hmrc.integrationcatalogue.models.Types.IsUpdate
-import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.*
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, IntegrationType, PlatformType}
-import uk.gov.hmrc.integrationcatalogue.repository.MongoFormatters._
+import uk.gov.hmrc.integrationcatalogue.repository.MongoFormatters.*
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
@@ -293,10 +293,16 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
       .recover { case _: Exception => 0 }
   }
 
-  def updateTeamId(integrationId: IntegrationId, teamId: String): Future[Option[IntegrationDetail]] = {
+  def updateTeamId(integrationId: IntegrationId, maybeTeamId: Option[String]): Future[Option[IntegrationDetail]] = {
+
+    val update = maybeTeamId match {
+      case Some(teamId) => set("teamId", teamId)
+      case _ => unset("teamId")
+    }
+
     collection.findOneAndUpdate(
       equal("id", Codecs.toBson(integrationId)),
-      set("teamId", teamId),
+      update,
       FindOneAndUpdateOptions().upsert(false).returnDocument(ReturnDocument.AFTER)
     ).toFuture() map {
         case integrationDetail: IntegrationDetail => Some(integrationDetail)
