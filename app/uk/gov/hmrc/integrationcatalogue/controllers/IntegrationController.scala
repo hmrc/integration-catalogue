@@ -109,8 +109,15 @@ class IntegrationController @Inject() (
     }
 
   def updateApiTeam(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId, teamId: String): Action[AnyContent] = identify.async {
-    integrationService.updateApiTeam(integrationId, teamId).map {
+    integrationService.updateApiTeam(integrationId, Some(teamId)).map {
       case Some(result) => Ok(Json.toJson(result))
+      case None         => NotFound
+    }
+  }
+
+  def removeApiTeam(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId): Action[AnyContent] = identify.async {
+    integrationService.updateApiTeam(integrationId, None).map {
+      case Some(result) => Ok
       case None         => NotFound
     }
   }

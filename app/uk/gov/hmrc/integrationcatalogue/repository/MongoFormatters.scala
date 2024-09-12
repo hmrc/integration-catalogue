@@ -56,7 +56,7 @@ object MongoFormatters {
       (JsPath \ "summary").readNullable[String] and
       (JsPath \ "description").readNullable[String] and
       (JsPath \ "scopes").readWithDefault[List[String]](List.empty)
-    )(EndpointMethod.apply _)
+    )(EndpointMethod.apply)
 
 
   private val endpointMethodWrites: Writes[EndpointMethod] = Json.writes[EndpointMethod]
@@ -87,7 +87,7 @@ object MongoFormatters {
       (JsPath \ "teamId").readNullable[String] and
       (JsPath \ "domain").readNullable[String] and
       (JsPath \ "subDomain").readNullable[String]
-    )(ApiDetail.apply _)
+    )(ApiDetail.apply)
 
   private val apiDetailWrites: Writes[ApiDetail] = Json.writes[ApiDetail]
   implicit val apiDetailParsedFormats: Format[ApiDetail] = Format(apiDetailReads, apiDetailWrites)

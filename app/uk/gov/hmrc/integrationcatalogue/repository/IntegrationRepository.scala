@@ -24,14 +24,14 @@ import org.mongodb.scala.model.Accumulators._
 import org.mongodb.scala.model.Aggregates._
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Indexes._
-import org.mongodb.scala.model.Updates.{set, setOnInsert}
-import org.mongodb.scala.model._
+import org.mongodb.scala.model.Updates.{set, unset, setOnInsert}
+import org.mongodb.scala.model.{Updates, *}
 import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 import play.api.Logging
 import uk.gov.hmrc.integrationcatalogue.models.Types.IsUpdate
-import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.*
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, IntegrationType, PlatformType}
-import uk.gov.hmrc.integrationcatalogue.repository.MongoFormatters._
+import uk.gov.hmrc.integrationcatalogue.repository.MongoFormatters.*
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
@@ -52,7 +52,7 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
         IndexModel(ascending("hods"), IndexOptions().name("hods_index").background(true).unique(false)),
         IndexModel(ascending("sourceSystem"), IndexOptions().name("sourceSystem_index").background(true).unique(false)),
         IndexModel(ascending("targetSystem"), IndexOptions().name("targetSystem_index").background(true).unique(false)),
-        IndexModel(ascending(List("platform", "publisherReference"): _*), IndexOptions().name("platform_pub_ref_idx").background(true).unique(true)),
+        IndexModel(ascending(List("platform", "publisherReference")*), IndexOptions().name("platform_pub_ref_idx").background(true).unique(true)),
         IndexModel(
           Indexes.text("$**"),
           IndexOptions().weights(new BasicDBObject().append("title", 50).append("description", 25))
@@ -145,7 +145,7 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
 
     collection.findOneAndUpdate(
       filter = query,
-      update = Updates.combine(allOps: _*),
+      update = Updates.combine(allOps*),
       options = FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
     ).toFuture()
       .map(x => Right((x, isUpsert)))// not sure how we get is upserted / updated now))
@@ -182,11 +182,11 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
       } yield IntegrationResponse(count.toInt, sendPagedResults(results, filter.itemsPerPage), results)
     } else {
       for {
-        count   <- collection.countDocuments(and(filters: _*)).toFuture()
+        count   <- collection.countDocuments(and(filters*)).toFuture()
         results <-
           (mayBeScoreProjection match {
-            case None          => collection.find(and(filters: _*))
-            case Some(x: Bson) => collection.find(and(filters: _*)).projection(x)
+            case None          => collection.find(and(filters*))
+            case Some(x: Bson) => collection.find(and(filters*)).projection(x)
           }).sort(sortOp)
             .skip(skipAmount)
             .limit(perPage)
@@ -199,13 +199,13 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
   private def buildFilters(filter: IntegrationFilter): Seq[Bson] = {
     val integrationTypeFilter    = filter.typeFilter.map(typeVal => Filters.equal("_type", typeVal.integrationType))
     val textFilter: Option[Bson] = filter.searchText.headOption.map(searchText => Filters.text(searchText))
-    val platformFilter           = if (filter.platforms.nonEmpty) Some(Filters.in("platform", filter.platforms.map(Codecs.toBson(_)): _*)) else None
-    val backendsFilter           = if (filter.backends.nonEmpty) Some(Filters.in("hods", filter.backends: _*)) else None
-    val sourceFilter             = if (filter.backends.nonEmpty) Some(Filters.in("sourceSystem", filter.backends: _*)) else None
-    val targetFilter             = if (filter.backends.nonEmpty) Some(Filters.in("targetSystem", filter.backends: _*)) else None
+    val platformFilter           = if (filter.platforms.nonEmpty) Some(Filters.in("platform", filter.platforms.map(Codecs.toBson(_))*)) else None
+    val backendsFilter           = if (filter.backends.nonEmpty) Some(Filters.in("hods", filter.backends*)) else None
+    val sourceFilter             = if (filter.backends.nonEmpty) Some(Filters.in("sourceSystem", filter.backends*)) else None
+    val targetFilter             = if (filter.backends.nonEmpty) Some(Filters.in("targetSystem", filter.backends*)) else None
     val combinedHodsFilters      = Seq(backendsFilter, sourceFilter, targetFilter).flatten
-    val hodsFilter               = if (combinedHodsFilters.isEmpty) None else Some(Filters.or(combinedHodsFilters: _*))
-    val teamIdsFilter            = if (filter.teamIds.nonEmpty) Some(Filters.in("teamId", filter.teamIds.map(Codecs.toBson(_)): _*)) else None
+    val hodsFilter               = if (combinedHodsFilters.isEmpty) None else Some(Filters.or(combinedHodsFilters*))
+    val teamIdsFilter            = if (filter.teamIds.nonEmpty) Some(Filters.in("teamId", filter.teamIds.map(Codecs.toBson(_))*)) else None
 
     Seq(integrationTypeFilter, textFilter, platformFilter, hodsFilter, teamIdsFilter).flatten
   }
@@ -293,10 +293,16 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
       .recover { case _: Exception => 0 }
   }
 
-  def updateTeamId(integrationId: IntegrationId, teamId: String): Future[Option[IntegrationDetail]] = {
+  def updateTeamId(integrationId: IntegrationId, maybeTeamId: Option[String]): Future[Option[IntegrationDetail]] = {
+
+    val update = maybeTeamId match {
+      case Some(teamId) => set("teamId", teamId)
+      case _ => unset("teamId")
+    }
+
     collection.findOneAndUpdate(
       equal("id", Codecs.toBson(integrationId)),
-      set("teamId", teamId),
+      update,
       FindOneAndUpdateOptions().upsert(false).returnDocument(ReturnDocument.AFTER)
     ).toFuture() map {
         case integrationDetail: IntegrationDetail => Some(integrationDetail)
