@@ -20,11 +20,11 @@ import com.mongodb.BasicDBObject
 import org.bson.BsonValue
 import org.mongodb.scala.bson.collection.immutable.Document
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.Accumulators.*
-import org.mongodb.scala.model.Aggregates.*
-import org.mongodb.scala.model.Filters.*
-import org.mongodb.scala.model.Indexes.*
-import org.mongodb.scala.model.Updates.{set, setOnInsert}
+import org.mongodb.scala.model.Accumulators._
+import org.mongodb.scala.model.Aggregates._
+import org.mongodb.scala.model.Filters._
+import org.mongodb.scala.model.Indexes._
+import org.mongodb.scala.model.Updates.{set, unset, setOnInsert}
 import org.mongodb.scala.model.{Updates, *}
 import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 import play.api.Logging
