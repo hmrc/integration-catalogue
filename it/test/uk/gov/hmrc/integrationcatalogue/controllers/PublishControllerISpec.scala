@@ -72,7 +72,7 @@ class PublishControllerISpec extends ServerBaseISpec with BeforeAndAfterEach wit
   def callPutEndpoint(url: String, body: String, headers: List[(String, String)]): WSResponse =
     wsClient
       .url(url)
-      .withHttpHeaders(headers: _*)
+      .withHttpHeaders(headers*)
       .withFollowRedirects(false)
       .put(body)
       .futureValue

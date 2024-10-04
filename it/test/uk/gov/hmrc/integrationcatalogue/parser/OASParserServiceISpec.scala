@@ -354,7 +354,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
     "handle when spec file is not present" in new Setup {
 
       val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF, OASSpecType, "{Unparseable}")
-      result shouldBe a[Invalid[_]]
+      result shouldBe a[Invalid[?]]
 
     }
 

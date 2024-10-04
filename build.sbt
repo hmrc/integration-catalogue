@@ -6,7 +6,7 @@ import uk.gov.hmrc.DefaultBuildSettings
 val appName = "integration-catalogue"
 
 ThisBuild / majorVersion := 0
-ThisBuild / scalaVersion := "3.4.2"
+ThisBuild / scalaVersion := "3.5.1"
 
 
 
@@ -20,6 +20,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(scoverageSettings)
   .settings(scalacOptions := scalacOptions.value.diff(Seq("-Wunused:all")))
   .disablePlugins(sbt.plugins.JUnitXmlReportPlugin)
+  .settings(scalacOptions += "-Wconf:msg=Flag.*repeatedly:s")
 
 
 lazy val scoverageSettings = {
@@ -39,3 +40,4 @@ lazy val it = (project in file("it"))
   .dependsOn(microservice % "test->test")
   .settings(DefaultBuildSettings.itSettings())
   .settings(libraryDependencies ++= AppDependencies.it)
+  .settings(scalacOptions += "-Wconf:msg=Flag.*repeatedly:s")

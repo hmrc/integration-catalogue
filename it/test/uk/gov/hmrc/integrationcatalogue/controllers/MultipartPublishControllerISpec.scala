@@ -90,7 +90,7 @@ class MultipartPublishControllerISpec extends ServerBaseISpec with DefaultPlayMo
     val multipartBody: MultipartFormData[TemporaryFile] = MultipartFormData[TemporaryFile](dataParts = Map.empty, files = Seq(filePart), badParts = Nil)
 
     val validApiPublishRequest: FakeRequest[MultipartFormData[TemporaryFile]] =
-      FakeRequest(Helpers.PUT, "/integration-catalogue/apis/multipart/publish", Headers(basePublishHeaders: _*), multipartBody)
+      FakeRequest(Helpers.PUT, "/integration-catalogue/apis/multipart/publish", Headers(basePublishHeaders*), multipartBody)
 
     val invalidFilePart =
       new MultipartFormData.FilePart[TemporaryFile](
@@ -125,7 +125,7 @@ class MultipartPublishControllerISpec extends ServerBaseISpec with DefaultPlayMo
     "PUT /apis/multipart/publish" should {
 
       "respond with 201 when using master auth key and valid request then do a create" in new Setup {
-        private val response = route(app, validApiPublishRequest.withHeaders(masterKeyHeader ++ coreIfPlatformTypeHeader: _*)).get
+        private val response = route(app, validApiPublishRequest.withHeaders(masterKeyHeader ++ coreIfPlatformTypeHeader*)).get
         status(response) mustBe CREATED
         private val publishResponse = Json.parse(contentAsString(response)).as[MultipartPublishResponse]
         publishResponse.platformType mustBe PlatformType.CORE_IF
@@ -133,7 +133,7 @@ class MultipartPublishControllerISpec extends ServerBaseISpec with DefaultPlayMo
       }
 
       "respond with 201 when using CORE_IF platform auth key and valid request then do a create" in new Setup {
-        private val response = route(app, validApiPublishRequest.withHeaders(coreIfAuthHeader ++ coreIfPlatformTypeHeader: _*)).get
+        private val response = route(app, validApiPublishRequest.withHeaders(coreIfAuthHeader ++ coreIfPlatformTypeHeader*)).get
         status(response) mustBe CREATED
         private val publishResponse = Json.parse(contentAsString(response)).as[MultipartPublishResponse]
         publishResponse.platformType mustBe PlatformType.CORE_IF
@@ -141,23 +141,23 @@ class MultipartPublishControllerISpec extends ServerBaseISpec with DefaultPlayMo
       }
 
       "respond with 400 when platform auth key is provided but platform type header is missing" in new Setup {
-        val response: Future[Result] = route(app, validApiPublishRequest.withHeaders(coreIfAuthHeader: _*)).get
+        val response: Future[Result] = route(app, validApiPublishRequest.withHeaders(coreIfAuthHeader*)).get
         status(response) mustBe BAD_REQUEST
         contentAsString(response) mustBe """{"errors":[{"message":"platform type header is missing or invalid"}]}"""
       }
 
       "respond with 400 when platform auth key is provided but platform type header is invalid" in new Setup {
         val response: Future[Result] =
-          route(app, validApiPublishRequest.withHeaders(coreIfAuthHeader ++ List(HeaderKeys.platformKey -> "SOMEINVALIDPLATFORM"): _*)).get
+          route(app, validApiPublishRequest.withHeaders(coreIfAuthHeader ++ List(HeaderKeys.platformKey -> "SOMEINVALIDPLATFORM")*)).get
         status(response) mustBe BAD_REQUEST
         contentAsString(response) mustBe """{"errors":[{"message":"platform type header is missing or invalid"}]}"""
       }
 
       "respond with 200 when valid request and an update" in new Setup {
-        val createResponse: Future[Result] = route(app, validApiPublishRequest.withHeaders(masterKeyHeader ++ coreIfPlatformTypeHeader: _*)).get
+        val createResponse: Future[Result] = route(app, validApiPublishRequest.withHeaders(masterKeyHeader ++ coreIfPlatformTypeHeader*)).get
         status(createResponse) mustBe CREATED
 
-        val okResponse: Future[Result] = route(app, validApiPublishRequest.withHeaders(masterKeyHeader ++ coreIfPlatformTypeHeader: _*)).get
+        val okResponse: Future[Result] = route(app, validApiPublishRequest.withHeaders(masterKeyHeader ++ coreIfPlatformTypeHeader*)).get
         status(okResponse) mustBe OK
       }
 
