@@ -101,7 +101,7 @@ class MultipartPublishControllerSpec extends AnyWordSpec with Matchers with Guic
 
     private def callPublishCommon(publishBody: MultipartFormData[TemporaryFile], headers: Seq[(String, String)]) = {
       val publishRequest = FakeRequest.apply("PUT", "integration-catalogue/apis/multipart/publish")
-        .withHeaders(headers: _*)
+        .withHeaders(headers*)
         .withBody(publishBody)
 
       controller.publishApi()(publishRequest)
@@ -115,7 +115,7 @@ class MultipartPublishControllerSpec extends AnyWordSpec with Matchers with Guic
 
       val data           = new MultipartFormData[TemporaryFile](Map(), List(FilePart(filePartKey, fileName, Some("text/plain"), tempFile)), List())
       val publishRequest = FakeRequest.apply("PUT", "integration-catalogue/apis/multipart/publish")
-        .withHeaders(headers: _*)
+        .withHeaders(headers*)
         .withBody(data)
 
       controller.publishApi()(publishRequest)
@@ -136,7 +136,7 @@ class MultipartPublishControllerSpec extends AnyWordSpec with Matchers with Guic
         "text.txt"
       )
 
-      result shouldBeResult CREATED
+      result.shouldBeResult(CREATED)
       contentAsString(result) shouldBe raw"""{"id":"$id","publisherReference":"123456","platformType":"CORE_IF"}"""
     }
 
@@ -149,7 +149,7 @@ class MultipartPublishControllerSpec extends AnyWordSpec with Matchers with Guic
         Seq("Data bytes")
       )
 
-      result shouldBeResult CREATED
+      result.shouldBeResult(CREATED)
       contentAsString(result) shouldBe raw"""{"id":"$id","publisherReference":"123456","platformType":"CORE_IF"}"""
     }
 
@@ -163,7 +163,7 @@ class MultipartPublishControllerSpec extends AnyWordSpec with Matchers with Guic
         "text.txt"
       )
 
-      result shouldBeResult OK
+      result.shouldBeResult(OK)
       contentAsString(result) shouldBe raw"""{"id":"$id","publisherReference":"123456","platformType":"CORE_IF"}"""
     }
 
@@ -176,7 +176,7 @@ class MultipartPublishControllerSpec extends AnyWordSpec with Matchers with Guic
         Seq("Data bytes")
       )
 
-      result shouldBeResult OK
+      result.shouldBeResult(OK)
       contentAsString(result) shouldBe raw"""{"id":"$id","publisherReference":"123456","platformType":"CORE_IF"}"""
     }
 
@@ -189,7 +189,7 @@ class MultipartPublishControllerSpec extends AnyWordSpec with Matchers with Guic
         Seq.empty
       )
 
-      result shouldBeResult BAD_REQUEST
+      result.shouldBeResult(BAD_REQUEST)
       contentAsString(result) shouldBe """{"errors":[{"message":"selectedFile is missing from requestBody"}]}"""
     }
 
@@ -197,7 +197,7 @@ class MultipartPublishControllerSpec extends AnyWordSpec with Matchers with Guic
 
       val result: Future[Result] = callPublishWithFile(Some(PublishResult(isSuccess = true, None, List.empty)), validHeaders, "selectedFile", "text.txt")
 
-      result shouldBeResult BAD_REQUEST
+      result.shouldBeResult(BAD_REQUEST)
       contentAsString(result) shouldBe """{"errors":[{"message":"Failed to publish API: Unexpected error"}]}"""
     }
 
@@ -205,7 +205,7 @@ class MultipartPublishControllerSpec extends AnyWordSpec with Matchers with Guic
       val expectedResponse       = PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert api")))
       val result: Future[Result] = callPublishWithFileReturnError(expectedResponse, validHeaders, "selectedFile", "text.txt")
 
-      result shouldBeResult BAD_REQUEST
+      result.shouldBeResult(BAD_REQUEST)
       contentAsString(result) shouldBe """{"errors":[{"message":"Unable to upsert api"}]}"""
     }
 
@@ -220,7 +220,7 @@ class MultipartPublishControllerSpec extends AnyWordSpec with Matchers with Guic
           "text.txt"
         )
 
-      result shouldBeResult BAD_REQUEST
+      result.shouldBeResult(BAD_REQUEST)
       contentAsString(result) shouldBe """{"errors":[{"message":"some message"}]}"""
     }
 
@@ -229,7 +229,7 @@ class MultipartPublishControllerSpec extends AnyWordSpec with Matchers with Guic
       val result: Future[Result] = callPublishWithFile(None, validHeaders, "CANT FIND ME", "text3.txt")
 
       contentAsString(result) shouldBe """{"errors":[{"message":"selectedFile is missing from requestBody"}]}"""
-      result shouldBeResult BAD_REQUEST
+      result.shouldBeResult(BAD_REQUEST)
 
       verifyNoInteractions(mockPublishService)
     }

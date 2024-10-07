@@ -193,7 +193,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         openApiSpecificationContent = apiDetail0.openApiSpecification
       )
 
-      result shouldBe an[Invalid[_]]
+      result shouldBe an[Invalid[?]]
     }
 
     "parse extensions returns error(s)" in new Setup {
@@ -206,7 +206,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         openApiSpecificationContent = apiDetail0.openApiSpecification
       )
 
-      result shouldBe an[Invalid[_]]
+      result shouldBe an[Invalid[?]]
     }
 
     "return failure with correct message when empty openApi object is passed in" in new Setup {
