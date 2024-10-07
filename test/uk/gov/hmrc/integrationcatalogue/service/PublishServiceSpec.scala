@@ -68,7 +68,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
   "publish" should {
     "return successful publish result on insert" in new Setup {
 
-      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockOasParserService.parse(any(), any(), any(), any(), any())).thenReturn(parseSuccess)
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
@@ -81,7 +81,8 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
         eqTo(publishRequest.publisherReference),
         eqTo(publishRequest.platformType),
         eqTo(publishRequest.specificationType),
-        eqTo(publishRequest.contents)
+        eqTo(publishRequest.contents),
+        any()
       )
       verify(mockApiRepo).findAndModify(eqTo(apiDetail0), eqTo(Option.empty))
       verify(mockApiTeamsRepo, never).findByPublisherReference(any())
@@ -89,7 +90,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
 
     "return successful publish result on update" in new Setup {
 
-      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockOasParserService.parse(any(), any(), any(), any(), any())).thenReturn(parseSuccess)
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessUpdate))
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
@@ -103,14 +104,15 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
         eqTo(publishRequest.publisherReference),
         eqTo(publishRequest.platformType),
         eqTo(publishRequest.specificationType),
-        eqTo(publishRequest.contents)
+        eqTo(publishRequest.contents),
+        any()
       )
       verify(mockApiRepo).findAndModify(eqTo(apiDetail0), eqTo(Option.empty))
     }
 
     "return fail when oas parse fails" in new Setup {
 
-      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseFailure)
+      when(mockOasParserService.parse(any(), any(), any(), any(), any())).thenReturn(parseFailure)
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe false
@@ -119,14 +121,15 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
         eqTo(publishRequest.publisherReference),
         eqTo(publishRequest.platformType),
         eqTo(publishRequest.specificationType),
-        eqTo(publishRequest.contents)
+        eqTo(publishRequest.contents),
+        any()
       )
       verifyNoInteractions(mockApiRepo)
     }
 
     "return fail when api upsert fails" in new Setup {
 
-      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockOasParserService.parse(any(), any(), any(), any(), any())).thenReturn(parseSuccess)
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertFailure))
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertFailure))
 
@@ -138,7 +141,8 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
         eqTo(publishRequest.publisherReference),
         eqTo(publishRequest.platformType),
         eqTo(publishRequest.specificationType),
-        eqTo(publishRequest.contents)
+        eqTo(publishRequest.contents),
+        any()
       )
       verify(mockApiRepo).findAndModify(eqTo(apiDetail0), eqTo(Option.empty))
 
@@ -148,7 +152,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       val request: PublishRequest = publishRequest.copy(autopublish = true)
       val apiTeam: ApiTeam = ApiTeam(request.publisherReference.value, "test-team-id")
 
-      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockOasParserService.parse(any(), any(), any(), any(), any())).thenReturn(parseSuccess)
       when(mockApiRepo.exists(any(), any())).thenReturn(Future.successful(false))
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
       when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(Some(apiTeam)))
@@ -169,7 +173,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
     "return success when auto-publishing a new API and the team link does not exist" in new Setup {
       val request: PublishRequest = publishRequest.copy(autopublish = true)
 
-      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockOasParserService.parse(any(), any(), any(), any(), any())).thenReturn(parseSuccess)
       when(mockApiRepo.exists(any(), any())).thenReturn(Future.successful(false))
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
       when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(None))
@@ -190,7 +194,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
     "return success when auto-publishing an existing API and ignore the existence of a team link" in new Setup {
       val request: PublishRequest = publishRequest.copy(autopublish = true)
 
-      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockOasParserService.parse(any(), any(), any(), any(), any())).thenReturn(parseSuccess)
       when(mockApiRepo.exists(any(), any())).thenReturn(Future.successful(true))
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessUpdate))
 

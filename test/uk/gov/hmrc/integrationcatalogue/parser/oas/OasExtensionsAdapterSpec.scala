@@ -27,6 +27,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
+import uk.gov.hmrc.integrationcatalogue.models.common.ApiType
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.{ExtensionKeys, IntegrationCatalogueExtensions, OASExtensionsAdapter}
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 
@@ -42,6 +43,8 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     val domain                          = "test-domain"
     val subDomain                       = "test-sub-domain"
+
+    val apiType                         = "SIMPLE"
 
     val domainAsInteger: Integer        = Integer.valueOf(101)
     val subDomainAsInteger: Integer     = Integer.valueOf(102)
@@ -117,6 +120,14 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
     extensionsWithDomainInfoAsDouble.put(DOMAIN_EXTENSION_KEY, domainAsDouble)
     extensionsWithDomainInfoAsDouble.put(SUB_DOMAIN_EXTENSION_KEY, subDomainAsDouble)
 
+    val extensionsWithApiType = new util.HashMap[String, Object]()
+    extensionsWithApiType.putAll(extensionsWithReviewDateAndPublisherReference)
+    extensionsWithApiType.put(API_TYPE, apiType)
+
+    val extensionsWithInvalidApiType = new util.HashMap[String, Object]()
+    extensionsWithInvalidApiType.putAll(extensionsWithReviewDateAndPublisherReference)
+    extensionsWithInvalidApiType.put(API_TYPE, "BadApiType")
+
     def generateInfoObject(extensionsValues: util.HashMap[String, Object]): Info = {
       val info       = new Info()
       val extensions = new util.HashMap[String, Object]()
@@ -132,11 +143,9 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Right when extensions is empty but publisher reference from header is provided" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithReviewDateAndPublisherReference), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithReviewDateAndPublisherReference), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
-        case Left(errors)      =>
-          errors.map(println)
-          fail()
+        case Left(_)      => fail()
         case Right(extensions) =>
           extensions.backends shouldBe Nil
           extensions.publisherReference shouldBe publisherRefValue
@@ -145,7 +154,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Left with error when extensions is empty and publisher reference is empty" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(new util.HashMap[String, Object]()), None, mockAppConfig)
+        parseExtensions(generateInfoObject(new util.HashMap[String, Object]()), None, mockAppConfig, autopublish = true)
       result match {
         case Left(errors) => errors.head shouldBe "Publisher Reference must be provided and must be valid"
         case Right(_)     => fail()
@@ -154,7 +163,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Right when extensions has backends but no status or publisher reference and publisher reference from header is provided" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithOnlyBackendsAndReviewDate), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithOnlyBackendsAndReviewDate), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(_)           => fail()
         case Right(extensions) =>
@@ -166,7 +175,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Right when extensions has backends and publisher reference and publisher reference from header matches extensions" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(_)           => fail()
         case Right(extensions) =>
@@ -177,7 +186,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Left with error when extensions has a value but no publisher reference provided" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithOnlyBackendsAndReviewDate), None, mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithOnlyBackendsAndReviewDate), None, mockAppConfig, autopublish = true)
       result match {
         case Left(errors) => errors.head shouldBe "Publisher Reference must be provided and must be valid"
         case Right(_)     => fail()
@@ -186,7 +195,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Left when extensions is set with backends and publisher ref and header publisher reference does not match extensions value" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), Some("SOMEOTHERREFERENCE"), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), Some("SOMEOTHERREFERENCE"), mockAppConfig, autopublish = true)
       result match {
         case Left(errors) => errors.head shouldBe "Publisher reference provided twice but they do not match"
         case Right(_)     => fail()
@@ -195,7 +204,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Right with backend strings and publisher ref when extensions is set with backends and publisher ref as string" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), None, mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), None, mockAppConfig, autopublish = true)
       result match {
         case Left(_)           => fail()
         case Right(extensions) =>
@@ -207,7 +216,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
     "return Right with backend strings and publisher ref when extensions is set with backends and publisher ref as Integer" in new Setup {
       extensionsWithReviewDatePublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefInt)
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), None, mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), None, mockAppConfig, autopublish = true)
       result match {
         case Left(_)           => fail()
         case Right(extensions) =>
@@ -219,7 +228,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
     "return Right with backend strings and publisher ref when extensions is set with backends and publisher ref as Double" in new Setup {
       extensionsWithReviewDatePublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefDouble)
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), None, mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), None, mockAppConfig, autopublish = true)
       result match {
         case Left(_)           => fail()
         case Right(extensions) =>
@@ -231,7 +240,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
     "return Right with backend strings and publisher ref when extensions is set with backends and publisher ref as List" in new Setup {
       extensionsWithReviewDatePublisherReferenceAndBackends.put(PUBLISHER_REF_EXTENSION_KEY, publisherRefList)
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), None, mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithReviewDatePublisherReferenceAndBackends), None, mockAppConfig, autopublish = true)
       result match {
         case Left(errors) => errors.head shouldBe "Invalid value. Expected a string, integer or double but found value: [] of type class java.util.ArrayList"
         case Right(_)     => fail()
@@ -240,7 +249,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Right with backend strings when extensions is set and backends are defined" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithOnlyBackendsAndReviewDate), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithOnlyBackendsAndReviewDate), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(_)           => fail()
         case Right(extensions) =>
@@ -251,7 +260,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Right when extensions is and only review datetime is added" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithReviewDateAndTime), Some(""), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithReviewDateAndTime), Some(""), mockAppConfig, autopublish = true)
       result match {
         case Left(_)           => fail()
         case Right(extensions) => extensions.backends shouldBe Nil
@@ -260,7 +269,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Left when extensions is empty" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(new util.HashMap[String, Object]()), Some(""), mockAppConfig)
+        parseExtensions(generateInfoObject(new util.HashMap[String, Object]()), Some(""), mockAppConfig, autopublish = true)
       result match {
         case Left(errors) => errors.head shouldBe "Reviewed date must be provided"
         case Right(_)     => fail()
@@ -273,7 +282,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
       extensionsWithEmptyBackends.put(EXTENSIONS_KEY, "")
       info.setExtensions(extensionsWithEmptyBackends)
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(info, Some(""), mockAppConfig)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(info, Some(""), mockAppConfig, autopublish = true)
       result match {
         case Left(errors) => errors.head shouldBe "attribute x-integration-catalogue is not of type `object`"
         case Right(_)     => fail()
@@ -287,7 +296,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       invalidBackends.put(BACKEND_EXTENSION_KEY, null)
       extensionsWithNullBackends.put(EXTENSIONS_KEY, invalidBackends)
       info.setExtensions(extensionsWithNullBackends)
-      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(info, Some(""), mockAppConfig)
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] = parseExtensions(info, Some(""), mockAppConfig, autopublish = true)
       result match {
         case Left(errors) => errors.head shouldBe "backends must be a list but was: Some(null)"
         case Right(_)     => fail()
@@ -297,7 +306,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
     "return Right with short description when extensions is set and short description is defined" in new Setup {
       when(mockAppConfig.shortDescLength).thenReturn(180)
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithShortDescAndPublisherReferenceAndBackends), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithShortDescAndPublisherReferenceAndBackends), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(_)           => fail()
         case Right(extensions) =>
@@ -311,7 +320,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
     "return Left when short description length is over maximum specified in config" in new Setup {
       when(mockAppConfig.shortDescLength).thenReturn(10)
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithShortDescAndPublisherReferenceAndBackends), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithShortDescAndPublisherReferenceAndBackends), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(errors) => errors.head shouldBe s"Short Description cannot be more than ${mockAppConfig.shortDescLength} characters long."
         case Right(_)     => fail()
@@ -320,7 +329,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Left when short description is not a string" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithInvalidShortDesc), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithInvalidShortDesc), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(errors) => errors.head shouldBe s"Short Description must be a String"
         case Right(_)     => fail()
@@ -329,19 +338,20 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Right when extensions only has status" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithReviewDateAndStatus), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithReviewDateAndStatus), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(_)           => fail()
         case Right(extensions) =>
           extensions.status shouldBe ApiStatus.ALPHA
           extensions.backends shouldBe List.empty
           extensions.publisherReference shouldBe publisherRefValue
+          extensions.apiType shouldBe Option.empty
       }
     }
 
     "return Left when status is invalid" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithInvalidStatus), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithInvalidStatus), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(errors) => errors.head shouldBe s"Status must be one of ALPHA, BETA, LIVE or DEPRECATED"
         case Right(_)     => fail()
@@ -350,7 +360,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Left when status is not a string" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithWrongTypeStatus), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithWrongTypeStatus), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(errors) => errors.head shouldBe s"Status must be one of ALPHA, BETA, LIVE or DEPRECATED"
         case Right(_)     => fail()
@@ -359,7 +369,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Left when status empty" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithEmptyStatus), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithEmptyStatus), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(errors) => errors.head shouldBe s"Status must be one of ALPHA, BETA, LIVE or DEPRECATED"
         case Right(_)     => fail()
@@ -368,7 +378,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Left when status null" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithNullStatus), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithNullStatus), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(errors) => errors.head shouldBe s"Status must be one of ALPHA, BETA, LIVE or DEPRECATED"
         case Right(_)     => fail()
@@ -377,7 +387,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Left when status reviewed date is not an accepted iso 8601 format" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithBadReviewDateString), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithBadReviewDateString), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(errors) => errors.head shouldBe "Reviewed date is not a valid date"
         case Right(_) => fail()
@@ -386,7 +396,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Left when status reviewed date is not a String" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithBadReviewDateType), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithBadReviewDateType), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(errors) => errors.head shouldBe "Reviewed date is not a valid date"
         case Right(_) => fail()
@@ -395,7 +405,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Right when domain and sub-domain are populated as String" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithDomainInfo), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithDomainInfo), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(_) => fail()
         case Right(extensions) =>
@@ -406,7 +416,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Right when domain and sub-domain are populated as Integer" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithDomainInfoAsInteger), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithDomainInfoAsInteger), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(_) => fail()
         case Right(extensions) =>
@@ -417,7 +427,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Right when domain and sub-domain are populated as Double" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithDomainInfoAsDouble), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithDomainInfoAsDouble), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(_) => fail()
         case Right(extensions) =>
@@ -428,12 +438,31 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     "return Right when domain and sub-domain are not populated" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
-        parseExtensions(generateInfoObject(extensionsWithReviewDateAndPublisherReference), Some(publisherRefValue), mockAppConfig)
+        parseExtensions(generateInfoObject(extensionsWithReviewDateAndPublisherReference), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
         case Left(_) => fail()
         case Right(extensions) =>
           extensions.domain shouldBe None
           extensions.subDomain shouldBe None
+      }
+    }
+
+    "return Right when an API type is populated as a valid String" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithApiType), Some(publisherRefValue), mockAppConfig, autopublish = true)
+      result match {
+        case Left(_) => fail()
+        case Right(extensions) =>
+          extensions.apiType shouldBe Some(ApiType.SIMPLE)
+      }
+    }
+
+    "return Left when an API type is populated with an invalid String" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithInvalidApiType), Some(publisherRefValue), mockAppConfig, autopublish = true)
+      result match {
+        case Left(errors) => errors.head shouldBe "Api-type must be a valid string"
+        case Right(_) => fail()
       }
     }
   }

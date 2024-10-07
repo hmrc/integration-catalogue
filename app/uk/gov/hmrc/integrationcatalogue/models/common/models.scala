@@ -19,7 +19,9 @@ package uk.gov.hmrc.integrationcatalogue.models.common
 import java.util.UUID
 import scala.collection.immutable
 import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
-import play.api.libs.json.Format
+import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.integrationcatalogue.models.Scope
+import uk.gov.hmrc.integrationcatalogue.repository.MongoFormatters.EnumFormat
 
 case class IntegrationId(value: UUID) extends AnyVal
 
@@ -84,3 +86,10 @@ object IntegrationType extends Enum[IntegrationType] with PlayJsonEnum[Integrati
     }
   }
 }
+
+enum ApiType derives EnumFormat:
+  case SIMPLE, ADVANCED
+
+object ApiType:
+  def valueExists(apiType: String): Boolean =
+    ApiType.values.exists(_.toString == apiType)

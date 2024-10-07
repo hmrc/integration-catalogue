@@ -17,11 +17,12 @@
 package uk.gov.hmrc.integrationcatalogue.repository
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json._
-import uk.gov.hmrc.integrationcatalogue.models._
-import uk.gov.hmrc.integrationcatalogue.models.common._
+import play.api.libs.json.*
+import uk.gov.hmrc.integrationcatalogue.models.*
+import uk.gov.hmrc.integrationcatalogue.models.common.*
 
 import java.time.Instant
+import scala.quoted.*
 
 object MongoFormatters {
   implicit val instantReads: Reads[Instant] =
@@ -86,7 +87,8 @@ object MongoFormatters {
       (JsPath \ "scopes").readWithDefault[Set[Scope]](Set.empty) and
       (JsPath \ "teamId").readNullable[String] and
       (JsPath \ "domain").readNullable[String] and
-      (JsPath \ "subDomain").readNullable[String]
+      (JsPath \ "subDomain").readNullable[String] and
+      (JsPath \ "apiType").readNullable[ApiType]
     )(ApiDetail.apply)
 
   private val apiDetailWrites: Writes[ApiDetail] = Json.writes[ApiDetail]
@@ -99,5 +101,47 @@ object MongoFormatters {
   implicit val integrationCountResponseFormats: OFormat[IntegrationCountResponse]             = Json.format[IntegrationCountResponse]
   implicit val fileTransferPlatformFormats: OFormat[FileTransferPlatform]                     = Json.format[FileTransferPlatform]
   implicit val fileTransferTransportsResponseFormats: OFormat[FileTransferTransportsResponse] = Json.format[FileTransferTransportsResponse]
+
+  trait EnumFormat[T] extends Format[T]
+
+  object EnumMacros {
+
+    def enumFormatMacro[T: Type](using Quotes): Expr[EnumFormat[T]] = {
+      import quotes.reflect.*
+      val tpe = TypeRepr.of[T]
+
+      val sym = tpe.classSymbol match {
+        case Some(sym)
+          if sym.flags.is(Flags.Enum) && !sym.flags.is(Flags.JavaDefined) =>
+          sym
+        case _ =>
+          report.errorAndAbort(s"${tpe.show} is not an enum type")
+      }
+
+      def reifyValueOf(name: Expr[String]) =
+        Select
+          .overloaded(Ref(sym.companionModule), "valueOf", Nil, name.asTerm :: Nil)
+          .asExprOf[T & reflect.Enum]
+
+      '{
+          new EnumFormat[T] {
+            private def valueOfUnsafe(name: String): T = ${
+              reifyValueOf('name)
+            }
+
+            override def reads(json: JsValue): JsResult[T] = try {
+              JsSuccess(valueOfUnsafe(json.as[JsString].value))
+            } catch {
+              case e: NoSuchElementException => JsError(e.getMessage)
+            }
+
+            override def writes(o: T): JsValue = JsString(o.toString)
+          }
+        }
+    }
+  }
+
+  object EnumFormat:
+    inline def derived[T]: EnumFormat[T] = ${ EnumMacros.enumFormatMacro[T] }
 
 }

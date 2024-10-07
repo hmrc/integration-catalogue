@@ -16,18 +16,19 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
-import cats.data.Validated._
-import cats.data._
-import cats.implicits._
+import cats.data.Validated.*
+import cats.data.*
+import cats.implicits.*
 import io.swagger.v3.oas.models.info.Info
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
+import uk.gov.hmrc.integrationcatalogue.models.common.ApiType
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters.dateAndOptionalTimeFormatter
 
 import java.time.Instant
 import java.util
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.reflect.runtime.universe.*
 import scala.util.{Failure, Success, Try}
 
@@ -36,7 +37,8 @@ trait OASExtensionsAdapter extends ExtensionKeys {
   def parseExtensions(
     info: Info,
     publisherReference: Option[String],
-    appConfig: AppConfig
+    appConfig: AppConfig,
+    autopublish: Boolean,
   ): Either[cats.data.NonEmptyList[String], IntegrationCatalogueExtensions] = {
     getIntegrationCatalogueExtensionsMap(getExtensions(info))
       .andThen(integrationCatalogueExtensions => {
@@ -48,10 +50,20 @@ trait OASExtensionsAdapter extends ExtensionKeys {
             getStatus(integrationCatalogueExtensions),
             getReviewedDate(integrationCatalogueExtensions),
             getDomain(integrationCatalogueExtensions),
-            getSubDomain(integrationCatalogueExtensions)
+            getSubDomain(integrationCatalogueExtensions),
+            getApiType(integrationCatalogueExtensions, autopublish)
           )
-        }.mapN((backends, publisherReference, shortDescription, status, reviewedDate, domain, subDomain) => {
-          IntegrationCatalogueExtensions(backends, publisherReference, shortDescription, status, reviewedDate, domain, subDomain)
+        }.mapN((backends, publisherReference, shortDescription, status, reviewedDate, domain, subDomain, apiType) => {
+          IntegrationCatalogueExtensions(
+            backends,
+            publisherReference,
+            shortDescription,
+            status,
+            reviewedDate,
+            domain,
+            subDomain,
+            apiType,
+          )
         })
       })
       .toEither
@@ -84,7 +96,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     }
   }
 
-  def getShortDescription(extensions: Map[String, AnyRef], appConfig: AppConfig): ValidatedNel[String, Option[String]] = {
+  private def getShortDescription(extensions: Map[String, AnyRef], appConfig: AppConfig): ValidatedNel[String, Option[String]] = {
     extensions.get(SHORT_DESC_EXTENSION_KEY) match {
       case None            => Validated.valid(None)
       case Some(x: String) => if (x.length > appConfig.shortDescLength) {
@@ -95,7 +107,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     }
   }
 
-  def getStatus(extensions: Map[String, AnyRef]): ValidatedNel[String, ApiStatus] = {
+  private def getStatus(extensions: Map[String, AnyRef]): ValidatedNel[String, ApiStatus] = {
     extensions.get(STATUS_EXTENSION_KEY) match {
       case None            => Validated.valid(LIVE)
       case Some(x: String) =>
@@ -107,7 +119,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     }
   }
 
-  def getReviewedDate(extensions: Map[String, AnyRef]): ValidatedNel[String, Instant] = {
+  private def getReviewedDate(extensions: Map[String, AnyRef]): ValidatedNel[String, Instant] = {
     extensions.get(REVIEWED_DATE_EXTENSION_KEY) match {
       case None            => "Reviewed date must be provided".invalidNel[Instant]
       case Some(x: String) =>
@@ -121,7 +133,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     }
   }
 
-  def getPublisherReference(extensions: Map[String, AnyRef], publisherReference: Option[String]): ValidatedNel[String, String] = {
+  private def getPublisherReference(extensions: Map[String, AnyRef], publisherReference: Option[String]): ValidatedNel[String, String] = {
 
     def handlePublisherReference(publisherReference: Option[String]) = publisherReference match {
       case None    => "Publisher Reference must be provided and must be valid".invalidNel[String]
@@ -146,7 +158,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     }
   }
 
-  def getDomain(extensions: Map[String, AnyRef]): ValidatedNel[String, Option[String]] = {
+  private def getDomain(extensions: Map[String, AnyRef]): ValidatedNel[String, Option[String]] = {
     extensions.get(DOMAIN_EXTENSION_KEY) match {
       case None                       => Validated.valid(None)
       case Some(x: String)            => Validated.valid(Some(x))
@@ -156,7 +168,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     }
   }
 
-  def getSubDomain(extensions: Map[String, AnyRef]): ValidatedNel[String, Option[String]] = {
+  private def getSubDomain(extensions: Map[String, AnyRef]): ValidatedNel[String, Option[String]] = {
     extensions.get(SUB_DOMAIN_EXTENSION_KEY) match {
       case None                       => Validated.valid(None)
       case Some(x: String)            => Validated.valid(Some(x))
@@ -166,6 +178,16 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     }
   }
 
+  def getApiType(extensions: Map[String, AnyRef], autopublish: Boolean): ValidatedNel[String, Option[ApiType]] = {
+    if (autopublish)
+      extensions.get(API_TYPE) match {
+        case None                                      => Validated.valid(None)
+        case Some(x: String) if ApiType.valueExists(x) => Validated.valid(Some(ApiType.valueOf(x)))
+        case _                                         => "Api-type must be a valid string".invalidNel[Option[ApiType]]
+      }
+    else
+      Validated.valid(None)
+  }
 }
 
 case class IntegrationCatalogueExtensions(
@@ -175,5 +197,6 @@ case class IntegrationCatalogueExtensions(
   status: ApiStatus,
   reviewedDate: Instant,
   domain: Option[String],
-  subDomain: Option[String]
+  subDomain: Option[String],
+  apiType: Option[ApiType]
 )

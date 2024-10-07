@@ -45,7 +45,8 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
                       platformType: PlatformType,
                       specType: SpecificationType,
                       openApi: OpenAPI,
-                      openApiSpecificationContent: String
+                      openApiSpecificationContent: String,
+                      autopublish: Boolean,
                     ): ValidatedNel[List[String], ApiDetail] = {
 
     Option(openApi.getInfo) match {
@@ -65,7 +66,10 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
 
             val allScopeDefinitions = buildScopeDefinitions(allEndpoints, openApi)
 
-            parseExtensions(info, publisherRef, appConfig) match {
+            parseExtensions(info, publisherRef, appConfig, autopublish) match {
+              case Right(extensions: IntegrationCatalogueExtensions)
+                if (autopublish && platformType == PlatformType.HIP && extensions.apiType.isEmpty) =>
+                  List("HIP APIs should always have an 'api-type' value.").invalidNel[ApiDetail]
               case Right(extensions: IntegrationCatalogueExtensions) =>
                 Valid(ApiDetail(
                   id = IntegrationId(uuidService.newUuid()),
@@ -85,7 +89,8 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
                   reviewedDate = extensions.reviewedDate,
                   scopes = allScopeDefinitions,
                   domain = extensions.domain,
-                  subDomain = extensions.subDomain
+                  subDomain = extensions.subDomain,
+                  apiType = extensions.apiType,
                 ))
               case Left(x)                                           => x.toList.invalidNel[ApiDetail]
             }

@@ -35,7 +35,8 @@ class OASParserService @Inject() (oasParser: OASFileLoader, oasV3Service: OASV3A
       publisherReference: Option[String],
       platformType: PlatformType,
       specificationType: SpecificationType,
-      fileContents: String
+      fileContents: String,
+      autopublish: Boolean,
     ): ValidatedNel[List[String], ApiDetail] = {
 
     val maybeSwaggerParseResult = Option(oasParser.parseOasSpec(fileContents))
@@ -68,7 +69,7 @@ class OASParserService @Inject() (oasParser: OASFileLoader, oasV3Service: OASV3A
       }).getOrElse(List(s"Oas Parser returned null").invalidNel[OpenAPI])
 
     oasSpecification match {
-      case Valid(openApi)                         => handleOpenApi(publisherReference, platformType, specificationType, openApi, fileContents)
+      case Valid(openApi)                         => handleOpenApi(publisherReference, platformType, specificationType, openApi, fileContents, autopublish)
       case e: Invalid[NonEmptyList[List[String]]] => e
     }
 
@@ -79,11 +80,12 @@ class OASParserService @Inject() (oasParser: OASFileLoader, oasV3Service: OASV3A
       platformType: PlatformType,
       specificationType: SpecificationType,
       openApi: OpenAPI,
-      fileContents: String
+      fileContents: String,
+      autopublish: Boolean,
     ): ValidatedNel[List[String], ApiDetail] = {
 
     openApi.getOpenapi.headOption match {
-      case Some('3') => oasV3Service.extractOpenApi(publisherReference, platformType, specificationType, openApi, fileContents)
+      case Some('3') => oasV3Service.extractOpenApi(publisherReference, platformType, specificationType, openApi, fileContents, autopublish)
       case _         => List(s"Unhandled OAS specification version for platform $platformType OAS").invalidNel[ApiDetail]
     }
   }
