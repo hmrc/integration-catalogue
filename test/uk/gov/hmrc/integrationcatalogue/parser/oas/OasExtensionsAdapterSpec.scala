@@ -461,7 +461,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
         parseExtensions(generateInfoObject(extensionsWithInvalidApiType), Some(publisherRefValue), mockAppConfig, autopublish = true)
       result match {
-        case Left(errors) => errors.head shouldBe "Api-type must be a valid string"
+        case Left(errors) => errors.head shouldBe s"Status must be one of ${ApiType.values.mkString(", ")}"
         case Right(_) => fail()
       }
     }

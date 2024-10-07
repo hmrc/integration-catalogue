@@ -181,9 +181,12 @@ trait OASExtensionsAdapter extends ExtensionKeys {
   def getApiType(extensions: Map[String, AnyRef], autopublish: Boolean): ValidatedNel[String, Option[ApiType]] = {
     if (autopublish)
       extensions.get(API_TYPE) match {
-        case None                                      => Validated.valid(None)
-        case Some(x: String) if ApiType.valueExists(x) => Validated.valid(Some(ApiType.valueOf(x)))
-        case _                                         => "Api-type must be a valid string".invalidNel[Option[ApiType]]
+        case None            => Validated.valid(None)
+        case Some(x: String) =>
+          if (ApiType.values.toList.map(_.entryName).contains(x.toUpperCase)) {
+            Validated.valid(Some(ApiType.withName(x)))
+          } else s"Status must be one of ${ApiType.values.mkString(", ")}".invalidNel[Option[ApiType]]
+        case _               => "Api-type must be a valid string".invalidNel[Option[ApiType]]
       }
     else
       Validated.valid(None)
