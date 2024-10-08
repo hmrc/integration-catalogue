@@ -38,7 +38,6 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     info: Info,
     publisherReference: Option[String],
     appConfig: AppConfig,
-    autopublish: Boolean,
   ): Either[cats.data.NonEmptyList[String], IntegrationCatalogueExtensions] = {
     getIntegrationCatalogueExtensionsMap(getExtensions(info))
       .andThen(integrationCatalogueExtensions => {
@@ -51,7 +50,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
             getReviewedDate(integrationCatalogueExtensions),
             getDomain(integrationCatalogueExtensions),
             getSubDomain(integrationCatalogueExtensions),
-            getApiType(integrationCatalogueExtensions, autopublish)
+            getApiType(integrationCatalogueExtensions)
           )
         }.mapN((backends, publisherReference, shortDescription, status, reviewedDate, domain, subDomain, apiType) => {
           IntegrationCatalogueExtensions(
@@ -178,18 +177,15 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     }
   }
 
-  def getApiType(extensions: Map[String, AnyRef], autopublish: Boolean): ValidatedNel[String, Option[ApiType]] = {
-    if (autopublish)
-      extensions.get(API_TYPE) match {
-        case None            => Validated.valid(None)
-        case Some(x: String) =>
-          if (ApiType.values.toList.map(_.entryName).contains(x.toUpperCase)) {
-            Validated.valid(Some(ApiType.withName(x)))
-          } else s"Status must be one of ${ApiType.values.mkString(", ")}".invalidNel[Option[ApiType]]
-        case _               => "Api-type must be a valid string".invalidNel[Option[ApiType]]
-      }
-    else
-      Validated.valid(None)
+  def getApiType(extensions: Map[String, AnyRef]): ValidatedNel[String, Option[ApiType]] = {
+    extensions.get(API_TYPE) match {
+      case None            => Validated.valid(None)
+      case Some(x: String) =>
+        if (ApiType.values.toList.map(_.entryName).contains(x.toUpperCase)) {
+          Validated.valid(Some(ApiType.withName(x)))
+        } else s"Status must be one of ${ApiType.values.mkString(", ")}".invalidNel[Option[ApiType]]
+      case _               => "Api-type must be a valid string".invalidNel[Option[ApiType]]
+    }
   }
 }
 

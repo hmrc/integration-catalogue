@@ -68,7 +68,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       val publisherReference      = if (setHeaderPublisherRef) Some("SOMEFILEREFERENCE") else None
       val oasFileContents: String = parseFileToString(filePath)
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(publisherReference, PlatformType.CORE_IF, OASSpecType, oasFileContents, autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(publisherReference, PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case Invalid(errors: NonEmptyList[List[String]]) =>
           errors.head.contains(expectedErrorMessage) shouldBe true
@@ -84,7 +84,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       val publisherReference      = "SOMEFILEREFERENCE"
       val oasFileContents: String = parseFileToString("/API1000.yaml")
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents, autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case Valid(parsedObject) =>
           parsedObject.title shouldBe "API1000 Get Data"
@@ -101,7 +101,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       val publisherReference      = "SOMEFILEREFERENCE"
       val oasFileContents: String = parseFileToString("/API1000_withDefaultResponse.yaml")
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents, autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case Valid(parsedObject) =>
           parsedObject.title shouldBe "API1000 Get Data"
@@ -118,7 +118,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       val publisherReference      = "SOMEFILEREFERENCE"
       val oasFileContents: String = parseFileToString("/API1000_multipleEndpoints.yaml")
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents, autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case Valid(parsedObject)                    =>
           parsedObject.title shouldBe "Swagger Petstore - OpenAPI 3.0"
@@ -136,7 +136,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
     "parse OpenApi object correctly with extensions" in new Setup {
       val publisherReference = "SOMEFILEREFERENCE"
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASDataWithExtensions, autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASDataWithExtensions)
 
       result match {
         case Valid(parsedObject) =>
@@ -162,7 +162,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
     "parse OpenApi object correctly with null in contact name" in new Setup {
       val publisherReference = "SOMEFILEREFERENCE"
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(""), autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(""))
 
       result match {
         case Valid(parsedObject) =>
@@ -184,7 +184,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       val publisherReference      = "SOMEFILEREFERENCE"
       val oasFileContents: String = parseFileToString("/API1000_withValidShortDesc.yaml")
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents, autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case Valid(parsedObject) =>
           parsedObject
@@ -199,7 +199,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       val publisherReference      = "SOMEFILEREFERENCE"
       val oasFileContents: String = parseFileToString("/API1000_withValidStatus.yaml")
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents, autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case Valid(parsedObject) =>
           parsedObject.apiStatus shouldBe ApiStatus.BETA
@@ -277,7 +277,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       val publisherReference      = "SOMEFILEREFERENCE"
       val oasFileContents: String = parseFileToString("/API1000_withValidPublisherRef-String.yaml")
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents, autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case errors: Invalid[NonEmptyList[List[String]]] =>
           errors.e.head.contains("Publisher reference provided twice but they do not match") shouldBe true
@@ -289,7 +289,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
     "parse oas file correctly with valid publisher ref of type string" in new Setup {
       val oasFileContents: String = parseFileToString("/API1000_withValidPublisherRef-String.yaml")
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(None, PlatformType.CORE_IF, OASSpecType, oasFileContents, autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(None, PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case Valid(parsedObject) =>
           parsedObject.publisherReference shouldBe "API 1001"
@@ -301,7 +301,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
     "parse oas file correctly with valid publisher ref of type double" in new Setup {
       val oasFileContents: String = parseFileToString("/API1000_withValidPublisherRef-Double.yaml")
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(None, PlatformType.CORE_IF, OASSpecType, oasFileContents, autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(None, PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case Valid(parsedObject) =>
           parsedObject.publisherReference shouldBe "1.5"
@@ -313,7 +313,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
     "parse oas file correctly with valid publisher ref of type integer" in new Setup {
       val oasFileContents: String = parseFileToString("/API1000_withValidPublisherRef-Integer.yaml")
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(None, PlatformType.CORE_IF, OASSpecType, oasFileContents, autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(None, PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case Valid(parsedObject) =>
           parsedObject.publisherReference shouldBe "1001"
@@ -329,8 +329,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
         Some(publisherReference),
         PlatformType.CORE_IF,
         OASSpecType,
-        rawOASData(oasContactName),
-        autopublish = true
+        rawOASData(oasContactName)
       )
 
       result match {
@@ -354,7 +353,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
 
     "handle when spec file is not present" in new Setup {
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF, OASSpecType, "{Unparseable}", autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF, OASSpecType, "{Unparseable}")
       result shouldBe a[Invalid[?]]
 
     }
@@ -362,7 +361,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
     "parse oas file with scopes correctly" in new Setup {
       val oasFileContents: String = parseFileToString("/API1000_multipleEndpoints.yaml")
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("test-publisher-ref"), PlatformType.CORE_IF, OASSpecType, oasFileContents, autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("test-publisher-ref"), PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case Valid(parsedObject) =>
           parsedObject.endpoints.foreach(
@@ -380,7 +379,7 @@ class OASParserServiceISpec extends AnyWordSpec with Matchers with OasParsedItTe
       val publisherReference = "SOMEFILEREFERENCE"
       val oasFileContents: String = parseFileToString("/API1000_withFlowsAndScopes.yaml")
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents, autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, oasFileContents)
       result match {
         case Valid(parsedObject) =>
           parsedObject.title shouldBe "API1000 Get Data"

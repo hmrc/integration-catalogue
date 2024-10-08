@@ -68,14 +68,14 @@ class OasParserServiceSpec extends AnyWordSpec with Matchers with MockitoSugar w
 
       primeSuccessNoWarnings()
 
-      when(mockAdapterService.extractOpenApi(any(), any(), any(), any(), any(), any())).thenReturn(Valid(apiDetail0))
+      when(mockAdapterService.extractOpenApi(any(), any(), any(), any(), any())).thenReturn(Valid(apiDetail0))
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(oasContactName), autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(oasContactName))
 
       result match {
         case Valid(parsedObject) =>
           parsedObject shouldBe apiDetail0
-          verify(mockAdapterService).extractOpenApi(eqTo(Some(publisherReference)), eqTo(PlatformType.CORE_IF), eqTo(OASSpecType), any(), any(), any())
+          verify(mockAdapterService).extractOpenApi(eqTo(Some(publisherReference)), eqTo(PlatformType.CORE_IF), eqTo(OASSpecType), any(), any())
 
         case _: Invalid[NonEmptyList[List[String]]] => fail()
       }
@@ -89,9 +89,9 @@ class OasParserServiceSpec extends AnyWordSpec with Matchers with MockitoSugar w
       when(mockSwaggerParseResult.getOpenAPI).thenReturn(openApi)
       when(mockSwaggerParseResult.getMessages).thenReturn(new java.util.ArrayList())
 
-      when(mockAdapterService.extractOpenApi(any(), any(), any(), any(), any(), any())).thenReturn(Valid(apiDetail0))
+      when(mockAdapterService.extractOpenApi(any(), any(), any(), any(), any())).thenReturn(Valid(apiDetail0))
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(oasContactName), autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some(publisherReference), PlatformType.CORE_IF, OASSpecType, rawOASData(oasContactName))
 
       result match {
         case Valid(parsedObject)                               => fail("parsed object shouold not be returned")
@@ -104,7 +104,7 @@ class OasParserServiceSpec extends AnyWordSpec with Matchers with MockitoSugar w
     "handle when spec file is not present" in new Setup {
 
       primeFailureWithErrors()
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF, OASSpecType, "{Unparseable}", autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF, OASSpecType, "{Unparseable}")
       result match {
         case _: Valid[ApiDetail]                               => fail("should not return a parsed object")
         case errorMessage: Invalid[NonEmptyList[List[String]]] => {
@@ -118,7 +118,7 @@ class OasParserServiceSpec extends AnyWordSpec with Matchers with MockitoSugar w
 
       when(mockSwaggerParseResult.getOpenAPI).thenReturn(null)
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF, OASSpecType, "{Unparseable}", autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF, OASSpecType, "{Unparseable}")
       result match {
         case _: Valid[ApiDetail]                               => fail("should not return a parsed object")
         case errorMessage: Invalid[NonEmptyList[List[String]]] => {
@@ -131,7 +131,7 @@ class OasParserServiceSpec extends AnyWordSpec with Matchers with MockitoSugar w
 
       when(mockFileLoader.parseOasSpec(any())).thenReturn(null)
 
-      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF, OASSpecType, "{Unparseable}", autopublish = true)
+      val result: ValidatedNel[List[String], ApiDetail] = objInTest.parse(Some("someref"), PlatformType.CORE_IF, OASSpecType, "{Unparseable}")
       result match {
         case _: Valid[ApiDetail]                               => fail("should not return a parsed object")
         case errorMessage: Invalid[NonEmptyList[List[String]]] => {

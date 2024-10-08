@@ -54,7 +54,7 @@ class PublishService @Inject() (
   def publishApi(request: PublishRequest)(implicit ec: ExecutionContext): Future[PublishResult] = {
 
     val parseResult: ValidatedNel[List[String], ApiDetail] =
-      oasParser.parse(request.publisherReference, request.platformType, request.specificationType, request.contents, request.autopublish)
+      oasParser.parse(request.publisherReference, request.platformType, request.specificationType, request.contents)
 
     parseResult match {
       case x: Invalid[NonEmptyList[List[String]]] => mapErrorsToPublishResult(x)

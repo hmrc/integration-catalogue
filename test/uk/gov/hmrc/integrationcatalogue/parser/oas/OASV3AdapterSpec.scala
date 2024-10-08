@@ -81,8 +81,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
             domainExtension = Some(domain),
             subDomainExtension = Some(subDomain)
           ),
-          openApiSpecificationContent = apiDetail0.openApiSpecification,
-          autopublish = true,
+          openApiSpecificationContent = apiDetail0.openApiSpecification
         )
       result match {
         case Valid(parsedObject) =>
@@ -125,7 +124,6 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           hasEmptyReqRespContent = true
         ),
         openApiSpecificationContent = apiDetail0.openApiSpecification,
-        autopublish = true,
       )
 
       result match {
@@ -161,7 +159,6 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.specificationType,
         getOpenAPIObject(withExtensions = false, reviewedDateExtension = Some("2021-07-24")),
         openApiSpecificationContent = apiDetail0.openApiSpecification,
-        autopublish = true,
       )
       result match {
         case Valid(parsedObject) =>
@@ -194,7 +191,6 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.specificationType,
         getOpenAPIObject(withExtensions = false, reviewedDateExtension = None),
         openApiSpecificationContent = apiDetail0.openApiSpecification,
-        autopublish = true,
       )
 
       result shouldBe an[Invalid[?]]
@@ -208,7 +204,6 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.specificationType,
         getOpenAPIObject(withExtensions = true, backendsExtension = null),
         openApiSpecificationContent = apiDetail0.openApiSpecification,
-        autopublish = true,
       )
 
       result shouldBe an[Invalid[?]]
@@ -221,8 +216,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           apiDetail0.platform,
           apiDetail0.specificationType,
           new OpenAPI(),
-          openApiSpecificationContent = apiDetail0.openApiSpecification,
-          autopublish = true,
+          openApiSpecificationContent = apiDetail0.openApiSpecification
         )
       parseResult shouldBe createInvalidMessage(List("Invalid OAS, info item missing from OAS specification"))
     }
@@ -236,8 +230,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           apiDetail0.platform,
           apiDetail0.specificationType,
           openApi,
-          openApiSpecificationContent = apiDetail0.openApiSpecification,
-          autopublish = true,
+          openApiSpecificationContent = apiDetail0.openApiSpecification
         )
       parseResult shouldBe createInvalidMessage(
         List("Invalid OAS, title missing from OAS specification", "Invalid OAS, version missing from OAS specification")
@@ -266,8 +259,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           apiDetail0.platform,
           apiDetail0.specificationType,
           openApi,
-          openApiSpecificationContent = apiDetail0.openApiSpecification,
-          autopublish = true,
+          openApiSpecificationContent = apiDetail0.openApiSpecification
         )
 
       result match {
@@ -308,8 +300,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           apiDetail0.platform,
           apiDetail0.specificationType,
           openApi,
-          openApiSpecificationContent = apiDetail0.openApiSpecification,
-          autopublish = true,
+          openApiSpecificationContent = apiDetail0.openApiSpecification
         )
 
       result match {
@@ -341,8 +332,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           apiDetail0.platform,
           apiDetail0.specificationType,
           openApi,
-          openApiSpecificationContent = apiDetail0.openApiSpecification,
-          autopublish = true,
+          openApiSpecificationContent = apiDetail0.openApiSpecification
         )
 
       result match {
@@ -391,7 +381,6 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.specificationType,
         openApi,
         openApiSpecificationContent = apiDetail0.openApiSpecification,
-        autopublish = true,
       )
 
     result match {
@@ -437,7 +426,6 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.specificationType,
         openApi,
         openApiSpecificationContent = apiDetail0.openApiSpecification,
-        autopublish = true,
       )
 
     result match {
@@ -484,7 +472,6 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.specificationType,
         openApi,
         openApiSpecificationContent = apiDetail0.openApiSpecification,
-        autopublish = true,
       )
 
     result match {
@@ -511,57 +498,12 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           subDomainExtension = Some(subDomain)
         ),
         openApiSpecificationContent = apiDetail0.openApiSpecification,
-        autopublish = true,
       )
     result match {
       case Valid(_) =>
         fail()
       case errors: Invalid[NonEmptyList[List[String]]] =>
         errors.leftSide.e.head shouldBe List("HIP APIs should always have an 'api-type' value.")
-    }
-
-  }
-
-  "return a valid result when the platform type is HIP, there is no api-type field and the autopublish flag is false" in new Setup {
-    when(mockUuidService.newUuid()).thenReturn(generatedUuid)
-    val hods                                          = List("ITMP", "NPS")
-    val expectedReviewedDate: Instant                 = Instant.parse("2021-07-24T00:00:00Z")
-    val result: ValidatedNel[List[String], ApiDetail] =
-      objInTest.extractOpenApi(
-        Some(apiDetail0.publisherReference),
-        PlatformType.HIP,
-        apiDetail0.specificationType,
-        getOpenAPIObject(
-          withExtensions = true,
-          hods,
-          reviewedDateExtension = Some("2021-07-24"),
-          domainExtension = Some(domain),
-          subDomainExtension = Some(subDomain)
-        ),
-        openApiSpecificationContent = apiDetail0.openApiSpecification,
-        autopublish = false,
-      )
-    result match {
-      case Valid(parsedObject) =>
-        parsedObject.id shouldBe IntegrationId(generatedUuid)
-        parsedObject.title shouldBe oasApiName
-        parsedObject.description shouldBe oasApiDescription
-        parsedObject.version shouldBe oasVersion
-        parsedObject.platform shouldBe PlatformType.HIP
-        parsedObject.specificationType shouldBe apiDetail0.specificationType
-        parsedObject.openApiSpecification shouldBe apiDetail0.openApiSpecification
-        parsedObject.reviewedDate shouldBe expectedReviewedDate
-        parsedObject.apiType shouldBe None
-
-        val contact: ContactInformation = parsedObject.maintainer.contactInfo.head
-        contact.name.getOrElse("") shouldBe oasContactName
-        contact.emailAddress.getOrElse("") shouldBe oasContactEMail
-        parsedObject.hods shouldBe hods
-
-        parsedObject.domain shouldBe Some(domain)
-        parsedObject.subDomain shouldBe Some(subDomain)
-      case _: Invalid[NonEmptyList[List[String]]] =>
-        fail()
     }
 
   }
