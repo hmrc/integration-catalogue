@@ -18,7 +18,7 @@ package uk.gov.hmrc.integrationcatalogue.testdata
 
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
 import uk.gov.hmrc.integrationcatalogue.models._
-import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, Maintainer, PlatformType, SpecificationType}
+import uk.gov.hmrc.integrationcatalogue.models.common.{ApiType, IntegrationId, Maintainer, PlatformType, SpecificationType}
 
 import java.time.Instant
 import java.util.UUID
@@ -191,7 +191,8 @@ trait OasParsedItTestData {
     reviewedDate = reviewedDate,
     scopes = Set.empty,
     domain = Some("test-domain-5"),
-    subDomain = Some("test-sub-domain-5")
+    subDomain = Some("test-sub-domain-5"),
+    apiType = Some(ApiType.SIMPLE),
   )
 
   val apiDetail6: ApiDetail = ApiDetail(

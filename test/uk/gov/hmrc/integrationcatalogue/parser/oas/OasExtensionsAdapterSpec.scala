@@ -27,6 +27,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
+import uk.gov.hmrc.integrationcatalogue.models.common.ApiType
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.{ExtensionKeys, IntegrationCatalogueExtensions, OASExtensionsAdapter}
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 
@@ -42,6 +43,8 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     val domain                          = "test-domain"
     val subDomain                       = "test-sub-domain"
+
+    val apiType                         = "SIMPLE"
 
     val domainAsInteger: Integer        = Integer.valueOf(101)
     val subDomainAsInteger: Integer     = Integer.valueOf(102)
@@ -117,6 +120,14 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
     extensionsWithDomainInfoAsDouble.put(DOMAIN_EXTENSION_KEY, domainAsDouble)
     extensionsWithDomainInfoAsDouble.put(SUB_DOMAIN_EXTENSION_KEY, subDomainAsDouble)
 
+    val extensionsWithApiType = new util.HashMap[String, Object]()
+    extensionsWithApiType.putAll(extensionsWithReviewDateAndPublisherReference)
+    extensionsWithApiType.put(API_TYPE, apiType)
+
+    val extensionsWithInvalidApiType = new util.HashMap[String, Object]()
+    extensionsWithInvalidApiType.putAll(extensionsWithReviewDateAndPublisherReference)
+    extensionsWithInvalidApiType.put(API_TYPE, "BadApiType")
+
     def generateInfoObject(extensionsValues: util.HashMap[String, Object]): Info = {
       val info       = new Info()
       val extensions = new util.HashMap[String, Object]()
@@ -134,9 +145,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
         parseExtensions(generateInfoObject(extensionsWithReviewDateAndPublisherReference), Some(publisherRefValue), mockAppConfig)
       result match {
-        case Left(errors)      =>
-          errors.map(println)
-          fail()
+        case Left(_)      => fail()
         case Right(extensions) =>
           extensions.backends shouldBe Nil
           extensions.publisherReference shouldBe publisherRefValue
@@ -336,6 +345,7 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
           extensions.status shouldBe ApiStatus.ALPHA
           extensions.backends shouldBe List.empty
           extensions.publisherReference shouldBe publisherRefValue
+          extensions.apiType shouldBe Option.empty
       }
     }
 
@@ -434,6 +444,25 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
         case Right(extensions) =>
           extensions.domain shouldBe None
           extensions.subDomain shouldBe None
+      }
+    }
+
+    "return Right when an API type is populated as a valid String" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithApiType), Some(publisherRefValue), mockAppConfig)
+      result match {
+        case Left(_) => fail()
+        case Right(extensions) =>
+          extensions.apiType shouldBe Some(ApiType.SIMPLE)
+      }
+    }
+
+    "return Left when an API type is populated with an invalid String" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithInvalidApiType), Some(publisherRefValue), mockAppConfig)
+      result match {
+        case Left(errors) => errors.head shouldBe s"Status must be one of ${ApiType.values.mkString(", ")}"
+        case Right(_) => fail()
       }
     }
   }

@@ -35,7 +35,7 @@ class OASParserService @Inject() (oasParser: OASFileLoader, oasV3Service: OASV3A
       publisherReference: Option[String],
       platformType: PlatformType,
       specificationType: SpecificationType,
-      fileContents: String
+      fileContents: String,
     ): ValidatedNel[List[String], ApiDetail] = {
 
     val maybeSwaggerParseResult = Option(oasParser.parseOasSpec(fileContents))
@@ -79,7 +79,7 @@ class OASParserService @Inject() (oasParser: OASFileLoader, oasV3Service: OASV3A
       platformType: PlatformType,
       specificationType: SpecificationType,
       openApi: OpenAPI,
-      fileContents: String
+      fileContents: String,
     ): ValidatedNel[List[String], ApiDetail] = {
 
     openApi.getOpenapi.headOption match {

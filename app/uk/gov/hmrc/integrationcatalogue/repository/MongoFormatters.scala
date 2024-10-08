@@ -17,11 +17,12 @@
 package uk.gov.hmrc.integrationcatalogue.repository
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json._
-import uk.gov.hmrc.integrationcatalogue.models._
-import uk.gov.hmrc.integrationcatalogue.models.common._
+import play.api.libs.json.*
+import uk.gov.hmrc.integrationcatalogue.models.*
+import uk.gov.hmrc.integrationcatalogue.models.common.*
 
 import java.time.Instant
+import scala.quoted.*
 
 object MongoFormatters {
   implicit val instantReads: Reads[Instant] =
@@ -86,7 +87,8 @@ object MongoFormatters {
       (JsPath \ "scopes").readWithDefault[Set[Scope]](Set.empty) and
       (JsPath \ "teamId").readNullable[String] and
       (JsPath \ "domain").readNullable[String] and
-      (JsPath \ "subDomain").readNullable[String]
+      (JsPath \ "subDomain").readNullable[String] and
+      (JsPath \ "apiType").readNullable[ApiType]
     )(ApiDetail.apply)
 
   private val apiDetailWrites: Writes[ApiDetail] = Json.writes[ApiDetail]

@@ -123,7 +123,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           subDomainExtension = Some(subDomain),
           hasEmptyReqRespContent = true
         ),
-        openApiSpecificationContent = apiDetail0.openApiSpecification
+        openApiSpecificationContent = apiDetail0.openApiSpecification,
       )
 
       result match {
@@ -158,7 +158,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.platform,
         apiDetail0.specificationType,
         getOpenAPIObject(withExtensions = false, reviewedDateExtension = Some("2021-07-24")),
-        openApiSpecificationContent = apiDetail0.openApiSpecification
+        openApiSpecificationContent = apiDetail0.openApiSpecification,
       )
       result match {
         case Valid(parsedObject) =>
@@ -190,7 +190,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.platform,
         apiDetail0.specificationType,
         getOpenAPIObject(withExtensions = false, reviewedDateExtension = None),
-        openApiSpecificationContent = apiDetail0.openApiSpecification
+        openApiSpecificationContent = apiDetail0.openApiSpecification,
       )
 
       result shouldBe an[Invalid[?]]
@@ -203,7 +203,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.platform,
         apiDetail0.specificationType,
         getOpenAPIObject(withExtensions = true, backendsExtension = null),
-        openApiSpecificationContent = apiDetail0.openApiSpecification
+        openApiSpecificationContent = apiDetail0.openApiSpecification,
       )
 
       result shouldBe an[Invalid[?]]
@@ -380,7 +380,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.platform,
         apiDetail0.specificationType,
         openApi,
-        openApiSpecificationContent = apiDetail0.openApiSpecification
+        openApiSpecificationContent = apiDetail0.openApiSpecification,
       )
 
     result match {
@@ -425,7 +425,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.platform,
         apiDetail0.specificationType,
         openApi,
-        openApiSpecificationContent = apiDetail0.openApiSpecification
+        openApiSpecificationContent = apiDetail0.openApiSpecification,
       )
 
     result match {
@@ -471,7 +471,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.platform,
         apiDetail0.specificationType,
         openApi,
-        openApiSpecificationContent = apiDetail0.openApiSpecification
+        openApiSpecificationContent = apiDetail0.openApiSpecification,
       )
 
     result match {
@@ -481,6 +481,33 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         fail(s"Result was not a valid ApiDetail: $invalid")
     }
   }
+
+  "return a failure when the platform type is HIP and there is no api-type field" in new Setup {
+    when(mockUuidService.newUuid()).thenReturn(generatedUuid)
+    val hods                                          = List("ITMP", "NPS")
+    val result: ValidatedNel[List[String], ApiDetail] =
+      objInTest.extractOpenApi(
+        Some(apiDetail0.publisherReference),
+        PlatformType.HIP,
+        apiDetail0.specificationType,
+        getOpenAPIObject(
+          withExtensions = true,
+          hods,
+          reviewedDateExtension = Some("2021-07-24"),
+          domainExtension = Some(domain),
+          subDomainExtension = Some(subDomain)
+        ),
+        openApiSpecificationContent = apiDetail0.openApiSpecification,
+      )
+    result match {
+      case Valid(_) =>
+        fail()
+      case errors: Invalid[NonEmptyList[List[String]]] =>
+        errors.leftSide.e.head shouldBe List("HIP APIs should always have an 'api-type' value.")
+    }
+
+  }
+
   private def checkEndpointScopes(apiDetail: ApiDetail, expectedScopes: Map[String, List[String]]): Unit = {
     apiDetail.endpoints.foreach(
       endpoint =>

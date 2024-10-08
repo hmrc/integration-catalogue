@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.integrationcatalogue.models.common
 
-import java.util.UUID
-import scala.collection.immutable
 import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
 import play.api.libs.json.Format
+
+import java.util.UUID
+import scala.collection.immutable
 
 case class IntegrationId(value: UUID) extends AnyVal
 
@@ -83,4 +84,14 @@ object IntegrationType extends Enum[IntegrationType] with PlayJsonEnum[Integrati
       case _                             => throw new IllegalArgumentException(s"$typeAsString is not a valid integration Type")
     }
   }
+}
+
+sealed trait ApiType extends EnumEntry
+
+object ApiType extends Enum[ApiType] with PlayJsonEnum[ApiType] {
+
+  val values: IndexedSeq[ApiType] = findValues
+
+  case object SIMPLE      extends ApiType
+  case object ADVANCED    extends ApiType
 }
