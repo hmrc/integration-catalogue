@@ -54,12 +54,12 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
   "findWithFilters" should {
     "return list of integration details" in new Setup {
 
-      when(mockIntegrationRepo.findWithFilters(any)).thenReturn(Future.successful(IntegrationResponse(count = expectedList.size, results = expectedList)))
+      when(mockIntegrationRepo.findWithFilters(any, any)).thenReturn(Future.successful(IntegrationResponse(count = expectedList.size, results = expectedList)))
 
-      val response: IntegrationResponse = await(inTest.findWithFilters(any))
+      val response: IntegrationResponse = await(inTest.findWithFilters(IntegrationFilter()))
       response.results shouldBe expectedList
 
-      verify(mockIntegrationRepo).findWithFilters(any)
+      verify(mockIntegrationRepo).findWithFilters(any, any)
     }
   }
 

@@ -126,7 +126,7 @@ trait OasParsedItTestData {
     hods = List("POOP"),
     endpoints = endpoints,
     shortDescription = Some("exampleApiDetail's short description"),
-    openApiSpecification = "OAS file contents 1",
+    openApiSpecification = Some("OAS file contents 1"),
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
     scopes = Set(Scope("scopename", Some("Scope definition"))),
@@ -148,7 +148,7 @@ trait OasParsedItTestData {
     hods = List("CUSTOMS"),
     endpoints = endpoints2,
     shortDescription = None,
-    openApiSpecification = "OAS file contents 2",
+    openApiSpecification = Some("OAS file contents 2"),
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
     scopes = Set.empty
@@ -167,7 +167,7 @@ trait OasParsedItTestData {
     hods = List("CUSTOMS"),
     endpoints = endpointsNoDeepSearch,
     shortDescription = None,
-    openApiSpecification = "OAS file contents 3 BOOP",
+    openApiSpecification = Some("OAS file contents 3 BOOP"),
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
     scopes = Set.empty
@@ -186,7 +186,7 @@ trait OasParsedItTestData {
     hods = List("ETMP"),
     endpoints = endpointsNoDeepSearch,
     shortDescription = Some("A short description"),
-    openApiSpecification = "OAS file contents 4",
+    openApiSpecification = Some("OAS file contents 4"),
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
     scopes = Set.empty,
@@ -208,7 +208,7 @@ trait OasParsedItTestData {
     hods = List("ETMP"),
     endpoints = endpointsNoDeepSearch,
     shortDescription = None,
-    openApiSpecification = "OAS file contents 5",
+    openApiSpecification = Some("OAS file contents 5"),
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
     scopes = Set.empty
@@ -227,7 +227,7 @@ trait OasParsedItTestData {
     hods = List("EMS"),
     endpoints = endpointsWithScopes,
     shortDescription = None,
-    openApiSpecification = "OAS file contents 9",
+    openApiSpecification = Some("OAS file contents 9"),
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
     scopes = Set.empty

@@ -81,7 +81,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
             domainExtension = Some(domain),
             subDomainExtension = Some(subDomain)
           ),
-          openApiSpecificationContent = apiDetail0.openApiSpecification
+          openApiSpecificationContent = apiDetail0.openApiSpecification.get
         )
       result match {
         case Valid(parsedObject) =>
@@ -123,7 +123,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           subDomainExtension = Some(subDomain),
           hasEmptyReqRespContent = true
         ),
-        openApiSpecificationContent = apiDetail0.openApiSpecification,
+        openApiSpecificationContent = apiDetail0.openApiSpecification.get
       )
 
       result match {
@@ -158,7 +158,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.platform,
         apiDetail0.specificationType,
         getOpenAPIObject(withExtensions = false, reviewedDateExtension = Some("2021-07-24")),
-        openApiSpecificationContent = apiDetail0.openApiSpecification,
+        openApiSpecificationContent = apiDetail0.openApiSpecification.get
       )
       result match {
         case Valid(parsedObject) =>
@@ -190,7 +190,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.platform,
         apiDetail0.specificationType,
         getOpenAPIObject(withExtensions = false, reviewedDateExtension = None),
-        openApiSpecificationContent = apiDetail0.openApiSpecification,
+        openApiSpecificationContent = apiDetail0.openApiSpecification.get
       )
 
       result shouldBe an[Invalid[?]]
@@ -203,7 +203,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.platform,
         apiDetail0.specificationType,
         getOpenAPIObject(withExtensions = true, backendsExtension = null),
-        openApiSpecificationContent = apiDetail0.openApiSpecification,
+        openApiSpecificationContent = apiDetail0.openApiSpecification.get
       )
 
       result shouldBe an[Invalid[?]]
@@ -216,7 +216,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           apiDetail0.platform,
           apiDetail0.specificationType,
           new OpenAPI(),
-          openApiSpecificationContent = apiDetail0.openApiSpecification
+          openApiSpecificationContent = apiDetail0.openApiSpecification.get
         )
       parseResult shouldBe createInvalidMessage(List("Invalid OAS, info item missing from OAS specification"))
     }
@@ -230,7 +230,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           apiDetail0.platform,
           apiDetail0.specificationType,
           openApi,
-          openApiSpecificationContent = apiDetail0.openApiSpecification
+          openApiSpecificationContent = apiDetail0.openApiSpecification.get
         )
       parseResult shouldBe createInvalidMessage(
         List("Invalid OAS, title missing from OAS specification", "Invalid OAS, version missing from OAS specification")
@@ -259,7 +259,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           apiDetail0.platform,
           apiDetail0.specificationType,
           openApi,
-          openApiSpecificationContent = apiDetail0.openApiSpecification
+          openApiSpecificationContent = apiDetail0.openApiSpecification.get
         )
 
       result match {
@@ -300,7 +300,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           apiDetail0.platform,
           apiDetail0.specificationType,
           openApi,
-          openApiSpecificationContent = apiDetail0.openApiSpecification
+          openApiSpecificationContent = apiDetail0.openApiSpecification.get
         )
 
       result match {
@@ -332,7 +332,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           apiDetail0.platform,
           apiDetail0.specificationType,
           openApi,
-          openApiSpecificationContent = apiDetail0.openApiSpecification
+          openApiSpecificationContent = apiDetail0.openApiSpecification.get
         )
 
       result match {
@@ -380,7 +380,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.platform,
         apiDetail0.specificationType,
         openApi,
-        openApiSpecificationContent = apiDetail0.openApiSpecification,
+        openApiSpecificationContent = apiDetail0.openApiSpecification.get
       )
 
     result match {
@@ -425,7 +425,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.platform,
         apiDetail0.specificationType,
         openApi,
-        openApiSpecificationContent = apiDetail0.openApiSpecification,
+        openApiSpecificationContent = apiDetail0.openApiSpecification.get
       )
 
     result match {
@@ -471,7 +471,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
         apiDetail0.platform,
         apiDetail0.specificationType,
         openApi,
-        openApiSpecificationContent = apiDetail0.openApiSpecification,
+        openApiSpecificationContent = apiDetail0.openApiSpecification.get
       )
 
     result match {
