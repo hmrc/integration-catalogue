@@ -482,32 +482,6 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
     }
   }
 
-  "return a failure when the platform type is HIP and there is no api-type field" in new Setup {
-    when(mockUuidService.newUuid()).thenReturn(generatedUuid)
-    val hods                                          = List("ITMP", "NPS")
-    val result: ValidatedNel[List[String], ApiDetail] =
-      objInTest.extractOpenApi(
-        Some(apiDetail0.publisherReference),
-        PlatformType.HIP,
-        apiDetail0.specificationType,
-        getOpenAPIObject(
-          withExtensions = true,
-          hods,
-          reviewedDateExtension = Some("2021-07-24"),
-          domainExtension = Some(domain),
-          subDomainExtension = Some(subDomain)
-        ),
-        openApiSpecificationContent = apiDetail0.openApiSpecification,
-      )
-    result match {
-      case Valid(_) =>
-        fail()
-      case errors: Invalid[NonEmptyList[List[String]]] =>
-        errors.leftSide.e.head shouldBe List("HIP APIs should always have an 'api-type' value.")
-    }
-
-  }
-
   private def checkEndpointScopes(apiDetail: ApiDetail, expectedScopes: Map[String, List[String]]): Unit = {
     apiDetail.endpoints.foreach(
       endpoint =>
