@@ -66,9 +66,6 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
             val allScopeDefinitions = buildScopeDefinitions(allEndpoints, openApi)
 
             parseExtensions(info, publisherRef, appConfig) match {
-              case Right(extensions: IntegrationCatalogueExtensions)
-                if (platformType == PlatformType.HIP && extensions.apiType.isEmpty) =>
-                  List("HIP APIs should always have an 'api-type' value.").invalidNel[ApiDetail]
               case Right(extensions: IntegrationCatalogueExtensions) =>
                 Valid(ApiDetail(
                   id = IntegrationId(uuidService.newUuid()),
