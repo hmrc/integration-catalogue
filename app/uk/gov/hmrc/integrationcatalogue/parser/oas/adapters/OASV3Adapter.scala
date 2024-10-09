@@ -80,7 +80,7 @@ class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)
                   platform = platformType,
                   hods = extensions.backends.toList,
                   shortDescription = extensions.shortDescription,
-                  openApiSpecification = openApiSpecificationContent,
+                  openApiSpecification = Some(openApiSpecificationContent),
                   apiStatus = extensions.status,
                   reviewedDate = extensions.reviewedDate,
                   scopes = allScopeDefinitions,

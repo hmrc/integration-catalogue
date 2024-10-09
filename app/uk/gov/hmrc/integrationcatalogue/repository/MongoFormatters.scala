@@ -82,7 +82,7 @@ object MongoFormatters {
       (JsPath \ "specificationType").read[SpecificationType] and
       (JsPath \ "endpoints").read[List[Endpoint]] and
       (JsPath \ "shortDescription").readNullable[String] and
-      (JsPath \ "openApiSpecification").read[String] and
+      (JsPath \ "openApiSpecification").readNullable[String] and
       (JsPath \ "apiStatus").read[ApiStatus] and
       (JsPath \ "scopes").readWithDefault[Set[Scope]](Set.empty) and
       (JsPath \ "teamId").readNullable[String] and

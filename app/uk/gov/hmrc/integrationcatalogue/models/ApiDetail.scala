@@ -187,7 +187,7 @@ case class ApiDetail(
                       specificationType: SpecificationType,
                       endpoints: List[Endpoint],
                       shortDescription: Option[String],
-                      openApiSpecification: String,
+                      openApiSpecification: Option[String],
                       apiStatus: ApiStatus,
                       scopes: Set[Scope],
                       teamId: Option[String] = None,

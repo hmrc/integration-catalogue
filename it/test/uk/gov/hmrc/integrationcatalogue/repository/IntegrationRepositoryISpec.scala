@@ -20,6 +20,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{Assertion, BeforeAndAfterEach}
+import org.scalatest.Inspectors.forAll
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -70,7 +71,7 @@ class IntegrationRepositoryISpec
   }
 
   def getAll: List[IntegrationDetail] = {
-    await(repo.findWithFilters(IntegrationFilter())).results
+    await(repo.findWithFilters(IntegrationFilter(), excludeOAS = false)).results
   }
 
   def findWithFilters(integrationFilter: IntegrationFilter): IntegrationResponse = {
@@ -555,6 +556,14 @@ class IntegrationRepositoryISpec
       "find 4 apis when searching for type API" in new FilterSetup {
         setUpTest()
         validateResults(findWithFilters(IntegrationFilter(typeFilter = Some(API))).results, List("API1001", "API1003", "API1004", "API1005"))
+      }
+
+      "not return the openApiSpecification field" in new FilterSetup {
+        setUpTest()
+
+        val results = await(repo.findWithFilters(IntegrationFilter(typeFilter = Some(API)))).results
+
+        forAll(results)(result => result.asInstanceOf[ApiDetail].openApiSpecification shouldBe None)
       }
 
     }

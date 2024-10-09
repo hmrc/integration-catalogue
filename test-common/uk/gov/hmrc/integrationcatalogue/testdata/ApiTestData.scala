@@ -113,7 +113,7 @@ trait ApiTestData {
     specificationType = SpecificationType.OAS_V3,
     endpoints = endpoints,
     shortDescription = None,
-    openApiSpecification = "OAS content for Self Assessment",
+    openApiSpecification = Some("OAS content for Self Assessment"),
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
     scopes = Set.empty
@@ -131,7 +131,7 @@ trait ApiTestData {
     specificationType = SpecificationType.OAS_V3,
     endpoints = endpoints,
     shortDescription = None,
-    openApiSpecification = "OAS content for Marriage Allowance",
+    openApiSpecification = Some("OAS content for Marriage Allowance"),
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
     scopes = Set.empty
@@ -150,7 +150,7 @@ trait ApiTestData {
     hods = List.empty,
     endpoints = endpoints,
     shortDescription = None,
-    openApiSpecification = "OAS content for API#1001",
+    openApiSpecification = Some("OAS content for API#1001"),
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
     scopes = Set.empty,
@@ -170,7 +170,7 @@ trait ApiTestData {
     hods = List("ETMP"),
     endpoints = endpoints,
     shortDescription = None,
-    openApiSpecification = "OAS content for API#1002",
+    openApiSpecification = Some("OAS content for API#1002"),
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
     scopes = Set.empty

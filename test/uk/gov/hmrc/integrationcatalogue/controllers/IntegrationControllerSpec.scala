@@ -69,7 +69,7 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
     hods = List("ETMP"),
     endpoints = endpoints,
     shortDescription = None,
-    openApiSpecification = "OAS content",
+    openApiSpecification = Some("OAS content"),
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
     scopes = Set.empty

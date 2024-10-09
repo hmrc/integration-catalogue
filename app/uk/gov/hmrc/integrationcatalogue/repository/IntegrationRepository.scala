@@ -18,13 +18,15 @@ package uk.gov.hmrc.integrationcatalogue.repository
 
 import com.mongodb.BasicDBObject
 import org.bson.BsonValue
+import org.bson.conversions.Bson
+import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.collection.immutable.Document
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Accumulators._
 import org.mongodb.scala.model.Aggregates._
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Indexes._
-import org.mongodb.scala.model.Updates.{set, unset, setOnInsert}
+import org.mongodb.scala.model.Updates.{set, setOnInsert, unset}
 import org.mongodb.scala.model.*
 import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 import play.api.Logging
@@ -157,7 +159,7 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
       }
   }
 
-  def findWithFilters(filter: IntegrationFilter): Future[IntegrationResponse] = {
+  def findWithFilters(filter: IntegrationFilter, excludeOAS: Boolean = true): Future[IntegrationResponse] = {
     // total count, per page, current page
     def sendPagedResults(results: List[IntegrationDetail], perPageFilter: Option[Int]) = {
       if (perPageFilter.isDefined) Some(results.size) else None
@@ -171,10 +173,12 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
     val perPage              = filter.itemsPerPage.getOrElse(0)
     val currentPage          = filter.currentPage.getOrElse(1)
     val skipAmount           = if (currentPage > 1) (currentPage - 1) * perPage else 0
+    val projection           = if (excludeOAS) Projections.exclude("openApiSpecification") else BsonDocument()
     if (filters.isEmpty) {
       for {
         count   <- collection.countDocuments().toFuture()
         results <- collection.find()
+                     .projection(projection)
                      .skip(skipAmount)
                      .limit(perPage)
                      .sort(ascending("title"))
@@ -187,7 +191,10 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
         results <-
           (mayBeScoreProjection match {
             case None          => collection.find(and(filters*))
-            case Some(x: Bson) => collection.find(and(filters*)).projection(x)
+              .projection(projection)
+            case Some(x: Bson) => collection.find(and(filters*))
+              .projection(projection)
+              .projection(x)
           }).sort(sortOp)
             .skip(skipAmount)
             .limit(perPage)
