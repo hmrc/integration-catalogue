@@ -16,16 +16,16 @@
 
 package uk.gov.hmrc.integrationcatalogue.service
 
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, verify, verifyNoMoreInteractions, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.*
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformType}
-import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
+import uk.gov.hmrc.integrationcatalogue.repository.{ApiDetailSummaryRepository, IntegrationRepository}
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 
 import java.util.UUID
@@ -35,10 +35,12 @@ import scala.concurrent.Future
 class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData {
 
   val mockIntegrationRepo: IntegrationRepository = mock[IntegrationRepository]
+  val mockSummaryRepository: ApiDetailSummaryRepository = mock[ApiDetailSummaryRepository]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockIntegrationRepo)
+    reset(mockSummaryRepository)
   }
 
   trait Setup {
@@ -46,8 +48,8 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
     val uuid: UUID = UUID.fromString("28c0bd67-4176-42c7-be13-53be98a4db58")
     val rawData    = "rawOASData"
 
-    val inTest       = new IntegrationService(mockIntegrationRepo)
-    val expectedList = List(apiDetail1, apiDetail2)
+    val inTest = new IntegrationService(mockIntegrationRepo, mockSummaryRepository)
+    val expectedList: List[IntegrationDetail] = List(apiDetail1, apiDetail2)
 
   }
 
@@ -60,6 +62,19 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
       response.results shouldBe expectedList
 
       verify(mockIntegrationRepo).findWithFilters(any)
+    }
+  }
+
+  "findSummariesWithFilters" should {
+    "return list of API Detail summaries" in new Setup {
+      val summaries: Seq[ApiDetailSummary] = Seq(apiDetail1, apiDetail2).map(ApiDetailSummary(_))
+
+      when(mockSummaryRepository.findWithFilters(any, any)).thenReturn(Future.successful(summaries))
+
+      val response: Seq[ApiDetailSummary] = await(inTest.findSummariesWithFilters(any, any))
+      response should contain theSameElementsAs summaries
+
+      verify(mockSummaryRepository).findWithFilters(any, any)
     }
   }
 
@@ -111,7 +126,7 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
   "getCatalogueReport" should {
     "returns count" in new Setup {
       when(mockIntegrationRepo.getCatalogueReport()).thenReturn(Future.successful(List.empty))
-      val result = await(inTest.getCatalogueReport())
+      val result: Seq[IntegrationPlatformReport] = await(inTest.getCatalogueReport())
       result shouldBe List.empty
       verify(mockIntegrationRepo).getCatalogueReport()
     }
@@ -120,7 +135,7 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
   "getFileTransferTransportsByPlatform" should {
     "returns no transports" in new Setup {
       when(mockIntegrationRepo.getFileTransferTransportsByPlatform(Some("a source"), Some("a target"))).thenReturn(Future.successful(List.empty))
-      val result = await(inTest.getFileTransferTransportsByPlatform(Some("a source"), Some("a target")))
+      val result: Seq[FileTransferTransportsForPlatform] = await(inTest.getFileTransferTransportsByPlatform(Some("a source"), Some("a target")))
       result shouldBe List.empty
       verify(mockIntegrationRepo).getFileTransferTransportsByPlatform(Some("a source"), Some("a target"))
     }
@@ -129,10 +144,10 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
   "updateApiTeam" should {
     "perform an update on the repository" in new Setup {
       val teamId = "a team id"
-      val apiId = IntegrationId(UUID.randomUUID())
+      val apiId: IntegrationId = IntegrationId(UUID.randomUUID())
       when(mockIntegrationRepo.updateTeamId(apiId, Some(teamId))).thenReturn(Future.successful(Some(apiDetail1)))
 
-      val result = await(inTest.updateApiTeam(apiId, Some(teamId)))
+      val result: Option[IntegrationDetail] = await(inTest.updateApiTeam(apiId, Some(teamId)))
 
       result shouldBe Some(apiDetail1)
       verify(mockIntegrationRepo).updateTeamId(apiId, Some(teamId))

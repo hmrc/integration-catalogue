@@ -72,12 +72,23 @@ class IntegrationController @Inject() (
     }
   }
 
+  def findSummariesWithFilters(
+    searchTerm: List[String],
+    platformFilter: List[PlatformType]
+  ): Action[AnyContent] =
+    (identify andThen validateQueryParamKeyAction).async {
+      integrationService.findSummariesWithFilters(searchTerm, platformFilter)
+        .map(
+          result =>
+            Ok(Json.toJson(result))
+        )
+    }
+
   def deleteByIntegrationId(integrationId: IntegrationId): Action[AnyContent] = identify.async {
     integrationService.deleteByIntegrationId(integrationId).map {
       case NoContentDeleteApiResult => NoContent
       case _                        => NotFound
     }
-
   }
 
   def deleteWithFilters(platformFilter: List[PlatformType]): Action[AnyContent] = identify.async {

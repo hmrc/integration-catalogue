@@ -17,7 +17,7 @@
 package uk.gov.hmrc.integrationcatalogue.controllers
 
 import org.apache.pekko.stream.testkit.NoMaterializer
-import org.mockito.ArgumentMatchers.{any, eq => eqTo, same}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
@@ -26,12 +26,12 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.mvc.Result
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.{ValidateFileTransferWizardQueryParamKeyAction, ValidateQueryParamKeyAction}
-import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
-import uk.gov.hmrc.integrationcatalogue.models._
-import uk.gov.hmrc.integrationcatalogue.models.common._
+import uk.gov.hmrc.integrationcatalogue.models.*
+import uk.gov.hmrc.integrationcatalogue.models.ApiStatus.*
+import uk.gov.hmrc.integrationcatalogue.models.common.*
 import uk.gov.hmrc.integrationcatalogue.service.IntegrationService
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, FakeIdentifierAction}
 
@@ -98,6 +98,25 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
 
     "return 401 when the request is not authenticated" in {
       val result = controller.findWithFilters(List(""), List(PlatformType.CORE_IF), List.empty, None, None, None, List.empty)(fakeRequest)
+      status(result) shouldBe Status.UNAUTHORIZED
+    }
+  }
+
+  "GET /integrations/summaries" should {
+    "return 200" in {
+      when(mockApiService.findSummariesWithFilters(any, any)).thenReturn(Future.successful(apiList.map(ApiDetailSummary(_))))
+      val result: Future[Result] = controller.findSummariesWithFilters(List(""), List(PlatformType.CORE_IF))(fakeAuthenticatedRequest)
+      status(result) shouldBe Status.OK
+    }
+
+    "return 200 when no results returned" in {
+      when(mockApiService.findSummariesWithFilters(any, any)).thenReturn(Future.successful(List.empty))
+      val result = controller.findSummariesWithFilters(List(""), List(PlatformType.CORE_IF))(fakeAuthenticatedRequest)
+      status(result) shouldBe Status.OK
+    }
+
+    "return 401 when the request is not authenticated" in {
+      val result = controller.findSummariesWithFilters(List.empty, List.empty)(fakeRequest)
       status(result) shouldBe Status.UNAUTHORIZED
     }
   }

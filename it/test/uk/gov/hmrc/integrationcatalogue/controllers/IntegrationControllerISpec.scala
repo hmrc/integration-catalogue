@@ -17,17 +17,19 @@
 package uk.gov.hmrc.integrationcatalogue.controllers
 
 import org.scalatest.BeforeAndAfterEach
+import play.api.http.ContentTypes.JSON
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.libs.ws.DefaultBodyReadables.readableAsString
-import play.api.test.Helpers.{BAD_REQUEST, NOT_FOUND, OK}
+import play.api.test.Helpers.{ACCEPT, BAD_REQUEST, NOT_FOUND, OK}
 import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.IdentifierAction
-import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters._
+import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters.*
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType.{API, FILE_TRANSFER}
+import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.{API_PLATFORM, CDS_CLASSIC, CORE_IF, DES}
-import uk.gov.hmrc.integrationcatalogue.models.{ApiDetail, ApiTeam, FileTransferTransportsForPlatform, IntegrationDetail, IntegrationPlatformReport, IntegrationResponse}
+import uk.gov.hmrc.integrationcatalogue.models.{ApiDetail, ApiDetailSummary, ApiTeam, FileTransferTransportsForPlatform, IntegrationDetail, IntegrationPlatformReport, IntegrationResponse}
 import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 import uk.gov.hmrc.integrationcatalogue.support.{AwaitTestSupport, MongoApp, ServerBaseISpec}
 import uk.gov.hmrc.integrationcatalogue.testdata.{FakeIdentifierAction, OasParsedItTestData}
@@ -77,7 +79,7 @@ class IntegrationControllerISpec
   def callGetEndpoint(url: String): WSResponse =
     wsClient
       .url(url)
-      .withHttpHeaders(FakeIdentifierAction.fakeAuthorizationHeader)
+      .withHttpHeaders(FakeIdentifierAction.fakeAuthorizationHeader, ACCEPT -> JSON)
       .withFollowRedirects(false)
       .get()
       .futureValue
@@ -232,6 +234,82 @@ class IntegrationControllerISpec
         setupFilterTestDataAndRunTest("integrationType=FILE_TRANSFER", OK, List(fileTransfer2.publisherReference))
       }
 
+    }
+
+    "GET /integrations/summaries" should {
+      def setupFilterTestDataAndRunTest(searchTerm: List[String], platformFilter: List[PlatformType], expectedReferences: List[String]): Unit = {
+        await(apiRepo.findAndModify(apiDetail1, Some(ApiTeam("publisher_ref1","team1"))))
+        await(apiRepo.findAndModify(apiDetail5, Some(ApiTeam("publisher_ref5","team5"))))
+        await(apiRepo.findAndModify(apiDetail4, Some(ApiTeam("publisher_ref4","team4"))))
+
+        val query = Seq(
+          searchTerm.map(searchTerm => s"searchTerm=$searchTerm"),
+          platformFilter.map(platformFilter => s"platformFilter=$platformFilter")
+        ).flatten.mkString("&")
+
+        val result = callGetEndpoint(s"$url/integrations/summaries?$query")
+        result.status mustBe OK
+
+        val summaries = Json.parse(result.body).as[Seq[ApiDetailSummary]]
+
+        summaries.map(_.publisherReference) must contain theSameElementsAs expectedReferences
+      }
+
+      "respond with all API summaries when no filters specified" in {
+        setupFilterTestDataAndRunTest(
+          List.empty,
+          List.empty,
+          List(
+            apiDetail1.publisherReference,
+            apiDetail4.publisherReference,
+            apiDetail5.publisherReference
+          )
+        )
+      }
+
+      "respond with matching summary when searching by searchTerm" in {
+        setupFilterTestDataAndRunTest(
+          List("API1001"),
+          List.empty,
+          List(apiDetail1.publisherReference)
+        )
+      }
+
+      "respond with no matching summaries when searching by searchTerm" in {
+        setupFilterTestDataAndRunTest(
+          List("cantfindme"),
+          List.empty,
+          List.empty
+        )
+      }
+
+      "respond with DES api when searching by searchTerm getKnownFactsName and platformFilter DES" in {
+        setupFilterTestDataAndRunTest(
+          List("getKnownFactsName"),
+          List(PlatformType.DES),
+          List(apiDetail4.publisherReference)
+        )
+      }
+
+      "respond with 200 and return 2 summaries when filtering by CORE_IF platform" in {
+        setupFilterTestDataAndRunTest(
+          List.empty,
+          List(PlatformType.CORE_IF),
+          List(apiDetail1.publisherReference, apiDetail5.publisherReference)
+        )
+      }
+
+      "respond with 400 when invalid platform param sent" in {
+        val result = callGetEndpoint(s"$url/integrations/summaries?platformFilter=UNKNOWN")
+        result.status mustBe BAD_REQUEST
+        result.body mustBe "{\"errors\":[{\"message\":\"Cannot accept UNKNOWN as PlatformType\"}]}"
+      }
+
+      "respond with 400 when invalid param key sent" in {
+        val result = callGetEndpoint(s"$url/integrations/summaries?unknownFilter=api_platform")
+        result.status mustBe BAD_REQUEST
+        result.body mustBe "{\"errors\":[{\"message\":\"Invalid query parameter key provided. It is case sensitive\"}]}"
+      }
     }
 
     "GET /integrations/:id" should {
