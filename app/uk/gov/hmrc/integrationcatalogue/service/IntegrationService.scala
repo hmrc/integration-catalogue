@@ -18,15 +18,16 @@ package uk.gov.hmrc.integrationcatalogue.service
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-
 import play.api.Logging
-
-import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.*
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformType}
-import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
+import uk.gov.hmrc.integrationcatalogue.repository.{ApiDetailSummaryRepository, IntegrationRepository}
 
 @Singleton
-class IntegrationService @Inject() (integrationRepository: IntegrationRepository) extends Logging {
+class IntegrationService @Inject() (
+  integrationRepository: IntegrationRepository,
+  summaryRepository: ApiDetailSummaryRepository
+) extends Logging {
 
   def getFileTransferTransportsByPlatform(source: Option[String], target: Option[String]): Future[List[FileTransferTransportsForPlatform]] = {
     integrationRepository.getFileTransferTransportsByPlatform(source, target)
@@ -36,9 +37,12 @@ class IntegrationService @Inject() (integrationRepository: IntegrationRepository
     integrationRepository.findWithFilters(filter)
   }
 
+  def findSummariesWithFilters(searchTerms: List[String], platformTypes: List[PlatformType]): Future[Seq[ApiDetailSummary]] = {
+    summaryRepository.findWithFilters(searchTerms, platformTypes)
+  }
+
   def findById(integrationId: IntegrationId): Future[Option[IntegrationDetail]] = {
     integrationRepository.findById(integrationId)
-
   }
 
   def deleteByIntegrationId(integrationId: IntegrationId)(implicit ec: ExecutionContext): Future[DeleteApiResult] = {
