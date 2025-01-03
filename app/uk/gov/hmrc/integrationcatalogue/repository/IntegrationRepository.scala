@@ -20,11 +20,11 @@ import com.mongodb.BasicDBObject
 import org.bson.BsonValue
 import org.mongodb.scala.bson.collection.immutable.Document
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.Accumulators._
-import org.mongodb.scala.model.Aggregates._
-import org.mongodb.scala.model.Filters._
-import org.mongodb.scala.model.Indexes._
-import org.mongodb.scala.model.Updates.{set, unset, setOnInsert}
+import org.mongodb.scala.model.Accumulators.*
+import org.mongodb.scala.model.Aggregates.*
+import org.mongodb.scala.model.Filters.*
+import org.mongodb.scala.model.Indexes.*
+import org.mongodb.scala.model.Updates.{set, setOnInsert, unset}
 import org.mongodb.scala.model.*
 import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 import play.api.Logging
@@ -35,6 +35,7 @@ import uk.gov.hmrc.integrationcatalogue.repository.MongoFormatters.*
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
+import java.time.Instant
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -115,19 +116,21 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
     maybeApiTeam: Option[ApiTeam] = Option.empty
   ): Future[Either[Exception, (IntegrationDetail, IsUpdate)]] = {
     for {
-      isUpdate <- collection.find(and(
+      existingIntegration <- collection.find(and(
                     equal("publisherReference", integrationDetail.publisherReference),
                     equal("platform", Codecs.toBson(integrationDetail.platform))
                   ))
-                    .toFuture().map(results => results.nonEmpty)
-      result   <- findAndModify2(integrationDetail, isUpdate, maybeApiTeam)
+                    .toFuture().map(results => results.headOption)
+      isUpdate = existingIntegration.isDefined
+      result   <- findAndModify2(integrationDetail, isUpdate, maybeApiTeam, existingIntegration)
     } yield result
   }
 
   private def findAndModify2(
     integrationDetail: IntegrationDetail,
     isUpsert: Boolean,
-    maybeApiTeam: Option[ApiTeam]
+    maybeApiTeam: Option[ApiTeam],
+    existingIntegration: Option[IntegrationDetail],
   ): Future[Either[Exception, (IntegrationDetail, IsUpdate)]] = {
 
     val query = and(equal("platform", Codecs.toBson(integrationDetail.platform)), equal("publisherReference", integrationDetail.publisherReference))
@@ -142,7 +145,9 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
 
     val setTeamIdOperation = maybeApiTeam.map(_.teamId).map(teamId => List(setOnInsert("teamId", teamId))).getOrElse(List.empty)
 
-    val allOps = setOnInsertOperations ++ updateOp ++ setTeamIdOperation
+    val setCreationDateOperation = existingIntegration.flatMap(_.createdDate).fold(set("createdDate", Instant.now()))(_ => empty())
+
+    val allOps = setOnInsertOperations ++ updateOp ++ setTeamIdOperation :+ setCreationDateOperation
 
     collection.findOneAndUpdate(
       filter = query,

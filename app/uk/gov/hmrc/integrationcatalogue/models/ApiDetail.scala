@@ -32,6 +32,7 @@ sealed trait IntegrationDetail {
   def maintainer: Maintainer
   def integrationType: IntegrationType
   def score: Option[Double]
+  def createdDate: Option[Instant]
 }
 
 case class Example(name: String, jsonBody: String)
@@ -193,7 +194,8 @@ case class ApiDetail(
                       teamId: Option[String] = None,
                       domain: Option[String] = None,
                       subDomain: Option[String] = None,
-                      apiType: Option[ApiType] = None
+                      apiType: Option[ApiType] = None,
+                      createdDate: Option[Instant] = None
                     ) extends IntegrationDetail {
   override val integrationType: IntegrationType = IntegrationType.API
 }
@@ -212,7 +214,8 @@ case class FileTransferDetail(
                                sourceSystem: List[String],
                                targetSystem: List[String],
                                transports: List[String],
-                               fileTransferPattern: String
+                               fileTransferPattern: String,
+                               createdDate: Option[Instant] = None
                              ) extends IntegrationDetail {
   override val integrationType: IntegrationType = IntegrationType.FILE_TRANSFER
 }

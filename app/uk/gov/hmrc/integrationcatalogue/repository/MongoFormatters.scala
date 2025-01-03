@@ -88,7 +88,8 @@ object MongoFormatters {
       (JsPath \ "teamId").readNullable[String] and
       (JsPath \ "domain").readNullable[String] and
       (JsPath \ "subDomain").readNullable[String] and
-      (JsPath \ "apiType").readNullable[ApiType]
+      (JsPath \ "apiType").readNullable[ApiType] and
+      (JsPath \ "reviewedDate").readNullable[Instant]
     )(ApiDetail.apply)
 
   private val apiDetailWrites: Writes[ApiDetail] = Json.writes[ApiDetail]

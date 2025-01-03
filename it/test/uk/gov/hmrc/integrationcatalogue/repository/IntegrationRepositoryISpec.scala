@@ -97,6 +97,7 @@ class IntegrationRepositoryISpec
     item.hods shouldBe itemToValidate.hods
     item.endpoints shouldBe itemToValidate.endpoints
     item.openApiSpecification shouldBe itemToValidate.openApiSpecification
+    item.createdDate shouldBe defined
   }
 
   def validateFileTransfer(testItem: IntegrationDetail, itemToValidate: FileTransferDetail): Assertion = {
@@ -105,6 +106,7 @@ class IntegrationRepositoryISpec
     item.fileTransferPattern shouldBe itemToValidate.fileTransferPattern
     item.sourceSystem shouldBe itemToValidate.sourceSystem
     item.targetSystem shouldBe itemToValidate.targetSystem
+    item.createdDate shouldBe defined
   }
 
   trait FilterSetup {
@@ -311,8 +313,8 @@ class IntegrationRepositoryISpec
           case Right((persisted: ApiDetail, _)) => {
             val id = UUID.randomUUID()
             val now = Instant.now
-            val actual = persisted.copy(id = IntegrationId(id), lastUpdated = now, reviewedDate = now)
-            val reference = apiDetail1.copy(id = IntegrationId(id), lastUpdated = now, reviewedDate = now)
+            val actual = persisted.copy(id = IntegrationId(id), lastUpdated = now, reviewedDate = now, createdDate = Some(now))
+            val reference = apiDetail1.copy(id = IntegrationId(id), lastUpdated = now, reviewedDate = now, createdDate = Some(now))
 
             classOf[ApiDetail].getDeclaredFields foreach (f => {
               f.setAccessible(true)
