@@ -22,11 +22,11 @@ import cats.implicits.*
 import io.swagger.v3.oas.models.info.Info
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
-import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
+import uk.gov.hmrc.integrationcatalogue.models.ApiStatus.*
 import uk.gov.hmrc.integrationcatalogue.models.common.ApiType
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters.dateAndOptionalTimeFormatter
 
-import java.time.Instant
+import java.time.{Instant, ZonedDateTime}
 import java.util
 import scala.jdk.CollectionConverters.*
 import scala.reflect.runtime.universe.*
@@ -124,6 +124,8 @@ trait OASExtensionsAdapter extends ExtensionKeys {
       case Some(x: String) =>
         Try[Instant] {
           Instant.from(dateAndOptionalTimeFormatter.parse(x))
+        } orElse Try {
+          ZonedDateTime.parse(x).toInstant
         } match {
           case Success(instant) => Validated.valid(instant)
           case Failure(_)        => "Reviewed date is not a valid date".invalidNel[Instant]

@@ -41,7 +41,7 @@ object JsonFormatters extends DateTimeFormatters {
       }
 
     private def parseDate(input: String): Option[Instant] =
-      scala.util.control.Exception.nonFatalCatch[Instant].opt(Instant.from(ZonedDateTime.parse(input).toInstant)) orElse
+      scala.util.control.Exception.nonFatalCatch[Instant].opt(ZonedDateTime.parse(input).toInstant) orElse
         scala.util.control.Exception.nonFatalCatch[Instant].opt(Instant.from(dateAndOptionalTimeFormatter.parse(input)))
   }
 
