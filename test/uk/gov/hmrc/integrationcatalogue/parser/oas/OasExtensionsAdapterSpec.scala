@@ -23,6 +23,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
@@ -31,8 +32,10 @@ import uk.gov.hmrc.integrationcatalogue.models.common.ApiType
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.{ExtensionKeys, IntegrationCatalogueExtensions, OASExtensionsAdapter}
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 
+import java.time.ZonedDateTime
+
 class OasExtensionsAdapterSpec extends AnyWordSpec
-    with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach with ExtensionKeys with OASExtensionsAdapter {
+    with Matchers with MockitoSugar with ApiTestData with OasTestData with BeforeAndAfterEach with ExtensionKeys with OASExtensionsAdapter with TableDrivenPropertyChecks {
 
   trait Setup {
     val publisherRefValue               = "SOMEREFERENCE"
@@ -382,6 +385,31 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       result match {
         case Left(errors) => errors.head shouldBe s"Status must be one of ALPHA, BETA, LIVE or DEPRECATED"
         case Right(_)     => fail()
+      }
+    }
+
+    "return Right when reviewed date is an accepted iso 8601 format" in new Setup {
+      forAll(Table(
+        "reviewDate",
+        "2025-01-23T01:12:23.34567889Z",
+        "2025-01-23T01:12:23.3456788Z",
+        "2025-01-23T01:12:23.345678Z",
+        "2025-01-23T01:12:23.34567Z",
+        "2025-01-23T01:12:23.3456Z",
+        "2025-01-23T01:12:23.345Z",
+        "2025-01-23T01:12:23.34Z",
+        "2025-01-23T01:12:23.3Z"
+      )){ reviewDate =>
+        val extensionValues = new util.HashMap[String, Object]() {{
+          put(REVIEWED_DATE_EXTENSION_KEY, reviewDate)
+        }}
+        val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+          parseExtensions(generateInfoObject(extensionValues), Some(publisherRefValue), mockAppConfig)
+        result match {
+          case Left(_)           => fail()
+          case Right(extensions) =>
+            extensions.reviewedDate shouldBe ZonedDateTime.parse(reviewDate).toInstant
+        }
       }
     }
 
