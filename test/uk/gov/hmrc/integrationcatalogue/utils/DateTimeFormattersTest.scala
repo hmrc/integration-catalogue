@@ -18,12 +18,13 @@ package uk.gov.hmrc.integrationcatalogue.utils
 
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters.instantReads
 
 import java.time.{Instant, OffsetDateTime, ZoneOffset}
 
-class DateTimeFormattersTest extends AnyWordSpec with DateTimeFormatters with Matchers {
+class DateTimeFormattersTest extends AnyWordSpec with DateTimeFormatters with Matchers with TableDrivenPropertyChecks {
 
   "dateAndOptionalTimeFormatter" should {
     "parse ISO 8601 Date Time With Z offset and nanos" in {
@@ -195,6 +196,24 @@ class DateTimeFormattersTest extends AnyWordSpec with DateTimeFormatters with Ma
       val expected = Instant.parse("2024-02-12T00:00:00Z")
       val actual = instantReads.reads(Json.parse("\"2024-02-12\""))
       actual must be(JsSuccess(expected))
+    }
+
+    "parse ISO 8601 Date Time with fractions of a second into Instant" in {
+      forAll(Table(
+        "dateWithFractionsOfASecond",
+        "2025-01-23T01:12:23.34567889Z",
+        "2025-01-23T01:12:23.3456788Z",
+        "2025-01-23T01:12:23.345678Z",
+        "2025-01-23T01:12:23.34567Z",
+        "2025-01-23T01:12:23.3456Z",
+        "2025-01-23T01:12:23.345Z",
+        "2025-01-23T01:12:23.34Z",
+        "2025-01-23T01:12:23.3Z"
+      )) { dateWithFractionsOfASecond =>
+        val expected = Instant.parse(dateWithFractionsOfASecond)
+        val actual = instantReads.reads(Json.parse(s"\"${dateWithFractionsOfASecond}\""))
+        actual must be(JsSuccess(expected))
+      }
     }
 
     "not parse non Iso 8601 strings" in {
