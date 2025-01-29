@@ -16,23 +16,25 @@
 
 package uk.gov.hmrc.integrationcatalogue.service
 
-import cats.data.Validated._
-import cats.data._
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+
+import cats.data.*
+import cats.data.Validated.*
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.*
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatestplus.mockito.MockitoSugar
-import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes._
-import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes.*
+import uk.gov.hmrc.integrationcatalogue.models.*
+import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.HIP
 import uk.gov.hmrc.integrationcatalogue.models.common.SpecificationType
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASParserService
 import uk.gov.hmrc.integrationcatalogue.repository.{ApiTeamsRepository, IntegrationRepository}
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import scala.concurrent.{Await, Future}
 
 class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData with OptionValues {
@@ -207,9 +209,31 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
   "linkApiToTeam" should {
     "pass the request to the ApiTeam repository" in new Setup {
       val apiTeam: ApiTeam = ApiTeam("test-publisher-reference", "test-team-id")
+
+      when(mockApiRepo.findByPublisherRef(eqTo(HIP), eqTo(apiTeam.publisherReference)))
+        .thenReturn(Future.successful(None))
+
       when(mockApiTeamsRepo.upsert(any())).thenReturn(Future.successful(()))
 
       Await.result(inTest.linkApiToTeam(apiTeam), Duration.apply(500, MILLISECONDS))
+
+      verify(mockApiTeamsRepo).upsert(eqTo(apiTeam))
+    }
+
+    "update the API's team if it already exists" in new Setup {
+      val apiTeam: ApiTeam = ApiTeam("test-publisher-reference", "test-team-id")
+
+      when(mockApiRepo.findByPublisherRef(eqTo(HIP), eqTo(apiTeam.publisherReference)))
+        .thenReturn(Future.successful(Some(apiDetail0)))
+
+      when(mockApiRepo.updateTeamId(any, any)).thenReturn(Future.successful(Some(apiDetail0)))
+
+      when(mockApiTeamsRepo.upsert(any())).thenReturn(Future.successful(()))
+
+      Await.result(inTest.linkApiToTeam(apiTeam), Duration.apply(500, MILLISECONDS))
+
+      // Not using matchers here as they don't work with IntegrationId
+      verify(mockApiRepo).updateTeamId(apiDetail0.id, Some(apiTeam.teamId))
 
       verify(mockApiTeamsRepo).upsert(eqTo(apiTeam))
     }

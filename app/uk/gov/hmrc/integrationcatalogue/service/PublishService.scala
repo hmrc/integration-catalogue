@@ -18,12 +18,13 @@ package uk.gov.hmrc.integrationcatalogue.service
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import cats.data.Validated._
-import cats.data._
+import cats.data.Validated.*
+import cats.data.*
 import play.api.Logging
-import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes._
-import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes.*
+import uk.gov.hmrc.integrationcatalogue.models.*
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId
+import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.HIP
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASParserService
 import uk.gov.hmrc.integrationcatalogue.repository.{ApiTeamsRepository, IntegrationRepository}
 
@@ -33,7 +34,7 @@ class PublishService @Inject() (
   integrationRepository: IntegrationRepository,
   uuidService: UuidService,
   apiTeamsRepository: ApiTeamsRepository
-) extends Logging {
+)(implicit ec: ExecutionContext) extends Logging {
 
   def publishFileTransfer(request: FileTransferPublishRequest)(implicit ec: ExecutionContext): Future[PublishResult] = {
     val integrationId = IntegrationId(uuidService.newUuid())
@@ -89,8 +90,22 @@ class PublishService @Inject() (
     Future.successful(PublishResult(isSuccess = false, None, flatList.map(err => PublishError(OAS_PARSE_ERROR, err))))
   }
 
+  /*
+    This method should really just call apiTeamsRepository.upsert(apiTeam)
+    In synchronous API generation with the APIM stubs the API will already
+    be created. Therefore, we update the API with the team if it exists.
+   */
   def linkApiToTeam(apiTeam: ApiTeam): Future[Unit] = {
-    apiTeamsRepository.upsert(apiTeam)
+    integrationRepository.findByPublisherRef(HIP, apiTeam.publisherReference).flatMap {
+      case Some(apiDetail: ApiDetail) =>
+        integrationRepository
+          .updateTeamId(apiDetail.id, Some(apiTeam.teamId))
+          .map(_ => ())
+      case _ =>
+        Future.successful(())
+    } andThen {
+      case _ => apiTeamsRepository.upsert(apiTeam)
+    }
   }
 
 }
