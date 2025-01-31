@@ -16,26 +16,25 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas.adapters
 
-import cats.data.Validated.*
-import cats.data.*
-import cats.implicits.*
+import cats.data.Validated._
+import cats.data._
+import cats.implicits._
 import com.fasterxml.jackson.databind.JsonNode
 import io.swagger.v3.oas.models.PathItem.HttpMethod
 import io.swagger.v3.oas.models.info.Contact
 import io.swagger.v3.oas.models.security.{SecurityRequirement, SecurityScheme}
 import io.swagger.v3.oas.models.{OpenAPI, Operation, PathItem}
-import org.bson.types.ObjectId
 import play.api.Logging
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
-import uk.gov.hmrc.integrationcatalogue.models.*
-import uk.gov.hmrc.integrationcatalogue.models.common.*
+import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.common._
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASV3Validation
 import uk.gov.hmrc.integrationcatalogue.service.{AcronymHelper, UuidService}
 
 import java.time.Instant
 import javax.inject.{Inject, Singleton}
 import scala.collection.mutable
-import scala.jdk.CollectionConverters.*
+import scala.jdk.CollectionConverters._
 
 @Singleton
 class OASV3Adapter @Inject() (uuidService: UuidService, appConfig: AppConfig)

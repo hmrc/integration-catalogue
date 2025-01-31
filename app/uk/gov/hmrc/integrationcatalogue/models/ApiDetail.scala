@@ -20,7 +20,7 @@ import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
 import org.bson.types.ObjectId
 import uk.gov.hmrc.integrationcatalogue.models.common.*
 
-import java.time.{Instant, LocalDateTime}
+import java.time.Instant
 
 sealed trait IntegrationDetail {
   def id: IntegrationId
