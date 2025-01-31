@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.integrationcatalogue.testdata
 
-import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
-import uk.gov.hmrc.integrationcatalogue.models._
+import uk.gov.hmrc.integrationcatalogue.models.ApiStatus.*
+import uk.gov.hmrc.integrationcatalogue.models.*
 import uk.gov.hmrc.integrationcatalogue.models.common.{ApiType, IntegrationId, Maintainer, PlatformType, SpecificationType}
 
 import java.time.Instant
@@ -114,7 +114,7 @@ trait OasParsedItTestData {
   )
 
   val apiDetail1: ApiDetail = ApiDetail(
-    IntegrationId(UUID.fromString("dda7249a-9b88-11eb-a8b3-0242ac130003")),
+    id = IntegrationId(UUID.fromString("dda7249a-9b88-11eb-a8b3-0242ac130003")),
     publisherReference = "API1001",
     title = "getKnownFactsName 1 ETMP",
     description = "getKnownFactsDesc",
@@ -136,7 +136,7 @@ trait OasParsedItTestData {
   )
 
   val apiDetail3: ApiDetail = ApiDetail(
-    IntegrationId(UUID.fromString("fab1868e-9b88-11eb-a8b3-0242ac130003")),
+    id = IntegrationId(UUID.fromString("fab1868e-9b88-11eb-a8b3-0242ac130003")),
     publisherReference = "API1003",
     title = "getKnownFactsName 3",
     description = "api detail 3",
@@ -155,7 +155,7 @@ trait OasParsedItTestData {
   )
 
   val apiDetail4: ApiDetail = ApiDetail(
-    IntegrationId(UUID.fromString("e2e4ce48-29b0-11eb-adc1-0242ac120001")),
+    id = IntegrationId(UUID.fromString("e2e4ce48-29b0-11eb-adc1-0242ac120001")),
     publisherReference = "API1004",
     title = "getKnownFactsName 4",
     description = "getKnownFactsDesc ETMP",
@@ -174,7 +174,7 @@ trait OasParsedItTestData {
   )
 
   val apiDetail5: ApiDetail = ApiDetail(
-    IntegrationId(UUID.fromString("28c0bd67-4176-42c7-be13-53be98a4db58")),
+    id = IntegrationId(UUID.fromString("28c0bd67-4176-42c7-be13-53be98a4db58")),
     publisherReference = "API1005",
     title = "getOtherFactsName 5 BOOP",
     description = "api detail 5",
@@ -196,7 +196,7 @@ trait OasParsedItTestData {
   )
 
   val apiDetail6: ApiDetail = ApiDetail(
-    IntegrationId(UUID.fromString("6d5a98fc-a33a-11eb-bcbc-0242ac130002")),
+    id = IntegrationId(UUID.fromString("6d5a98fc-a33a-11eb-bcbc-0242ac130002")),
     publisherReference = "API1006",
     title = "CDS Classic API",
     description = "CDS Classic API",
@@ -215,7 +215,7 @@ trait OasParsedItTestData {
   )
 
   val apiDetail9: ApiDetail = ApiDetail(
-    IntegrationId(UUID.fromString("53b96a37-d9bb-4d55-8528-be107e3003bf")),
+    id = IntegrationId(UUID.fromString("53b96a37-d9bb-4d55-8528-be107e3003bf")),
     publisherReference = "API1009",
     title = "API9 with Scopes",
     description = "Description of API9 with Scopes",

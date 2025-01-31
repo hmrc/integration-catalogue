@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.integrationcatalogue.repository
 
+import org.bson.types.ObjectId
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.*
 import uk.gov.hmrc.integrationcatalogue.models.*
 import uk.gov.hmrc.integrationcatalogue.models.common.*
+import uk.gov.hmrc.mongo.play.json.formats.MongoFormats.Implicits.objectIdFormat
 
 import java.time.Instant
 import scala.quoted.*
@@ -68,7 +70,8 @@ object MongoFormatters {
   implicit val scopeFormat: Format[Scope] = Json.format[Scope]
 
   private val apiDetailReads: Reads[ApiDetail] = (
-    (JsPath \ "id").read[IntegrationId] and
+    (JsPath \ "_id").read[ObjectId] and
+      (JsPath \ "id").read[IntegrationId] and
       (JsPath \ "publisherReference").read[String] and
       (JsPath \ "title").read[String] and
       (JsPath \ "description").read[String] and
@@ -92,6 +95,7 @@ object MongoFormatters {
     )(ApiDetail.apply)
 
   private val apiDetailWrites: Writes[ApiDetail] = Json.writes[ApiDetail]
+
   implicit val apiDetailParsedFormats: Format[ApiDetail] = Format(apiDetailReads, apiDetailWrites)
 
   implicit val integrationDetailFormats: OFormat[IntegrationDetail]                           = Json.format[IntegrationDetail]
