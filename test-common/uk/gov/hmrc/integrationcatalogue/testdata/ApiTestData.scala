@@ -99,10 +99,10 @@ trait ApiTestData {
   val endpointPutMethod: EndpointMethod = EndpointMethod("PUT", Some("summary"), Some("some description"), List.empty)
   val endpoint1: Endpoint = Endpoint("/some/url", List(endpointGetMethod, endpointPutMethod))
 
-  val endpoints = List(endpoint1, Endpoint("/some/url", List.empty))
+  val endpoints: List[Endpoint] = List(endpoint1, Endpoint("/some/url", List.empty))
 
   val apiDetail0: ApiDetail = ApiDetail(
-    selfassessmentApiId,
+    id = selfassessmentApiId,
     publisherReference = "self-assessment-api",
     title = "Self Assessment (MTD)",
     description = "Making Tax Digital introduces digital record keeping for most businesses, self-employed people and landlords.",
@@ -120,7 +120,7 @@ trait ApiTestData {
   )
 
   val apiDetail1: ApiDetail = ApiDetail(
-    IntegrationId(UUID.fromString("2f0c9fc4-7773-433b-b4cf-15d4cb932e36")),
+    id = IntegrationId(UUID.fromString("2f0c9fc4-7773-433b-b4cf-15d4cb932e36")),
     publisherReference = "marriage-allowance",
     title = "Marriage Allowance",
     description = "This API provides resources related to [Marriage Allowance](https://www.gov.uk/marriage-allowance).",
@@ -138,7 +138,7 @@ trait ApiTestData {
   )
 
   val apiDetail2: ApiDetail = ApiDetail(
-    IntegrationId(UUID.fromString("bd05e606-b400-49f2-a436-89d1ed1513bc")),
+    id = IntegrationId(UUID.fromString("bd05e606-b400-49f2-a436-89d1ed1513bc")),
     publisherReference = "API1001",
     title = "API#1001 Get Data 1",
     description = "This is will be an automated information sharing arrangement with Local Authorities (LAs) via DWP, with a view to LAs recovering (or remitting) as much Housing Benefit (HB) debt as possible, prior to it being subsumption into UC.",
@@ -158,7 +158,7 @@ trait ApiTestData {
   )
 
   val apiDetail3: ApiDetail = ApiDetail(
-    IntegrationId(UUID.fromString("136791a6-2b1c-11eb-adc1-0242ac120002")),
+    id = IntegrationId(UUID.fromString("136791a6-2b1c-11eb-adc1-0242ac120002")),
     publisherReference = "API1002",
     title = "API#1002 Get Data 2",
     description = "This API provides the capability to retrieve the customer known data.",
@@ -176,6 +176,6 @@ trait ApiTestData {
     scopes = Set.empty
   )
 
-  val apiList = List(apiDetail0, apiDetail1, apiDetail2, apiDetail3)
+  val apiList: List[ApiDetail] = List(apiDetail0, apiDetail1, apiDetail2, apiDetail3)
 
 }

@@ -315,8 +315,10 @@ class IntegrationRepositoryISpec
             val reference = apiDetail1.copy(id = IntegrationId(id), lastUpdated = now, reviewedDate = now)
 
             classOf[ApiDetail].getDeclaredFields foreach (f => {
-              f.setAccessible(true)
-              f.get(actual) shouldBe (f.get(reference))
+              if (!f.getName.equals("_id")) {
+                f.setAccessible(true)
+                f.get(actual) shouldBe (f.get(reference))
+              }
             })
           }
           case _ => fail()

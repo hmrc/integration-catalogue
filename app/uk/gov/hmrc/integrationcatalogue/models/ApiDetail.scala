@@ -17,9 +17,10 @@
 package uk.gov.hmrc.integrationcatalogue.models
 
 import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
-import uk.gov.hmrc.integrationcatalogue.models.common._
+import org.bson.types.ObjectId
+import uk.gov.hmrc.integrationcatalogue.models.common.*
 
-import java.time.Instant
+import java.time.{Instant, LocalDateTime}
 
 sealed trait IntegrationDetail {
   def id: IntegrationId
@@ -173,6 +174,7 @@ case class Scope( name: String,
 }
 
 case class ApiDetail(
+                      _id: ObjectId = new ObjectId,
                       id: IntegrationId,
                       publisherReference: String,
                       title: String,
@@ -195,7 +197,13 @@ case class ApiDetail(
                       subDomain: Option[String] = None,
                       apiType: Option[ApiType] = None
                     ) extends IntegrationDetail {
+
   override val integrationType: IntegrationType = IntegrationType.API
+
+  def created: Instant = {
+    Instant.ofEpochSecond(_id.getTimestamp)
+  }
+
 }
 
 case class FileTransferDetail(
