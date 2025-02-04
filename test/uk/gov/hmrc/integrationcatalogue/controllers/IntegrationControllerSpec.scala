@@ -162,6 +162,27 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
     }
   }
 
+  "GET /integrations/publisher-reference/:publisherReference" should {
+    "return 200 and the integration when it exists" in {
+      when(mockApiService.findByPublisherReference(apiDetail0.publisherReference))
+        .thenReturn(Future.successful(Some(apiDetail0)))
+      val result = controller.findByPublisherReference(apiDetail0.publisherReference)(fakeAuthenticatedRequest)
+      status(result) shouldBe Status.OK
+    }
+
+    "return 401 when the request is not authenticated" in {
+      val result = controller.findByPublisherReference(apiDetail0.publisherReference)(fakeRequest)
+      status(result) shouldBe Status.UNAUTHORIZED
+    }
+
+    "return 404 when the integration does not exist" in {
+      when(mockApiService.findByPublisherReference(apiDetail0.publisherReference))
+        .thenReturn(Future.successful(None))
+      val result = controller.findByPublisherReference(apiDetail0.publisherReference)(fakeAuthenticatedRequest)
+      status(result) shouldBe Status.NOT_FOUND
+    }
+  }
+
   "DELETE /integrations" should {
     "return 401 when the request is not authenticated" in {
       val result = controller.deleteWithFilters(List.empty)(FakeRequest())
