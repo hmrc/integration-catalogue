@@ -1,21 +1,22 @@
 # microservice specific routes
 
-GET           /integrations                             uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.findWithFilters(searchTerm: List[String], platformFilter: List[uk.gov.hmrc.integrationcatalogue.models.common.PlatformType], backendsFilter: List[String], itemsPerPage: Option[Int], currentPage: Option[Int], integrationType: Option[uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType], teamIds: List[String])
-GET           /integrations/summaries                   uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.findSummariesWithFilters(searchTerm: List[String], platformFilter: List[uk.gov.hmrc.integrationcatalogue.models.common.PlatformType])
-GET           /integrations/:integrationId              uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.findById(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId)
-DELETE        /integrations/:integrationId              uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.deleteByIntegrationId(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId)
+GET           /integrations                                             uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.findWithFilters(searchTerm: List[String], platformFilter: List[uk.gov.hmrc.integrationcatalogue.models.common.PlatformType], backendsFilter: List[String], itemsPerPage: Option[Int], currentPage: Option[Int], integrationType: Option[uk.gov.hmrc.integrationcatalogue.models.common.IntegrationType], teamIds: List[String])
+GET           /integrations/summaries                                   uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.findSummariesWithFilters(searchTerm: List[String], platformFilter: List[uk.gov.hmrc.integrationcatalogue.models.common.PlatformType])
+GET           /integrations/:integrationId                              uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.findById(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId)
+DELETE        /integrations/:integrationId                              uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.deleteByIntegrationId(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId)
+GET           /integrations/publisher-reference/:publisherReference     uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.findByPublisherReference(publisherReference: String)
 
-DELETE        /integrations                             uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.deleteWithFilters(platformFilter: List[uk.gov.hmrc.integrationcatalogue.models.common.PlatformType])
+DELETE        /integrations                                             uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.deleteWithFilters(platformFilter: List[uk.gov.hmrc.integrationcatalogue.models.common.PlatformType])
 
-GET           /report                                   uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.getIntegrationCatalogueReport()
+GET           /report                                                   uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.getIntegrationCatalogueReport()
 
-PUT           /apis/publish                             uk.gov.hmrc.integrationcatalogue.controllers.PublishController.publishApi()
-PUT           /apis/multipart/publish                   uk.gov.hmrc.integrationcatalogue.controllers.MultipartPublishController.publishApi()
-POST          /apis/team                                uk.gov.hmrc.integrationcatalogue.controllers.PublishController.linkApiToTeam()
-PUT           /apis/:integrationId/teams/:teamId        uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.updateApiTeam(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId, teamId: String)
-DELETE        /apis/:integrationId/teams                uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.removeApiTeam(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId)
+PUT           /apis/publish                                             uk.gov.hmrc.integrationcatalogue.controllers.PublishController.publishApi()
+PUT           /apis/multipart/publish                                   uk.gov.hmrc.integrationcatalogue.controllers.MultipartPublishController.publishApi()
+POST          /apis/team                                                uk.gov.hmrc.integrationcatalogue.controllers.PublishController.linkApiToTeam()
+PUT           /apis/:integrationId/teams/:teamId                        uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.updateApiTeam(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId, teamId: String)
+DELETE        /apis/:integrationId/teams                                uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.removeApiTeam(integrationId: uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId)
 
-PUT           /filetransfers/publish                    uk.gov.hmrc.integrationcatalogue.controllers.PublishController.publishFileTransfer()
-GET           /filetransfers/platform/transports        uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.getFileTransferTransportsByPlatform(source: Option[String], target: Option[String])
+PUT           /filetransfers/publish                                    uk.gov.hmrc.integrationcatalogue.controllers.PublishController.publishFileTransfer()
+GET           /filetransfers/platform/transports                        uk.gov.hmrc.integrationcatalogue.controllers.IntegrationController.getFileTransferTransportsByPlatform(source: Option[String], target: Option[String])
 
-GET           /platform/contacts                        uk.gov.hmrc.integrationcatalogue.controllers.PlatformController.getPlatformContacts()
+GET           /platform/contacts                                        uk.gov.hmrc.integrationcatalogue.controllers.PlatformController.getPlatformContacts()

@@ -48,6 +48,15 @@ class IntegrationController @Inject() (
     }
   }
 
+  def findByPublisherReference(publisherReference: String): Action[AnyContent] = identify.async {
+    integrationService.findByPublisherReference(publisherReference).map {
+      case Some(result) => Ok(Json.toJson(result))
+      case None         =>
+        logger.info(s"Integration not found: publisher reference=$publisherReference")
+        NotFound
+    }
+  }
+
   def findWithFilters(
       searchTerm: List[String],
       platformFilter: List[PlatformType],

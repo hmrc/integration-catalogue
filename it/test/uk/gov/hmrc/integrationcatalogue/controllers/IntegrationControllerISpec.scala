@@ -367,6 +367,30 @@ class IntegrationControllerISpec
       }
     }
 
+    "GET /integrations/publisher-reference/:publisherReference" should {
+      "respond with integration when the publisher reference exists" in {
+        await(apiRepo.findAndModify(apiDetail9)) match {
+          case Left(_)                                    => fail()
+          case Right((integration: IntegrationDetail, _)) =>
+            val result = callGetEndpoint(s"$url/integrations/publisher-reference/${integration.publisherReference}")
+            result.status mustBe OK
+
+            val response = Json.parse(result.body).as[IntegrationDetail]
+            response.publisherReference mustBe integration.publisherReference
+            response.platform mustBe integration.platform
+        }
+      }
+
+      "respond with 404 when integration not found" in {
+        await(apiRepo.findAndModify(apiDetail1)) match {
+          case Left(_) => fail()
+          case Right((integration: IntegrationDetail, _)) =>
+            val result = callGetEndpoint(s"$url/integrations/publisher-reference/${integration.publisherReference}")
+            result.status mustBe NOT_FOUND
+        }
+      }
+    }
+
     "GET  /report " should {
 
       "respond with correct report when integrations exist" in {

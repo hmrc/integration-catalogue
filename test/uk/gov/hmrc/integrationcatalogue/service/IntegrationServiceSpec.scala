@@ -123,6 +123,16 @@ class IntegrationServiceSpec extends AnyWordSpec with Matchers with MockitoSugar
     }
   }
 
+  "findByPublisherReference" should {
+    "returns integration detail" in new Setup {
+      when(mockIntegrationRepo.findByPublisherRef(any, any)).thenReturn(Future.successful(Some(apiDetail1)))
+
+      val result: Option[IntegrationDetail] = await(inTest.findByPublisherReference(apiDetail1.publisherReference))
+      result shouldBe Some(apiDetail1)
+      verify(mockIntegrationRepo).findByPublisherRef(PlatformType.HIP, apiDetail1.publisherReference)
+    }
+  }
+
   "getCatalogueReport" should {
     "returns count" in new Setup {
       when(mockIntegrationRepo.getCatalogueReport()).thenReturn(Future.successful(List.empty))

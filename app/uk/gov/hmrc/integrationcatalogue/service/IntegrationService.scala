@@ -20,6 +20,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.Logging
 import uk.gov.hmrc.integrationcatalogue.models.*
+import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.HIP
 import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformType}
 import uk.gov.hmrc.integrationcatalogue.repository.{ApiDetailSummaryRepository, IntegrationRepository}
 
@@ -43,6 +44,10 @@ class IntegrationService @Inject() (
 
   def findById(integrationId: IntegrationId): Future[Option[IntegrationDetail]] = {
     integrationRepository.findById(integrationId)
+  }
+
+  def findByPublisherReference(publisherReference: String): Future[Option[IntegrationDetail]] = {
+    integrationRepository.findByPublisherRef(HIP, publisherReference)
   }
 
   def deleteByIntegrationId(integrationId: IntegrationId)(implicit ec: ExecutionContext): Future[DeleteApiResult] = {
