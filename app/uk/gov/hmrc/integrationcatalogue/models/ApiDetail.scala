@@ -193,7 +193,8 @@ case class ApiDetail(
                       teamId: Option[String] = None,
                       domain: Option[String] = None,
                       subDomain: Option[String] = None,
-                      apiType: Option[ApiType] = None
+                      apiType: Option[ApiType] = None,
+                      apiNumber: Option[String] = None
                     ) extends IntegrationDetail {
   override val integrationType: IntegrationType = IntegrationType.API
 }
