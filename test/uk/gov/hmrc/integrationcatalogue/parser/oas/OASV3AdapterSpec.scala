@@ -62,6 +62,8 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
 
     val domain = "test-domain"
     val subDomain = "test-sub-domain"
+
+    val apiGeneration = "v2"
   }
 
   "extractOpenApi" should {
@@ -79,7 +81,8 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
             hods,
             reviewedDateExtension = Some("2021-07-24"),
             domainExtension = Some(domain),
-            subDomainExtension = Some(subDomain)
+            subDomainExtension = Some(subDomain),
+            apiGenerationExtension = Some(apiGeneration)
           ),
           openApiSpecificationContent = apiDetail0.openApiSpecification
         )
@@ -93,6 +96,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
           parsedObject.specificationType shouldBe apiDetail0.specificationType
           parsedObject.openApiSpecification shouldBe apiDetail0.openApiSpecification
           parsedObject.reviewedDate shouldBe expectedReviewedDate
+          parsedObject.apiGeneration shouldBe Some(apiGeneration)
 
           val contact: ContactInformation = parsedObject.maintainer.contactInfo.head
           contact.name.getOrElse("") shouldBe oasContactName

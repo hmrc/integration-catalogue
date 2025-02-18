@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.integrationcatalogue.repository
 
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.functional.syntax.*
 import play.api.libs.json.*
 import uk.gov.hmrc.integrationcatalogue.models.*
 import uk.gov.hmrc.integrationcatalogue.models.common.*
@@ -67,30 +67,134 @@ object MongoFormatters {
 
   implicit val scopeFormat: Format[Scope] = Json.format[Scope]
 
-  private val apiDetailReads: Reads[ApiDetail] = (
-    (JsPath \ "id").read[IntegrationId] and
-      (JsPath \ "publisherReference").read[String] and
-      (JsPath \ "title").read[String] and
-      (JsPath \ "description").read[String] and
-      (JsPath \ "platform").read[PlatformType] and
-      (JsPath \ "hods").read[List[String]] and
-      (JsPath \ "lastUpdated").read[Instant] and
-      (JsPath \ "reviewedDate").read[Instant] and
-      (JsPath \ "maintainer").read[Maintainer] and
-      (JsPath \ "score").readNullable[Double] and
-      (JsPath \ "version").read[String] and
-      (JsPath \ "specificationType").read[SpecificationType] and
-      (JsPath \ "endpoints").read[List[Endpoint]] and
-      (JsPath \ "shortDescription").readNullable[String] and
-      (JsPath \ "openApiSpecification").read[String] and
-      (JsPath \ "apiStatus").read[ApiStatus] and
-      (JsPath \ "scopes").readWithDefault[Set[Scope]](Set.empty) and
-      (JsPath \ "teamId").readNullable[String] and
-      (JsPath \ "domain").readNullable[String] and
-      (JsPath \ "subDomain").readNullable[String] and
-      (JsPath \ "apiType").readNullable[ApiType] and
-      (JsPath \ "apiNumber").readNullable[String]
-    )(ApiDetail.apply)
+  private val apiDetailReads1: Reads[(
+    IntegrationId,
+    String,
+    String,
+    String,
+    PlatformType,
+    List[String],
+    Instant,
+    Instant,
+    Maintainer,
+    Option[Double],
+    String,
+    SpecificationType,
+    List[Endpoint],
+    Option[String],
+    String,
+    ApiStatus,
+    Set[Scope],
+    Option[String],
+    Option[String],
+    Option[String],
+    Option[ApiType]
+    )] =
+    ( (JsPath \ "id").read[IntegrationId]
+    ~ (JsPath \ "publisherReference").read[String]
+    ~ (JsPath \ "title").read[String]
+    ~ (JsPath \ "description").read[String]
+    ~ (JsPath \ "platform").read[PlatformType]
+    ~ (JsPath \ "hods").read[List[String]]
+    ~ (JsPath \ "lastUpdated").read[Instant]
+    ~ (JsPath \ "reviewedDate").read[Instant]
+    ~ (JsPath \ "maintainer").read[Maintainer]
+    ~ (JsPath \ "score").readNullable[Double]
+    ~ (JsPath \ "version").read[String]
+    ~ (JsPath \ "specificationType").read[SpecificationType]
+    ~ (JsPath \ "endpoints").read[List[Endpoint]]
+    ~ (JsPath \ "shortDescription").readNullable[String]
+    ~ (JsPath \ "openApiSpecification").read[String]
+    ~ (JsPath \ "apiStatus").read[ApiStatus]
+    ~ (JsPath \ "scopes").readWithDefault[Set[Scope]](Set.empty)
+    ~ (JsPath \ "teamId").readNullable[String]
+    ~ (JsPath \ "domain").readNullable[String]
+    ~ (JsPath \ "subDomain").readNullable[String]
+    ~ (JsPath \ "apiType").readNullable[ApiType]).tupled
+
+  private val apiDetailReads2: Reads[(Option[String], Option[String])] =
+    ( (JsPath \ "apiNumber").readNullable[String]
+    ~ (JsPath \ "apiGeneration").readNullable[String]).tupled
+
+  private val readsToApiDetail: ((
+    IntegrationId,
+    String,
+    String,
+    String,
+    PlatformType,
+    List[String],
+    Instant,
+    Instant,
+    Maintainer,
+    Option[Double],
+    String,
+    SpecificationType,
+    List[Endpoint],
+    Option[String],
+    String,
+    ApiStatus,
+    Set[Scope],
+    Option[String],
+    Option[String],
+    Option[String],
+    Option[ApiType]
+  ), (Option[String], Option[String])) => ApiDetail = { case (
+    (
+      id,
+      publisherReference,
+      title,
+      description,
+      platform,
+      hods,
+      lastUpdated,
+      reviewedDate,
+      maintainer,
+      score,
+      version,
+      specificationType,
+      endpoints,
+      shortDescription,
+      openApiSpecification,
+      apiStatus,
+      scopes,
+      teamId,
+      domain,
+      subDomain,
+      apiType,
+      ),(
+      apiNumber,
+      apiGeneration,
+      )
+    ) =>
+    ApiDetail(
+      id,
+      publisherReference,
+      title,
+      description,
+      platform,
+      hods,
+      lastUpdated,
+      reviewedDate,
+      maintainer,
+      score,
+      version,
+      specificationType,
+      endpoints,
+      shortDescription,
+      openApiSpecification,
+      apiStatus,
+      scopes,
+      teamId,
+      domain,
+      subDomain,
+      apiType,
+      apiNumber,
+      apiGeneration
+    )
+  }
+
+  private val apiDetailReads: Reads[ApiDetail] =
+    (apiDetailReads1 ~ apiDetailReads2) { readsToApiDetail }
 
   private val apiDetailWrites: Writes[ApiDetail] = Json.writes[ApiDetail]
   implicit val apiDetailParsedFormats: Format[ApiDetail] = Format(apiDetailReads, apiDetailWrites)

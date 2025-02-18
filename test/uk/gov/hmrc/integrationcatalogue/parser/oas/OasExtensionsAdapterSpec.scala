@@ -131,6 +131,16 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
     extensionsWithInvalidApiType.putAll(extensionsWithReviewDateAndPublisherReference)
     extensionsWithInvalidApiType.put(API_TYPE, "BadApiType")
 
+    val extensionsWithApiGeneration = new util.HashMap[String, Object]() {{
+      putAll(extensionsWithReviewDateAndPublisherReference);
+      put(API_GENERATION, "v2")
+    }}
+
+    val extensionsWithInvalidApiGeneration = new util.HashMap[String, Object]() {{
+      putAll(extensionsWithReviewDateAndPublisherReference);
+      put(API_GENERATION, Int.box(2))
+    }}
+
     def generateInfoObject(extensionsValues: util.HashMap[String, Object]): Info = {
       val info       = new Info()
       val extensions = new util.HashMap[String, Object]()
@@ -490,6 +500,25 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
         parseExtensions(generateInfoObject(extensionsWithInvalidApiType), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe s"Status must be one of ${ApiType.values.mkString(", ")}"
+        case Right(_) => fail()
+      }
+    }
+
+    "return Right when an API generation is populated as a valid String" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithApiGeneration), Some(publisherRefValue), mockAppConfig)
+      result match {
+        case Left(_) => fail()
+        case Right(extensions) =>
+          extensions.apiGeneration shouldBe Some("v2")
+      }
+    }
+
+    "return Left when an API generation is populated with an invalid String" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithInvalidApiGeneration), Some(publisherRefValue), mockAppConfig)
+      result match {
+        case Left(errors) => errors.head shouldBe s"Api-Generation must be a valid string"
         case Right(_) => fail()
       }
     }

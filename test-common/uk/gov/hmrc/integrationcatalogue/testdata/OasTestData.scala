@@ -79,7 +79,8 @@ trait OasTestData extends ExtensionKeys {
                         oAuth2SecuritySchemeName: Option[String] = None,
                         globalScopes: List[String] = List.empty,
                         endpointScopes: Map[String, List[String]] = Map.empty,
-                        oauthFlowScopes: Map[String, List[(String,String)]] = Map.empty
+                        oauthFlowScopes: Map[String, List[(String,String)]] = Map.empty,
+                        apiGenerationExtension: Option[String] = None,
                       ): OpenAPI = {
     val openAPIInfo = buildOpenApiInfo()
 
@@ -97,6 +98,7 @@ trait OasTestData extends ExtensionKeys {
 
         domainExtension.foreach(domain => sublevelExtensions.put(DOMAIN_EXTENSION_KEY, domain))
         subDomainExtension.foreach(subDomain => sublevelExtensions.put(SUB_DOMAIN_EXTENSION_KEY, subDomain))
+        apiGenerationExtension.foreach(apiGeneration => sublevelExtensions.put(API_GENERATION, apiGeneration))
       }
 
       if (reviewedDateExtension.isDefined) {

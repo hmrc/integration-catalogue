@@ -25,5 +25,6 @@ trait ExtensionKeys {
   val REVIEWED_DATE_EXTENSION_KEY = "reviewed-date"
   val DOMAIN_EXTENSION_KEY        = "domain"
   val SUB_DOMAIN_EXTENSION_KEY    = "sub-domain"
-  val API_TYPE    = "api-type"
+  val API_TYPE                    = "api-type"
+  val API_GENERATION              = "API-Generation"
 }

@@ -133,7 +133,8 @@ trait OasParsedItTestData {
     domain = Some("test-domain-1"),
     subDomain = Some("test-sub-domain-1"),
     teamId = Some("team1"),
-    apiNumber = Some("test-api-number-1")
+    apiNumber = Some("test-api-number-1"),
+    apiGeneration = Some("v2"),
   )
 
   val apiDetail3: ApiDetail = ApiDetail(
@@ -152,7 +153,8 @@ trait OasParsedItTestData {
     openApiSpecification = "OAS file contents 2",
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
-    scopes = Set.empty
+    scopes = Set.empty,
+    apiGeneration = Some("v2"),
   )
 
   val apiDetail4: ApiDetail = ApiDetail(
@@ -171,7 +173,8 @@ trait OasParsedItTestData {
     openApiSpecification = "OAS file contents 3 BOOP",
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
-    scopes = Set.empty
+    scopes = Set.empty,
+    apiGeneration = Some("v2"),
   )
 
   val apiDetail5: ApiDetail = ApiDetail(
@@ -194,6 +197,7 @@ trait OasParsedItTestData {
     domain = Some("test-domain-5"),
     subDomain = Some("test-sub-domain-5"),
     apiType = Some(ApiType.SIMPLE),
+    apiGeneration = Some("v2"),
   )
 
   val apiDetail6: ApiDetail = ApiDetail(
@@ -212,7 +216,8 @@ trait OasParsedItTestData {
     openApiSpecification = "OAS file contents 5",
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
-    scopes = Set.empty
+    scopes = Set.empty,
+    apiGeneration = Some("v2"),
   )
 
   val apiDetail9: ApiDetail = ApiDetail(
@@ -231,7 +236,8 @@ trait OasParsedItTestData {
     openApiSpecification = "OAS file contents 9",
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
-    scopes = Set.empty
+    scopes = Set.empty,
+    apiGeneration = Some("v2"),
   )
 
   val fileTransfer2: FileTransferDetail =
@@ -248,7 +254,7 @@ trait OasParsedItTestData {
       sourceSystem = List("source"),
       targetSystem = List("target"),
       transports = List("UTM"),
-      fileTransferPattern = "pattern1"
+      fileTransferPattern = "pattern1",
     )
 
   val fileTransfer7: FileTransferDetail =

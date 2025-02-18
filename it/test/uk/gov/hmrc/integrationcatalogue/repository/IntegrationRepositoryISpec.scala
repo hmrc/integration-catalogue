@@ -298,6 +298,7 @@ class IntegrationRepositoryISpec
             apiDetail.domain shouldBe apiDetail5.domain
             apiDetail.subDomain shouldBe apiDetail5.subDomain
             apiDetail.apiType shouldBe apiDetail5.apiType
+            apiDetail.apiGeneration shouldBe apiDetail5.apiGeneration
           case Right(_) => fail()
           case Left(_) => fail()
         }
