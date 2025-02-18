@@ -22,9 +22,13 @@ import cats.data.Validated.*
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.*
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.prop.TableDrivenPropertyChecks.forAll
+import org.scalatest.prop.Tables.Table
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.{Configuration, Environment}
+import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes.*
 import uk.gov.hmrc.integrationcatalogue.models.*
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.HIP
@@ -32,6 +36,7 @@ import uk.gov.hmrc.integrationcatalogue.models.common.SpecificationType
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASParserService
 import uk.gov.hmrc.integrationcatalogue.repository.{ApiTeamsRepository, IntegrationRepository}
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
+import uk.gov.hmrc.integrationcatalogue.utils.ApiNumberExtractor
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.*
@@ -43,6 +48,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
   val mockApiRepo: IntegrationRepository     = mock[IntegrationRepository]
   val mockUuidService: UuidService           = mock[UuidService]
   val mockApiTeamsRepo: ApiTeamsRepository   = mock[ApiTeamsRepository]
+  val mockApiNumberExtractor: ApiNumberExtractor   = mock[ApiNumberExtractor]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -52,8 +58,11 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
   trait Setup {
 
     val rawData = "rawOASData"
+    private val env = Environment.simple()
+    private val configuration = Configuration.load(env)
+    private val appConfig = new AppConfig(configuration)
 
-    val inTest = new PublishService(mockOasParserService, mockApiRepo, mockUuidService, mockApiTeamsRepo)
+    val inTest = new PublishService(mockOasParserService, mockApiRepo, mockUuidService, mockApiTeamsRepo, mockApiNumberExtractor)
 
     val publishRequest: PublishRequest = PublishRequest(
       publisherReference = Some(apiDetail0.publisherReference),
@@ -72,6 +81,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
 
       when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
+      when(mockApiNumberExtractor.extract(any())).thenReturn(apiDetail0)
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
 
@@ -93,6 +103,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
 
       when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessUpdate))
+      when(mockApiNumberExtractor.extract(any())).thenReturn(apiDetail0)
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
@@ -129,6 +140,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
     "return fail when api upsert fails" in new Setup {
 
       when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockApiNumberExtractor.extract(any())).thenReturn(apiDetail0)
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertFailure))
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertFailure))
 
@@ -151,6 +163,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       val apiTeam: ApiTeam = ApiTeam(request.publisherReference.value, "test-team-id")
 
       when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockApiNumberExtractor.extract(any())).thenReturn(apiDetail0)
       when(mockApiRepo.exists(any(), any())).thenReturn(Future.successful(false))
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
       when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(Some(apiTeam)))
@@ -172,6 +185,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       val request: PublishRequest = publishRequest.copy(autopublish = true)
 
       when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockApiNumberExtractor.extract(any())).thenReturn(apiDetail0)
       when(mockApiRepo.exists(any(), any())).thenReturn(Future.successful(false))
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
       when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(None))
@@ -193,6 +207,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       val request: PublishRequest = publishRequest.copy(autopublish = true)
 
       when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
+      when(mockApiNumberExtractor.extract(any())).thenReturn(apiDetail0)
       when(mockApiRepo.exists(any(), any())).thenReturn(Future.successful(true))
       when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessUpdate))
 
@@ -203,6 +218,19 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       result.publishDetails.value shouldBe expectedPublishDetails
 
       verify(mockApiTeamsRepo, never).findByPublisherReference(any())
+    }
+
+    "extract valid API numbers when they appear in the API title" in new Setup {
+      val apiDetailWithExtractedNumber = apiDetail0.copy(apiNumber = Some("API123"), title = "my api title")
+      when(mockApiNumberExtractor.extract(eqTo(apiDetail0))).thenReturn(apiDetailWithExtractedNumber)
+
+      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(valid(apiDetail0))
+      when(mockApiRepo.exists(any(), any())).thenReturn(Future.successful(false))
+      when(mockApiRepo.findAndModify(any(), any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
+
+      Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
+
+      verify(mockApiRepo).findAndModify(apiDetailWithExtractedNumber, None)
     }
   }
 
