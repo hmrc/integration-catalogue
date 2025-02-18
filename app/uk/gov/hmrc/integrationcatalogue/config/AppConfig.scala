@@ -28,6 +28,7 @@ class AppConfig @Inject() (config: Configuration) {
 
   val defaultShortDescLength: Int   = 180
   val oldIndexesToDrop: Seq[String] = config.getOptional[Seq[String]]("mongodb.oldIndexesToDrop").getOrElse(Seq.empty)
+  val publishApiNumberIgnoreList: Set[String] = config.get[Seq[String]]("publish.apiNumber.ignoreList").toSet
   val apiTeamsTtlDays: Long = config.getOptional[Long]("mongodb.apiTeamsTtlDays").getOrElse(180)
   val shortDescLength: Int = config.getOptional[Int]("publish.shortDesc.maxLength").getOrElse(defaultShortDescLength)
 

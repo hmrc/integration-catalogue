@@ -21,19 +21,22 @@ import scala.concurrent.{ExecutionContext, Future}
 import cats.data.Validated.*
 import cats.data.*
 import play.api.Logging
+import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes.*
 import uk.gov.hmrc.integrationcatalogue.models.*
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.HIP
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASParserService
 import uk.gov.hmrc.integrationcatalogue.repository.{ApiTeamsRepository, IntegrationRepository}
+import uk.gov.hmrc.integrationcatalogue.utils.ApiNumberExtractor
 
 @Singleton
 class PublishService @Inject() (
   oasParser: OASParserService,
   integrationRepository: IntegrationRepository,
   uuidService: UuidService,
-  apiTeamsRepository: ApiTeamsRepository
+  apiTeamsRepository: ApiTeamsRepository,
+  apiNumberExtractor: ApiNumberExtractor,
 )(implicit ec: ExecutionContext) extends Logging {
 
   def publishFileTransfer(request: FileTransferPublishRequest)(implicit ec: ExecutionContext): Future[PublishResult] = {
@@ -62,7 +65,8 @@ class PublishService @Inject() (
       case Valid(apiDetailParsed) =>
         fetchTeam(request).flatMap {
           case Right(maybeApiTeam) =>
-            integrationRepository.findAndModify(apiDetailParsed, maybeApiTeam).map {
+            val apiDetailWithNumber = apiNumberExtractor.extract(apiDetailParsed)
+            integrationRepository.findAndModify(apiDetailWithNumber, maybeApiTeam).map {
               case Right((api, isUpdate)) =>
                 PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, api.id, api.publisherReference, api.platform)))
               case Left(_) =>
