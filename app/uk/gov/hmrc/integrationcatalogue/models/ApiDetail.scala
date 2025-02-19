@@ -17,7 +17,7 @@
 package uk.gov.hmrc.integrationcatalogue.models
 
 import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
-import uk.gov.hmrc.integrationcatalogue.models.common._
+import uk.gov.hmrc.integrationcatalogue.models.common.*
 
 import java.time.Instant
 
@@ -189,12 +189,13 @@ case class ApiDetail(
                       shortDescription: Option[String],
                       openApiSpecification: String,
                       apiStatus: ApiStatus,
-                      scopes: Set[Scope],
+                      scopes: Set[Scope] = Set.empty,
                       teamId: Option[String] = None,
                       domain: Option[String] = None,
                       subDomain: Option[String] = None,
                       apiType: Option[ApiType] = None,
-                      apiNumber: Option[String] = None
+                      apiNumber: Option[String] = None,
+                      apiGeneration: Option[ApiGeneration] = None,
                     ) extends IntegrationDetail {
   override val integrationType: IntegrationType = IntegrationType.API
 }

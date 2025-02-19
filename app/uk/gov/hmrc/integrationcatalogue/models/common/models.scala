@@ -95,3 +95,13 @@ object ApiType extends Enum[ApiType] with PlayJsonEnum[ApiType] {
   case object SIMPLE      extends ApiType
   case object ADVANCED    extends ApiType
 }
+
+sealed trait ApiGeneration extends EnumEntry
+
+object ApiGeneration extends Enum[ApiGeneration] with PlayJsonEnum[ApiGeneration] {
+
+  val values: IndexedSeq[ApiGeneration] = findValues
+
+  case object V1      extends ApiGeneration
+  case object V2      extends ApiGeneration
+}

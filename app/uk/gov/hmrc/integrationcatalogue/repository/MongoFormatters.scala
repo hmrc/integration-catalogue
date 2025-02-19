@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.integrationcatalogue.repository
 
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.functional.syntax.*
 import play.api.libs.json.*
 import uk.gov.hmrc.integrationcatalogue.models.*
 import uk.gov.hmrc.integrationcatalogue.models.common.*
@@ -67,30 +67,7 @@ object MongoFormatters {
 
   implicit val scopeFormat: Format[Scope] = Json.format[Scope]
 
-  private val apiDetailReads: Reads[ApiDetail] = (
-    (JsPath \ "id").read[IntegrationId] and
-      (JsPath \ "publisherReference").read[String] and
-      (JsPath \ "title").read[String] and
-      (JsPath \ "description").read[String] and
-      (JsPath \ "platform").read[PlatformType] and
-      (JsPath \ "hods").read[List[String]] and
-      (JsPath \ "lastUpdated").read[Instant] and
-      (JsPath \ "reviewedDate").read[Instant] and
-      (JsPath \ "maintainer").read[Maintainer] and
-      (JsPath \ "score").readNullable[Double] and
-      (JsPath \ "version").read[String] and
-      (JsPath \ "specificationType").read[SpecificationType] and
-      (JsPath \ "endpoints").read[List[Endpoint]] and
-      (JsPath \ "shortDescription").readNullable[String] and
-      (JsPath \ "openApiSpecification").read[String] and
-      (JsPath \ "apiStatus").read[ApiStatus] and
-      (JsPath \ "scopes").readWithDefault[Set[Scope]](Set.empty) and
-      (JsPath \ "teamId").readNullable[String] and
-      (JsPath \ "domain").readNullable[String] and
-      (JsPath \ "subDomain").readNullable[String] and
-      (JsPath \ "apiType").readNullable[ApiType] and
-      (JsPath \ "apiNumber").readNullable[String]
-    )(ApiDetail.apply)
+  private val apiDetailReads: Reads[ApiDetail] = Json.using[Json.WithDefaultValues].reads[ApiDetail]
 
   private val apiDetailWrites: Writes[ApiDetail] = Json.writes[ApiDetail]
   implicit val apiDetailParsedFormats: Format[ApiDetail] = Format(apiDetailReads, apiDetailWrites)

@@ -23,7 +23,7 @@ import io.swagger.v3.oas.models.info.Info
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus.*
-import uk.gov.hmrc.integrationcatalogue.models.common.ApiType
+import uk.gov.hmrc.integrationcatalogue.models.common.{ApiGeneration, ApiType}
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters.dateAndOptionalTimeFormatter
 
 import java.time.{Instant, ZonedDateTime}
@@ -50,9 +50,10 @@ trait OASExtensionsAdapter extends ExtensionKeys {
             getReviewedDate(integrationCatalogueExtensions),
             getDomain(integrationCatalogueExtensions),
             getSubDomain(integrationCatalogueExtensions),
-            getApiType(integrationCatalogueExtensions)
+            getApiType(integrationCatalogueExtensions),
+            getApiGeneration(integrationCatalogueExtensions)
           )
-        }.mapN((backends, publisherReference, shortDescription, status, reviewedDate, domain, subDomain, apiType) => {
+        }.mapN((backends, publisherReference, shortDescription, status, reviewedDate, domain, subDomain, apiType, apiGeneration) => {
           IntegrationCatalogueExtensions(
             backends,
             publisherReference,
@@ -62,6 +63,7 @@ trait OASExtensionsAdapter extends ExtensionKeys {
             domain,
             subDomain,
             apiType,
+            apiGeneration,
           )
         })
       })
@@ -189,6 +191,17 @@ trait OASExtensionsAdapter extends ExtensionKeys {
       case _               => "Api-type must be a valid string".invalidNel[Option[ApiType]]
     }
   }
+
+  def getApiGeneration(extensions: Map[String, AnyRef]): ValidatedNel[String, Option[ApiGeneration]] = {
+    extensions.get(API_GENERATION) match {
+      case None            => Validated.valid(None)
+      case Some(apiGeneration: String) =>
+        if (ApiGeneration.values.toList.map(_.entryName).contains(apiGeneration.toUpperCase)) {
+          Validated.valid(Some(ApiGeneration.withName(apiGeneration)))
+        } else s"Api-Generation must be one of ${ApiGeneration.values.mkString(", ")}".invalidNel[Option[ApiGeneration]]
+      case _               => "Api-Generation must be a valid string".invalidNel[Option[ApiGeneration]]
+    }
+  }
 }
 
 case class IntegrationCatalogueExtensions(
@@ -199,5 +212,6 @@ case class IntegrationCatalogueExtensions(
   reviewedDate: Instant,
   domain: Option[String],
   subDomain: Option[String],
-  apiType: Option[ApiType]
+  apiType: Option[ApiType],
+  apiGeneration: Option[ApiGeneration],
 )
