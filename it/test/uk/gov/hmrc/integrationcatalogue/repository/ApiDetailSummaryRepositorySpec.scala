@@ -21,6 +21,7 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.Json
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType
 import uk.gov.hmrc.integrationcatalogue.models.{ApiDetail, ApiDetailSummary, IntegrationDetail}
 import uk.gov.hmrc.integrationcatalogue.support.MdcTesting

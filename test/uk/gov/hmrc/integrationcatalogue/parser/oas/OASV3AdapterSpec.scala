@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.integrationcatalogue.parser.oas
 
-import cats.data.Validated._
-import cats.data._
+import cats.data.Validated.*
+import cats.data.*
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.info.Info
 import org.joda.time.DateTime
@@ -28,7 +28,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
-import uk.gov.hmrc.integrationcatalogue.models.common.{ContactInformation, IntegrationId, PlatformType, SpecificationType}
+import uk.gov.hmrc.integrationcatalogue.models.common.{ApiGeneration, ContactInformation, IntegrationId, PlatformType, SpecificationType}
 import uk.gov.hmrc.integrationcatalogue.models.{ApiDetail, Scope}
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.OASV3Adapter
 import uk.gov.hmrc.integrationcatalogue.service.UuidService
@@ -63,7 +63,7 @@ class OASV3AdapterSpec extends AnyWordSpec with Matchers with MockitoSugar with 
     val domain = "test-domain"
     val subDomain = "test-sub-domain"
 
-    val apiGeneration = "v2"
+    val apiGeneration = ApiGeneration.V2
   }
 
   "extractOpenApi" should {

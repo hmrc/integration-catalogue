@@ -17,7 +17,7 @@
 package uk.gov.hmrc.integrationcatalogue.models
 
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.integrationcatalogue.models.common.{ApiType, IntegrationId, PlatformType}
+import uk.gov.hmrc.integrationcatalogue.models.common.{ApiGeneration, ApiType, IntegrationId, PlatformType}
 
 case class ApiDetailSummary(
   id: IntegrationId,
@@ -32,7 +32,7 @@ case class ApiDetailSummary(
   apiType: Option[ApiType],
   teamId: Option[String],
   apiNumber: Option[String],
-  apiGeneration: Option[String]
+  apiGeneration: Option[ApiGeneration]
 )
 
 object ApiDetailSummary {

@@ -23,7 +23,7 @@ import io.swagger.v3.oas.models.info.Info
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus.*
-import uk.gov.hmrc.integrationcatalogue.models.common.ApiType
+import uk.gov.hmrc.integrationcatalogue.models.common.{ApiGeneration, ApiType}
 import uk.gov.hmrc.integrationcatalogue.models.JsonFormatters.dateAndOptionalTimeFormatter
 
 import java.time.{Instant, ZonedDateTime}
@@ -192,11 +192,14 @@ trait OASExtensionsAdapter extends ExtensionKeys {
     }
   }
 
-  def getApiGeneration(extensions: Map[String, AnyRef]): ValidatedNel[String, Option[String]] = {
+  def getApiGeneration(extensions: Map[String, AnyRef]): ValidatedNel[String, Option[ApiGeneration]] = {
     extensions.get(API_GENERATION) match {
       case None            => Validated.valid(None)
-      case Some(apiGeneration: String) => Validated.valid(Some(apiGeneration.toLowerCase))
-      case _               => "Api-Generation must be a valid string".invalidNel[Option[String]]
+      case Some(apiGeneration: String) =>
+        if (ApiGeneration.values.toList.map(_.entryName).contains(apiGeneration.toUpperCase)) {
+          Validated.valid(Some(ApiGeneration.withName(apiGeneration)))
+        } else s"Api-Generation must be one of ${ApiGeneration.values.mkString(", ")}".invalidNel[Option[ApiGeneration]]
+      case _               => "Api-Generation must be a valid string".invalidNel[Option[ApiGeneration]]
     }
   }
 }
@@ -210,5 +213,5 @@ case class IntegrationCatalogueExtensions(
   domain: Option[String],
   subDomain: Option[String],
   apiType: Option[ApiType],
-  apiGeneration: Option[String],
+  apiGeneration: Option[ApiGeneration],
 )

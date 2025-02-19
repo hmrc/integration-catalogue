@@ -28,7 +28,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.models.ApiStatus
-import uk.gov.hmrc.integrationcatalogue.models.common.ApiType
+import uk.gov.hmrc.integrationcatalogue.models.common.{ApiGeneration, ApiType}
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.{ExtensionKeys, IntegrationCatalogueExtensions, OASExtensionsAdapter}
 import uk.gov.hmrc.integrationcatalogue.testdata.{ApiTestData, OasTestData}
 
@@ -133,10 +133,15 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
 
     val extensionsWithApiGeneration = new util.HashMap[String, Object]() {{
       putAll(extensionsWithReviewDateAndPublisherReference);
-      put(API_GENERATION, "v2")
+      put(API_GENERATION, "V2")
     }}
 
     val extensionsWithInvalidApiGeneration = new util.HashMap[String, Object]() {{
+      putAll(extensionsWithReviewDateAndPublisherReference);
+      put(API_GENERATION, "V-1")
+    }}
+
+    val extensionsWithInvalidApiGenerationType = new util.HashMap[String, Object]() {{
       putAll(extensionsWithReviewDateAndPublisherReference);
       put(API_GENERATION, Int.box(2))
     }}
@@ -510,13 +515,22 @@ class OasExtensionsAdapterSpec extends AnyWordSpec
       result match {
         case Left(_) => fail()
         case Right(extensions) =>
-          extensions.apiGeneration shouldBe Some("v2")
+          extensions.apiGeneration shouldBe Some(ApiGeneration.V2)
       }
     }
 
     "return Left when an API generation is populated with an invalid String" in new Setup {
       val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
         parseExtensions(generateInfoObject(extensionsWithInvalidApiGeneration), Some(publisherRefValue), mockAppConfig)
+      result match {
+        case Left(errors) => errors.head shouldBe s"Api-Generation must be one of V1, V2"
+        case Right(_) => fail()
+      }
+    }
+
+    "return Left when an API generation is populated with an invalid type" in new Setup {
+      val result: Either[NonEmptyList[String], IntegrationCatalogueExtensions] =
+        parseExtensions(generateInfoObject(extensionsWithInvalidApiGenerationType), Some(publisherRefValue), mockAppConfig)
       result match {
         case Left(errors) => errors.head shouldBe s"Api-Generation must be a valid string"
         case Right(_) => fail()

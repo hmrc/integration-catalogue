@@ -21,13 +21,14 @@ import io.swagger.v3.oas.models.info.{Contact, Info}
 import io.swagger.v3.oas.models.media.{Content, MediaType}
 import io.swagger.v3.oas.models.parameters.RequestBody
 import io.swagger.v3.oas.models.responses.{ApiResponse, ApiResponses}
-import io.swagger.v3.oas.models.security._
-import io.swagger.v3.oas.models._
+import io.swagger.v3.oas.models.security.*
+import io.swagger.v3.oas.models.*
 import io.swagger.v3.parser.core.models.SwaggerParseResult
+import uk.gov.hmrc.integrationcatalogue.models.common.ApiGeneration
 import uk.gov.hmrc.integrationcatalogue.parser.oas.adapters.ExtensionKeys
 
 import java.util
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 trait OasTestData extends ExtensionKeys {
   // *** - OPENAPI STUFF
@@ -80,7 +81,7 @@ trait OasTestData extends ExtensionKeys {
                         globalScopes: List[String] = List.empty,
                         endpointScopes: Map[String, List[String]] = Map.empty,
                         oauthFlowScopes: Map[String, List[(String,String)]] = Map.empty,
-                        apiGenerationExtension: Option[String] = None,
+                        apiGenerationExtension: Option[ApiGeneration] = None,
                       ): OpenAPI = {
     val openAPIInfo = buildOpenApiInfo()
 
@@ -98,7 +99,7 @@ trait OasTestData extends ExtensionKeys {
 
         domainExtension.foreach(domain => sublevelExtensions.put(DOMAIN_EXTENSION_KEY, domain))
         subDomainExtension.foreach(subDomain => sublevelExtensions.put(SUB_DOMAIN_EXTENSION_KEY, subDomain))
-        apiGenerationExtension.foreach(apiGeneration => sublevelExtensions.put(API_GENERATION, apiGeneration))
+        apiGenerationExtension.foreach(apiGeneration => sublevelExtensions.put(API_GENERATION, apiGeneration.entryName))
       }
 
       if (reviewedDateExtension.isDefined) {

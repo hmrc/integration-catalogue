@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.integrationcatalogue.testdata
 
-import uk.gov.hmrc.integrationcatalogue.models.ApiStatus._
-import uk.gov.hmrc.integrationcatalogue.models._
-import uk.gov.hmrc.integrationcatalogue.models.common.{ApiType, IntegrationId, Maintainer, PlatformType, SpecificationType}
+import uk.gov.hmrc.integrationcatalogue.models.ApiStatus.*
+import uk.gov.hmrc.integrationcatalogue.models.*
+import uk.gov.hmrc.integrationcatalogue.models.common.{ApiGeneration, ApiType, IntegrationId, Maintainer, PlatformType, SpecificationType}
 
 import java.time.Instant
 import java.util.UUID
@@ -134,7 +134,7 @@ trait OasParsedItTestData {
     subDomain = Some("test-sub-domain-1"),
     teamId = Some("team1"),
     apiNumber = Some("test-api-number-1"),
-    apiGeneration = Some("v2"),
+    apiGeneration = Some(ApiGeneration.V2),
   )
 
   val apiDetail3: ApiDetail = ApiDetail(
@@ -154,7 +154,7 @@ trait OasParsedItTestData {
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
     scopes = Set.empty,
-    apiGeneration = Some("v2"),
+    apiGeneration = Some(ApiGeneration.V2),
   )
 
   val apiDetail4: ApiDetail = ApiDetail(
@@ -174,7 +174,7 @@ trait OasParsedItTestData {
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
     scopes = Set.empty,
-    apiGeneration = Some("v2"),
+    apiGeneration = Some(ApiGeneration.V2),
   )
 
   val apiDetail5: ApiDetail = ApiDetail(
@@ -197,7 +197,7 @@ trait OasParsedItTestData {
     domain = Some("test-domain-5"),
     subDomain = Some("test-sub-domain-5"),
     apiType = Some(ApiType.SIMPLE),
-    apiGeneration = Some("v2"),
+    apiGeneration = Some(ApiGeneration.V2),
   )
 
   val apiDetail6: ApiDetail = ApiDetail(
@@ -217,7 +217,7 @@ trait OasParsedItTestData {
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
     scopes = Set.empty,
-    apiGeneration = Some("v2"),
+    apiGeneration = Some(ApiGeneration.V2),
   )
 
   val apiDetail9: ApiDetail = ApiDetail(
@@ -237,7 +237,7 @@ trait OasParsedItTestData {
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
     scopes = Set.empty,
-    apiGeneration = Some("v2"),
+    apiGeneration = Some(ApiGeneration.V2),
   )
 
   val fileTransfer2: FileTransferDetail =
