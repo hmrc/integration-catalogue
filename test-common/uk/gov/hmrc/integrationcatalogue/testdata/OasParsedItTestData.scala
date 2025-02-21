@@ -133,7 +133,7 @@ trait OasParsedItTestData {
     domain = Some("test-domain-1"),
     subDomain = Some("test-sub-domain-1"),
     teamId = Some("team1"),
-    apiNumber = Some("test-api-number-1"),
+    apiNumber = Some("API#1001"),
     apiGeneration = Some(ApiGeneration.V2),
   )
 
@@ -197,6 +197,7 @@ trait OasParsedItTestData {
     domain = Some("test-domain-5"),
     subDomain = Some("test-sub-domain-5"),
     apiType = Some(ApiType.SIMPLE),
+    apiNumber = Some("API#1005"),
     apiGeneration = Some(ApiGeneration.V2),
   )
 
@@ -237,7 +238,7 @@ trait OasParsedItTestData {
     apiStatus = LIVE,
     reviewedDate = reviewedDate,
     scopes = Set.empty,
-    apiGeneration = Some(ApiGeneration.V2),
+    apiGeneration = Some(ApiGeneration.V2)
   )
 
   val fileTransfer2: FileTransferDetail =

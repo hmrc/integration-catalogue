@@ -55,12 +55,12 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
         IndexModel(ascending(List("platform", "publisherReference")*), IndexOptions().name("platform_pub_ref_idx").background(true).unique(true)),
         IndexModel(
           Indexes.text("$**"),
-          IndexOptions().weights(new BasicDBObject().append("title", 50).append("description", 25))
+          IndexOptions().weights(new BasicDBObject().append("apiNumber", 75).append("title", 50).append("description", 25))
             .name("text_index_1_1").background(true)
         ),
         IndexModel(ascending("teamId"), IndexOptions().name("teamId_index").background(true).unique(false).sparse(true))
       ),
-      replaceIndexes = false
+      replaceIndexes = true
     )
     with Logging {
 
