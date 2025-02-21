@@ -19,7 +19,7 @@ package uk.gov.hmrc.integrationcatalogue.repository
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.{Assertion, BeforeAndAfterEach}
+import org.scalatest.{Assertion, BeforeAndAfterEach, OptionValues}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -45,7 +45,8 @@ class IntegrationRepositoryISpec
     with ScalaFutures
     with BeforeAndAfterEach
     with OasParsedItTestData
-    with AwaitTestSupport {
+    with AwaitTestSupport
+    with OptionValues {
 
   override val repository: PlayMongoRepository[IntegrationDetail] = app.injector.instanceOf[IntegrationRepository]
   lazy val indexNameToDrop = "please_delete_me__let_me_go"
@@ -513,6 +514,27 @@ class IntegrationRepositoryISpec
         )
       }
 
+      "find 1 result when searching for quoted text containing a specific API number" in  new FilterSetup {
+        setUpTest()
+        validateResults(findWithFilters(IntegrationFilter(List(s""""${apiDetail1.apiNumber.value}""""))).results, List("API1001"))
+      }
+
+      "find multiple results when searching for text containing the API number for API1001, with that API first" in  new FilterSetup {
+        setUpTest()
+        val results: Seq[IntegrationDetail] = findWithFilters(IntegrationFilter(List(apiDetail1.apiNumber.value))).results
+        val topResult: Seq[IntegrationDetail] = Seq(results.head)
+        results.size should be > 1
+        validateResults(topResult, List("API1001"))
+      }
+
+      "find multiple results when searching for text containing the API number for API1005, with that API first" in  new FilterSetup {
+        setUpTest()
+        val results: Seq[IntegrationDetail] = findWithFilters(IntegrationFilter(List(apiDetail5.apiNumber.value))).results
+        val topResult: Seq[IntegrationDetail] = Seq(results.head)
+        results.size should be > 1
+        validateResults(topResult, List("API1005"))
+      }
+
       "find 2 results when searching for backend CUSTOMS" in new FilterSetup {
         setUpTest()
         validateResults(findWithFilters(IntegrationFilter(backends = List("CUSTOMS"))).results, List("API1003", "API1004"))
@@ -557,7 +579,6 @@ class IntegrationRepositoryISpec
         setUpTest()
         validateResults(findWithFilters(IntegrationFilter(typeFilter = Some(API))).results, List("API1001", "API1003", "API1004", "API1005"))
       }
-
     }
 
     "getCatalogueReport" should {
