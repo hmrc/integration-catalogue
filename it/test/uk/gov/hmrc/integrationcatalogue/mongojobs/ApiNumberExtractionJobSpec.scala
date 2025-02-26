@@ -22,15 +22,14 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.time.{Seconds, Span}
 import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.integrationcatalogue.models.IntegrationDetail
+import uk.gov.hmrc.integrationcatalogue.models.{ApiDetail, FileTransferDetail, IntegrationDetail}
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 import play.api.inject.bind
 import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 import uk.gov.hmrc.integrationcatalogue.testdata.ApiTestData
 import uk.gov.hmrc.integrationcatalogue.utils.ApiNumberExtractor
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.integrationcatalogue.models.ApiDetail
-import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId
+import uk.gov.hmrc.integrationcatalogue.models.common.{IntegrationId, PlatformType}
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext
@@ -65,15 +64,47 @@ class ApiNumberExtractionJobSpec extends AnyFreeSpec
     ).head().futureValue
   }
 
+  private def insertFileTransferWithTitles(titles: Seq[String]) = {
+    repository.collection.insertMany(
+      titles.map(title => FileTransferDetail(
+        id = IntegrationId(UUID.randomUUID()),
+        fileTransferSpecificationVersion = "0.1",
+        publisherReference = "pubref-" + title,
+        title = title,
+        description = "file transfer 1 desc",
+        lastUpdated = dateValue,
+        reviewedDate = reviewedDate,
+        platform = PlatformType.CORE_IF,
+        maintainer = coreIfMaintainer,
+        sourceSystem = List("source"),
+        targetSystem = List("target"),
+        transports = List("UTM"),
+        fileTransferPattern = "pattern1",
+      )
+    )).head().futureValue
+  }
+
   private def runExtractionJob() = {
     new ApiNumberExtractionJob(apiNumberExtractor, repository).run().futureValue
   }
 
   private def checkApiTitles(expectedTitles: Set[ApiNumberResult]) = {
     eventually(timeout(Span(5, Seconds)), interval(Span(0.5, Seconds))) {
-      val results = repository.collection.find().foldLeft(Set.empty[ApiNumberResult]) { (acc, integrationDetail) =>
-        val apiDetail = integrationDetail.asInstanceOf[ApiDetail]
-        acc + ApiNumberResult(apiDetail.apiNumber, apiDetail.title)
+      val results = repository.collection.find()
+        .collect {case apiDetail: ApiDetail => apiDetail}
+        .foldLeft(Set.empty[ApiNumberResult]) { (acc, apiDetail) =>
+          acc + ApiNumberResult(apiDetail.apiNumber, apiDetail.title)
+        }
+      results.head.futureValue mustBe expectedTitles
+    }
+  }
+
+  private def checkFileTransferTitles(expectedTitles: Set[String]) = {
+    eventually(timeout(Span(5, Seconds)), interval(Span(0.5, Seconds))) {
+      val results = repository.collection.find()
+        .collect {case fileTransferDetail: FileTransferDetail => fileTransferDetail}
+        .foldLeft(Set.empty[String]) { (acc, fileTransferDetail) =>
+        acc + fileTransferDetail.title
       }
       results.head.futureValue mustBe expectedTitles
     }
@@ -102,6 +133,32 @@ class ApiNumberExtractionJobSpec extends AnyFreeSpec
       runExtractionJob()
 
       checkApiTitles((1 to 1000 map { i => ApiNumberResult(Some(s"API#$i"), s"title $i") }).toSet)
+    }
+
+    "must not affect file transfers" in {
+      insertApiDetailsWithTitles(Seq(
+        "API#101 - title 1",
+        "API with no number",
+        "API#103 - title 3",
+      ))
+      insertFileTransferWithTitles(Seq(
+        "File Transfer 1",
+        "FTR#123 - File Transfer 2",
+        "File Transfer 3",
+      ))
+
+      runExtractionJob()
+
+      checkApiTitles(Set(
+        ApiNumberResult(Some("API#101"), "title 1"),
+        ApiNumberResult(None, "API with no number"),
+        ApiNumberResult(Some("API#103"), "title 3"),
+      ))
+      checkFileTransferTitles(Set(
+        "File Transfer 1",
+        "FTR#123 - File Transfer 2",
+        "File Transfer 3",
+      ))
     }
 
     "must not update API number and title when no valid number is found" in {

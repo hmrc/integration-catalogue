@@ -51,8 +51,7 @@ class ApiNumberExtractionJob @Inject()(
             Future.successful(accSummary)
           } else {
             logger.info(s"Processing batch ${currentPage + 1}...")
-            val updatedApiDetails = response.flatMap(integrationDetail => {
-                val currentApiDetail = integrationDetail.asInstanceOf[ApiDetail]
+            val updatedApiDetails = response.collect { case apiDetail: ApiDetail => apiDetail }.flatMap(currentApiDetail => {
                 val transformedApiDetails = apiNumberExtractor.extract(currentApiDetail)
                 val apiNumberExtracted = transformedApiDetails.title != currentApiDetail.title
 
@@ -64,7 +63,6 @@ class ApiNumberExtractionJob @Inject()(
                 case Left(e) => false
               }
             }))
-
             updateResults.flatMap(r => {
               val successCount = r.count(identity)
               val batchSummary = MigrationSummary(
@@ -73,6 +71,7 @@ class ApiNumberExtractionJob @Inject()(
                 extractSuccessCount = successCount,
                 extractFailureCount = r.size - successCount
               )
+              logger.info(s"Batch ${currentPage + 1} summary: $batchSummary")
               processBatch(currentPage + 1, accSummary + batchSummary)
             })
           }
