@@ -16,9 +16,11 @@
 
 package uk.gov.hmrc.integrationcatalogue.mongojobs
 
+import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatest.time.{Millis, Seconds, Span}
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.integrationcatalogue.models.IntegrationDetail
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
@@ -31,8 +33,7 @@ import uk.gov.hmrc.integrationcatalogue.models.ApiDetail
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId
 
 import java.util.UUID
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.concurrent.duration.*
+import scala.concurrent.ExecutionContext
 
 class ApiNumberExtractionJobSpec extends AnyFreeSpec
   with Matchers
@@ -69,11 +70,13 @@ class ApiNumberExtractionJobSpec extends AnyFreeSpec
   }
 
   private def checkApiTitles(expectedTitles: Set[ApiNumberResult]) = {
-    repository.collection.find().foldLeft(Set.empty[ApiNumberResult]) { (acc, integrationDetail) => {
-      val apiDetail = integrationDetail.asInstanceOf[ApiDetail]
-      acc + ApiNumberResult(apiDetail.apiNumber, apiDetail.title)
+    eventually(timeout(Span(5, Seconds)), interval(Span(0.5, Seconds))) {
+      val results = repository.collection.find().foldLeft(Set.empty[ApiNumberResult]) { (acc, integrationDetail) =>
+        val apiDetail = integrationDetail.asInstanceOf[ApiDetail]
+        acc + ApiNumberResult(apiDetail.apiNumber, apiDetail.title)
+      }
+      results.head.futureValue mustBe expectedTitles
     }
-    }.head.futureValue mustBe expectedTitles
   }
 
   "ApiNumberExtractionJobSpec" - {
@@ -83,7 +86,7 @@ class ApiNumberExtractionJobSpec extends AnyFreeSpec
         "DAPI-102 title 2",
         "acc3   title 3"
       ))
-      
+
       runExtractionJob()
 
       checkApiTitles(Set(
@@ -91,6 +94,14 @@ class ApiNumberExtractionJobSpec extends AnyFreeSpec
         ApiNumberResult(Some("DAPI-102"), "title 2"),
         ApiNumberResult(Some("acc3"), "title 3")
       ))
+    }
+
+    "bulk test" in {
+      insertApiDetailsWithTitles(1 to 1000 map { i => s"API#$i - title $i" })
+
+      runExtractionJob()
+
+      checkApiTitles((1 to 1000 map { i => ApiNumberResult(Some(s"API#$i"), s"title $i") }).toSet)
     }
 
     "must not update API number and title when no valid number is found" in {
