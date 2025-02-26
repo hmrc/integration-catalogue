@@ -20,7 +20,7 @@ import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import org.scalatest.time.{Millis, Seconds, Span}
+import org.scalatest.time.{Seconds, Span}
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.integrationcatalogue.models.IntegrationDetail
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
@@ -96,7 +96,7 @@ class ApiNumberExtractionJobSpec extends AnyFreeSpec
       ))
     }
 
-    "bulk test" in {
+    "must successfully update large numbers of APIs covering multiple batches" in {
       insertApiDetailsWithTitles(1 to 1000 map { i => s"API#$i - title $i" })
 
       runExtractionJob()
@@ -134,6 +134,21 @@ class ApiNumberExtractionJobSpec extends AnyFreeSpec
         ApiNumberResult(None, "CSRD2 title 1"),
         ApiNumberResult(None, "CSRD2 - title 2"),
       ))
+    }
+  }
+
+  "MigrationSummary" - {
+    "must combine summaries correctly" in {
+      val summary1 = MigrationSummary(10, 5, 3, 2)
+      val summary2 = MigrationSummary(20, 10, 5, 5)
+
+      val expectedSummary = MigrationSummary(30, 15, 8, 7)
+      summary1 + summary2 mustBe expectedSummary
+    }
+
+    "must correctly format summary as string" in {
+      val summary = MigrationSummary(10, 5, 3, 2)
+      summary.toString mustBe "ApiNumberExtractionJob Migration Report: Total APIs=10, APIs with valid numbers=5, API numbers extracted successfully=3, API number extraction failures=2"
     }
   }
 }

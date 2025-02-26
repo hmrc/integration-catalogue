@@ -17,11 +17,12 @@
 package uk.gov.hmrc.integrationcatalogue.mongojobs
 
 import com.google.inject.Inject
+import org.mongodb.scala.model.Sorts.ascending
 import play.api.Logging
-import uk.gov.hmrc.integrationcatalogue.models.{ApiDetail, IntegrationDetail, IntegrationFilter}
+import uk.gov.hmrc.integrationcatalogue.models.{ApiDetail, IntegrationDetail}
 import uk.gov.hmrc.integrationcatalogue.repository.IntegrationRepository
 import uk.gov.hmrc.integrationcatalogue.utils.ApiNumberExtractor
-
+import org.mongodb.scala.ObservableFuture
 import scala.concurrent.{ExecutionContext, Future}
 
 class ApiNumberExtractionJob @Inject()(
@@ -29,51 +30,56 @@ class ApiNumberExtractionJob @Inject()(
     integrationRepository: IntegrationRepository
 )(implicit ec: ExecutionContext) extends MongoJob with Logging {
 
-  private val batchSize = 100
+  private val batchSize = 50
 
   override def run(): Future[Unit] = {
     logger.info(s"Running API number extraction job...")
 
-    val batchSize = 20
-
     def processBatch(currentPage: Int, accSummary: MigrationSummary): Future[MigrationSummary] = {
-      integrationRepository.findWithFilters(IntegrationFilter(currentPage = Some(currentPage), itemsPerPage = Some(batchSize))).flatMap(response => {
-        logger.info(s"Processing batch ${currentPage + 1}...")
-        if (response.results.isEmpty) {
-          Future.successful(accSummary)
-        } else {
-          val updatedApiDetails = response.results.flatMap(integrationDetail => {
-              val currentApiDetail = integrationDetail.asInstanceOf[ApiDetail]
-              val transformedApiDetails = apiNumberExtractor.extract(currentApiDetail)
-              val apiNumberExtracted = transformedApiDetails.title != currentApiDetail.title
+      /* We can't use integrationRepository.findWithFilters() to retrieve the results here because it sorts by title -
+      since we are updating the title it means some rows get fetched multiple times and some never get fetched. We
+      ensure consistent ordering by sorting on 'id' although other fields would also work */
+      integrationRepository.collection.find()
+        .skip(currentPage * batchSize)
+        .limit(batchSize)
+        .sort(ascending("id"))
+        .toFuture()
+        .map(_.toList)
+        .flatMap(response => {
+          if (response.isEmpty) {
+            logger.info("No more APIs to process")
+            Future.successful(accSummary)
+          } else {
+            logger.info(s"Processing batch ${currentPage + 1}...")
+            val updatedApiDetails = response.flatMap(integrationDetail => {
+                val currentApiDetail = integrationDetail.asInstanceOf[ApiDetail]
+                val transformedApiDetails = apiNumberExtractor.extract(currentApiDetail)
+                val apiNumberExtracted = transformedApiDetails.title != currentApiDetail.title
 
-              Option.when(apiNumberExtracted)(transformedApiDetails)
+                Option.when(apiNumberExtracted)(transformedApiDetails)
+              })
+            val updateResults = Future.sequence(updatedApiDetails.map(apiDetail => {
+              integrationRepository.findAndModify(apiDetail).map {
+                case Right((a, _)) => true
+                case Left(e) => false
+              }
+            }))
+
+            updateResults.flatMap(r => {
+              val successCount = r.count(identity)
+              val batchSummary = MigrationSummary(
+                apiCount = response.size,
+                validApiNumberCount = updatedApiDetails.size,
+                extractSuccessCount = successCount,
+                extractFailureCount = r.size - successCount
+              )
+              processBatch(currentPage + 1, accSummary + batchSummary)
             })
-
-          val updateResults = Future.sequence(updatedApiDetails.map(apiDetail => {
-            integrationRepository.findAndModify(apiDetail).map {
-              case Right((a, _)) => true
-              case Left(e) => false
-            }
-          }))
-
-          updateResults.flatMap(r => {
-            val successCount = r.count(identity)
-            val failureCount = r.size - successCount
-            val batchSummary = MigrationSummary(
-              response.results.size,
-              updatedApiDetails.size,
-              successCount,
-              failureCount
-            )
-
-            processBatch(currentPage + 1, accSummary + batchSummary)
-          })
-        }
-      })
+          }
+        })
     }
 
-    val resultFuture = processBatch(0, MigrationSummary(0, 0, 0, 0))
+    val resultFuture = processBatch(0, MigrationSummary())
     resultFuture.map(finalSummary => {
       logger.info(s"API number extraction job completed. Final summary: $finalSummary")
     })
@@ -81,10 +87,10 @@ class ApiNumberExtractionJob @Inject()(
 }
 
 case class MigrationSummary(
-  apiCount: Int,
-  validApiNumberCount: Int,
-  extractSuccessCount: Int,
-  extractFailureCount: Int
+  apiCount: Int = 0,
+  validApiNumberCount: Int = 0,
+  extractSuccessCount: Int = 0,
+  extractFailureCount: Int = 0
 ) {
   override def toString: String = {
     "ApiNumberExtractionJob Migration Report: " +

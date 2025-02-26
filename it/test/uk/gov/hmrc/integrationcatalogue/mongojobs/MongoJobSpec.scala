@@ -39,22 +39,24 @@ class MongoJobSpec
       val fixture = buildFixture(Some(true))
       running(fixture.application) {
         Thread.sleep(1000)
-        eventually {verify(fixture.integrationRepository).findWithFilters(IntegrationFilter())}
+        eventually {
+          verify(fixture.integrationRepository).findWithFilters(IntegrationFilter())
+        }
       }
     }
-  }
 
-  "not lookup API titles when mongo job is disabled" in {
-    val fixture = buildFixture(Some(false))
-    running(fixture.application) {
-      verifyNoInteractions(fixture.integrationRepository)
+    "not lookup API titles when mongo job is disabled" in {
+      val fixture = buildFixture(Some(false))
+      running(fixture.application) {
+        verifyNoInteractions(fixture.integrationRepository)
+      }
     }
-  }
 
-  "not lookup API titles when mongo job config is absent" in {
-    val fixture = buildFixture(None)
-    running(fixture.application) {
-      verifyNoInteractions(fixture.integrationRepository)
+    "not lookup API titles when mongo job config is absent" in {
+      val fixture = buildFixture(None)
+      running(fixture.application) {
+        verifyNoInteractions(fixture.integrationRepository)
+      }
     }
   }
 }
