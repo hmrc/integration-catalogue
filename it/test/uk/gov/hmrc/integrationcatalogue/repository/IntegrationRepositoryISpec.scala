@@ -248,6 +248,19 @@ class IntegrationRepositoryISpec
 
       }
 
+      "created date is not modified after an update" in {
+        val apiDetailModify: ApiDetail = await(repo.findAndModify(apiDetail1)).toOption.collect {
+          case (apiDetail: ApiDetail, _) => apiDetail
+        }.getOrElse(fail())
+
+
+        val apiDetailModifyAgain: ApiDetail = await(repo.findAndModify(apiDetailModify.copy(title = "new title"))).toOption.collect {
+          case (apiDetail: ApiDetail, _) => apiDetail
+        }.getOrElse(fail())
+
+        apiDetailModify.created shouldBe apiDetailModifyAgain.created
+      }
+
       "save file transfer details when no duplicate exists in collection" in {
         val result = getAll
         result shouldBe List.empty
@@ -308,7 +321,7 @@ class IntegrationRepositoryISpec
 
       }
 
-      "Save API should serialize all fields in APIDetail" in {
+      "Save API should serialize all fields in APIDetail except the primary key '_id'" in {
         await(repo.findAndModify(apiDetail1, Some(ApiTeam("a_publisher_ref", "team1")))) match {
           case Right((persisted: ApiDetail, _)) => {
             val id = UUID.randomUUID()
@@ -317,8 +330,10 @@ class IntegrationRepositoryISpec
             val reference = apiDetail1.copy(id = IntegrationId(id), lastUpdated = now, reviewedDate = now)
 
             classOf[ApiDetail].getDeclaredFields foreach (f => {
-              f.setAccessible(true)
-              f.get(actual) shouldBe (f.get(reference))
+              if (!f.getName.equals("_id")) {
+                f.setAccessible(true)
+                f.get(actual) shouldBe (f.get(reference))
+              }
             })
           }
           case _ => fail()

@@ -57,7 +57,7 @@ class IntegrationControllerSpec extends AnyWordSpec with Matchers with MockitoSu
   )
 
   private val exampleApiDetail: ApiDetail = ApiDetail(
-    IntegrationId(UUID.fromString("e2e4ce48-29b0-11eb-adc1-0242ac120002")),
+    id = IntegrationId(UUID.fromString("e2e4ce48-29b0-11eb-adc1-0242ac120002")),
     publisherReference = "API1689",
     title = "getKnownFactsName",
     description = "getKnownFactsDesc",
