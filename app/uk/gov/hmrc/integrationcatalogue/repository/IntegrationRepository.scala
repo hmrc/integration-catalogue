@@ -60,7 +60,7 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
         ),
         IndexModel(ascending("teamId"), IndexOptions().name("teamId_index").background(true).unique(false).sparse(true))
       ),
-      replaceIndexes = true
+      replaceIndexes = false
     )
     with Logging {
 
