@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.integrationcatalogue.mongojobs
 
+import org.bson.types.ObjectId
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
@@ -57,6 +58,7 @@ class ApiNumberExtractionJobSpec extends AnyFreeSpec
   private def insertApiDetailsWithTitles(titles: Seq[String]) = {
     repository.collection.insertMany(
       titles.map(title => apiDetail0.copy(
+        _id = new ObjectId(),
         id = IntegrationId(UUID.randomUUID()),
         title = title,
         publisherReference = "pubref-" + title)

@@ -20,6 +20,7 @@ import play.api.libs.functional.syntax.*
 import play.api.libs.json.*
 import uk.gov.hmrc.integrationcatalogue.models.*
 import uk.gov.hmrc.integrationcatalogue.models.common.*
+import uk.gov.hmrc.mongo.play.json.formats.MongoFormats.Implicits.objectIdFormat
 
 import java.time.Instant
 import scala.quoted.*

@@ -19,6 +19,7 @@ package uk.gov.hmrc.integrationcatalogue.models
 import play.api.libs.json._
 import uk.gov.hmrc.integrationcatalogue.models.common._
 import uk.gov.hmrc.integrationcatalogue.utils.DateTimeFormatters
+import uk.gov.hmrc.mongo.play.json.formats.MongoFormats.Implicits.objectIdFormat
 
 import java.time.format.DateTimeFormatter
 import java.time.{Instant, ZoneId, ZonedDateTime}
@@ -72,7 +73,17 @@ object JsonFormatters extends DateTimeFormatters {
 
   implicit val formatScope: Format[Scope] = Json.format[Scope]
 
-  implicit val formatApiDetailParsed: Format[ApiDetail] = Json.format[ApiDetail]
+  private val readApiDetail: Reads[ApiDetail] = Json.using[Json.WithDefaultValues].reads[ApiDetail]
+
+  private val writeApiDetailWithCreated: Writes[ApiDetail] = new OWrites[ApiDetail] {
+    private val oWritesApiDetail = Json.writes[ApiDetail]
+
+    override def writes(apiDetail: ApiDetail): JsObject = {
+      oWritesApiDetail.writes(apiDetail) + ("created", Json.toJson(apiDetail.created)) - "_id"
+    }
+  }
+
+  implicit val formatApiDetailParsed: Format[ApiDetail] = Format(readApiDetail, writeApiDetailWithCreated)
 
   implicit val formatFileTransferDetail: Format[FileTransferDetail] = Json.format[FileTransferDetail]
 

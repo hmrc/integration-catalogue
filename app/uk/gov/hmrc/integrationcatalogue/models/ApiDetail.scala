@@ -17,6 +17,7 @@
 package uk.gov.hmrc.integrationcatalogue.models
 
 import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
+import org.bson.types.ObjectId
 import uk.gov.hmrc.integrationcatalogue.models.common.*
 
 import java.time.Instant
@@ -173,6 +174,7 @@ case class Scope( name: String,
 }
 
 case class ApiDetail(
+                      _id: ObjectId = new ObjectId,
                       id: IntegrationId,
                       publisherReference: String,
                       title: String,
@@ -198,6 +200,10 @@ case class ApiDetail(
                       apiGeneration: Option[ApiGeneration] = None,
                     ) extends IntegrationDetail {
   override val integrationType: IntegrationType = IntegrationType.API
+
+  def created: Instant = {
+    Instant.ofEpochSecond(_id.getTimestamp)
+  }
 }
 
 case class FileTransferDetail(
