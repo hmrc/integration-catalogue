@@ -29,14 +29,14 @@ class ApiNumberGenerator @Inject()(
   repository: PlatformSequenceRepository
 )(implicit ec: ExecutionContext) {
 
-  def generate(platform: PlatformType, apiNumber: Option[String]): Future[Option[String]] = {
+  def generate(platform: PlatformType, existingApiNumber: Option[String]): Future[Option[String]] = {
     apiNumbering.forPlatformType(platform) match {
-      case Some(platformNumbering) if apiNumber.isEmpty =>
+      case Some(platformNumbering) if existingApiNumber.isEmpty =>
         repository.nextValue(platformNumbering).map(
           sequence =>
             Some(apiNumbering.buildApiNumber(sequence))
         )
-      case Some(_) => Future.successful(apiNumber)
+      case Some(_) => Future.successful(existingApiNumber)
       case None => Future.successful(None)
     }
   }
