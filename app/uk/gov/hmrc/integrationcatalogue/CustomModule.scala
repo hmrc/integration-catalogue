@@ -17,6 +17,7 @@
 package uk.gov.hmrc.integrationcatalogue
 
 import com.google.inject.AbstractModule
+import uk.gov.hmrc.integrationcatalogue.config.{ApiNumbering, ApiNumberingImpl}
 import uk.gov.hmrc.integrationcatalogue.controllers.actionBuilders.{AuthenticatedIdentifierAction, IdentifierAction}
 import uk.gov.hmrc.integrationcatalogue.scheduled.MetricsScheduler
 
@@ -28,6 +29,7 @@ class CustomModule extends AbstractModule {
     bind(classOf[MetricsScheduler]).asEagerSingleton()
     bind(classOf[IdentifierAction]).to(classOf[AuthenticatedIdentifierAction]).asEagerSingleton()
     bind(classOf[Clock]).toInstance(Clock.systemUTC())
+    bind(classOf[ApiNumbering]).to(classOf[ApiNumberingImpl]).asEagerSingleton()
   }
 
 }
