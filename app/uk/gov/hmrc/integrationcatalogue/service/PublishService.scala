@@ -64,19 +64,21 @@ class PublishService @Inject() (
     parseResult match {
       case x: Invalid[NonEmptyList[List[String]]] => mapErrorsToPublishResult(x)
       case Valid(apiDetailParsed) =>
-        integrationRepository.findByPublisherRef(request.platformType, apiDetailParsed.publisherReference).flatMap {
-          case Some(existingApiDetail: ApiDetail) => {
-            apiNumberGenerator.generate(request.platformType, existingApiDetail.apiNumber).map {
-              case Some(apiNumber) => {
-                apiDetailParsed.copy(apiNumber = Some(apiNumber))
-              }
-              case None => {
-                apiNumberExtractor.extract(apiDetailParsed)
+        integrationRepository.findByPublisherRef(apiDetailParsed.platform, apiDetailParsed.publisherReference).flatMap {
+          maybeExistingIntegrationDetail => {
+            val maybeExistingApiNumber = maybeExistingIntegrationDetail match {
+              case Some(apiDetail: ApiDetail) => apiDetail.apiNumber
+              case _ => None
+            }
+            val maybeTeamId: Future[Option[String]] = maybeExistingIntegrationDetail match {
+              case Some(apiDetail: ApiDetail) => Future.successful(apiDetail.teamId)
+              case _ => apiTeamsRepository.findByPublisherReference(apiDetailParsed.publisherReference).map {
+                case Some(apiTeam) => Some(apiTeam.teamId)
+                case _             => None
               }
             }
-          }
-          case None => {
-            apiNumberGenerator.generate(request.platformType, None).map {
+
+            apiNumberGenerator.generate(request.platformType, maybeExistingApiNumber).map {
               case Some(apiNumber) => {
                 apiDetailParsed.copy(apiNumber = Some(apiNumber))
               }
