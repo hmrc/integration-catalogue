@@ -91,7 +91,8 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
           set("subDomain", Codecs.toBson(apiDetail.subDomain)),
           set("apiType", Codecs.toBson(apiDetail.apiType)),
           set("apiNumber", Codecs.toBson(apiDetail.apiNumber)),
-          set("apiGeneration", Codecs.toBson(apiDetail.apiGeneration))
+          set("apiGeneration", Codecs.toBson(apiDetail.apiGeneration)),
+          set("apiTeam", Codecs.toBson(apiDetail.teamId)),
         )
       case IntegrationType.FILE_TRANSFER =>
         val fileTransferDetail: FileTransferDetail = integrationDetail.asInstanceOf[FileTransferDetail]
@@ -112,24 +113,20 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
 
   }
 
-  def findAndModify(
-    integrationDetail: IntegrationDetail,
-    maybeApiTeam: Option[ApiTeam] = Option.empty
-  ): Future[Either[Exception, (IntegrationDetail, IsUpdate)]] = {
+  def findAndModify(integrationDetail: IntegrationDetail): Future[Either[Exception, (IntegrationDetail, IsUpdate)]] = {
     for {
       isUpdate <- collection.find(and(
                     equal("publisherReference", integrationDetail.publisherReference),
                     equal("platform", Codecs.toBson(integrationDetail.platform))
                   ))
                     .toFuture().map(results => results.nonEmpty)
-      result   <- findAndModify2(integrationDetail, isUpdate, maybeApiTeam)
+      result   <- findAndModify2(integrationDetail, isUpdate)
     } yield result
   }
 
   private def findAndModify2(
     integrationDetail: IntegrationDetail,
-    isUpsert: Boolean,
-    maybeApiTeam: Option[ApiTeam]
+    isUpsert: Boolean
   ): Future[Either[Exception, (IntegrationDetail, IsUpdate)]] = {
 
     val query = and(equal("platform", Codecs.toBson(integrationDetail.platform)), equal("publisherReference", integrationDetail.publisherReference))
@@ -142,9 +139,7 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
       setOnInsert("_type", integrationDetail.integrationType.integrationType)
     )
 
-    val setTeamIdOperation = maybeApiTeam.map(_.teamId).map(teamId => List(setOnInsert("teamId", teamId))).getOrElse(List.empty)
-
-    val allOps = setOnInsertOperations ++ updateOp ++ setTeamIdOperation
+    val allOps = setOnInsertOperations ++ updateOp
 
     collection.findOneAndUpdate(
       filter = query,

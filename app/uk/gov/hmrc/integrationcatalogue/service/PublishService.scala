@@ -28,7 +28,7 @@ import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.HIP
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASParserService
 import uk.gov.hmrc.integrationcatalogue.repository.{ApiTeamsRepository, IntegrationRepository}
-import uk.gov.hmrc.integrationcatalogue.utils.ApiNumberExtractor
+import uk.gov.hmrc.integrationcatalogue.utils.{ApiNumberExtractor, ApiNumberGenerator}
 
 @Singleton
 class PublishService @Inject() (
@@ -37,6 +37,7 @@ class PublishService @Inject() (
   uuidService: UuidService,
   apiTeamsRepository: ApiTeamsRepository,
   apiNumberExtractor: ApiNumberExtractor,
+  apiNumberGenerator: ApiNumberGenerator
 )(implicit ec: ExecutionContext) extends Logging {
 
   def publishFileTransfer(request: FileTransferPublishRequest)(implicit ec: ExecutionContext): Future[PublishResult] = {
@@ -44,7 +45,7 @@ class PublishService @Inject() (
 
     val fileTransferDetail = FileTransferDetail.fromFileTransferPublishRequest(request, integrationId)
 
-    integrationRepository.findAndModify(fileTransferDetail, Option.empty).flatMap {
+    integrationRepository.findAndModify(fileTransferDetail).flatMap {
       case Right((fileTransfer, isUpdate)) =>
         Future.successful(PublishResult(
           isSuccess = true,
@@ -63,16 +64,35 @@ class PublishService @Inject() (
     parseResult match {
       case x: Invalid[NonEmptyList[List[String]]] => mapErrorsToPublishResult(x)
       case Valid(apiDetailParsed) =>
-        fetchTeam(request).flatMap {
-          case Right(maybeApiTeam) =>
-            val apiDetailWithNumber = apiNumberExtractor.extract(apiDetailParsed)
-            integrationRepository.findAndModify(apiDetailWithNumber, maybeApiTeam).map {
+        integrationRepository.findByPublisherRef(request.platformType, apiDetailParsed.publisherReference).flatMap {
+          case Some(existingApiDetail: ApiDetail) => {
+            apiNumberGenerator.generate(request.platformType, existingApiDetail.apiNumber).map {
+              case Some(apiNumber) => {
+                apiDetailParsed.copy(apiNumber = Some(apiNumber))
+              }
+              case None => {
+                apiNumberExtractor.extract(apiDetailParsed)
+              }
+            }
+          }
+          case None => {
+            apiNumberGenerator.generate(request.platformType, None).map {
+              case Some(apiNumber) => {
+                apiDetailParsed.copy(apiNumber = Some(apiNumber))
+              }
+              case None => {
+                apiNumberExtractor.extract(apiDetailParsed)
+              }
+            }
+          }
+        }.flatMap {
+          apiDetailWithNumber =>
+            integrationRepository.findAndModify(apiDetailWithNumber).map {
               case Right((api, isUpdate)) =>
                 PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, api.id, api.publisherReference, api.platform)))
               case Left(_) =>
                 PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert api")))
             }
-          case Left(publishResult) => Future.successful(publishResult)
         }
     }
   }
