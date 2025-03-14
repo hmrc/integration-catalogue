@@ -71,11 +71,12 @@ class PublishService @Inject() (
           }
           maybeApiNumber <- apiNumberGenerator.generate(request.platformType, maybeExistingApiNumber)
           apiDetailWithNumber = maybeApiNumber match {
-              case Some(apiNumber) => apiDetailParsed.copy(apiNumber = Some(apiNumber))
+              // if the generator returns an API number and the extractor finds a number in the title, we use the generator number but also remove the redundant number from the title
+              case Some(apiNumber) => apiNumberExtractor.extract(apiDetailParsed).copy(apiNumber = Some(apiNumber))
               case None            => apiNumberExtractor.extract(apiDetailParsed)
           }
           maybeTeamId <- maybeExistingIntegrationDetail match {
-            case Some(apiDetail: ApiDetail) => Future.successful(apiDetail.teamId)
+            case Some(apiDetail: ApiDetail) if ! apiDetail.teamId.isEmpty => Future.successful(apiDetail.teamId)
             case _ => apiTeamsRepository.findByPublisherReference(apiDetailParsed.publisherReference).map {
               case Some(apiTeam) => Some(apiTeam.teamId)
               case _             => None

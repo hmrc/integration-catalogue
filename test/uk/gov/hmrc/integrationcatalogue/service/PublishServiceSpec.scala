@@ -22,8 +22,6 @@ import cats.data.Validated.*
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.*
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.prop.TableDrivenPropertyChecks.forAll
-import org.scalatest.prop.Tables.Table
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatestplus.mockito.MockitoSugar
@@ -44,19 +42,13 @@ import scala.concurrent.{Await, Future}
 
 class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ApiTestData with OasTestData with OptionValues {
 
-  val mockOasParserService: OASParserService = mock[OASParserService]
-  val mockApiRepo: IntegrationRepository     = mock[IntegrationRepository]
-  val mockUuidService: UuidService           = mock[UuidService]
-  val mockApiTeamsRepo: ApiTeamsRepository   = mock[ApiTeamsRepository]
-  val mockApiNumberExtractor: ApiNumberExtractor   = mock[ApiNumberExtractor]
-  val mockApiNumberGenerator: ApiNumberGenerator   = mock[ApiNumberGenerator]
-
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    reset(mockOasParserService, mockApiRepo, mockApiTeamsRepo)
-  }
-
   trait Setup {
+    val mockOasParserService: OASParserService = mock[OASParserService]
+    val mockApiRepo: IntegrationRepository = mock[IntegrationRepository]
+    val mockUuidService: UuidService = mock[UuidService]
+    val mockApiTeamsRepo: ApiTeamsRepository = mock[ApiTeamsRepository]
+    val mockApiNumberExtractor: ApiNumberExtractor = mock[ApiNumberExtractor]
+    val mockApiNumberGenerator: ApiNumberGenerator = mock[ApiNumberGenerator]
 
     val rawData = "rawOASData"
     private val env = Environment.simple()
@@ -75,17 +67,180 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
     val apiUpsertSuccessInsert: Either[Exception, (ApiDetail, Types.IsUpdate)] = Right((apiDetail0, false))
     val apiUpsertSuccessUpdate: Either[Exception, (ApiDetail, Types.IsUpdate)] = Right((apiDetail0, true))
     val apiUpsertFailure: Either[Exception, (ApiDetail, Types.IsUpdate)]       = Left(new Exception(s"ApiDetailParsed upsert error."))
+
+    val generatedApiNumber = "generatedApiNumber"
+    val existingApiNumber = "existingApiNumber"
+    val extractedApiNumber = "extractedApiNumber"
+    val titleAfterApiNumberExtracted = "titleAfterApiNumberExtracted"
+    val existingTeamId = "existingTeamId"
+    val existingApiDetail = apiDetail0.copy()
+
+    def givenApiDoesNotAlreadyExist(): Unit = {
+      when(mockApiRepo.findByPublisherRef(any(), any())).thenReturn(Future.successful(None))
+    }
+
+    def givenApiAlreadyExistsWithApiNumber(): Unit = {
+      when(mockApiRepo.findByPublisherRef(any(), any())).thenReturn(Future.successful(Some(existingApiDetail.copy(apiNumber = Some(existingApiNumber)))))
+    }
+
+    def givenApiAlreadyExistsWithATeamId(): Unit = {
+      when(mockApiRepo.findByPublisherRef(any(), any())).thenReturn(Future.successful(Some(existingApiDetail.copy(teamId = Some(existingTeamId)))))
+    }
+
+    def givenApiAlreadyExistsWithoutATeamId(): Unit = {
+      when(mockApiRepo.findByPublisherRef(any(), any())).thenReturn(Future.successful(Some(existingApiDetail.copy(teamId = None))))
+    }
+
+    def givenATeamExistsForTheApiPublisherReference(): Unit = {
+      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(Some(ApiTeam(apiDetail0.publisherReference, existingTeamId))))
+    }
+
+    def givenNoTeamExistsForTheApiPublisherReference(): Unit = {
+      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(None))
+    }
+
+    def givenApiAlreadyExistsWithoutAnApiNumber(): Unit = {
+      when(mockApiRepo.findByPublisherRef(any(), any())).thenReturn(Future.successful(Some(existingApiDetail.copy(apiNumber = None))))
+    }
+
+    def givenApiNumberGeneratorReturns(returnedApiNumber: Option[String]): Unit = {
+      when(mockApiNumberGenerator.generate(any(), any())).thenReturn(Future.successful(returnedApiNumber))
+    }
+
+    def givenApiNumberExtractorFindsANumberInTheTitle(extractedApiNumber: String, newTitle: String): Unit = {
+      when(mockApiNumberExtractor.extract(any())).thenAnswer(i => i.getArgument(0).asInstanceOf[ApiDetail].copy(apiNumber = Some(extractedApiNumber), title = newTitle))
+    }
+
+    def givenApiNumberExtractorDoesNotFindANumberInTheTitle(): Unit = {
+      when(mockApiNumberExtractor.extract(any())).thenAnswer(i => i.getArgument(0).asInstanceOf[ApiDetail])
+    }
+
+    def thenRepoStoresCorrectApiDetails(expectedApiNumber: Option[String], expectedTeamId: Option[String] = None, apiTitle: String = apiDetail0.title): Unit = {
+      verify(mockApiRepo).findAndModify(eqTo(apiDetail0.copy(apiNumber = expectedApiNumber, teamId = expectedTeamId, title = apiTitle)))
+    }
+
+    when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(None))
+    when(mockApiRepo.findAndModify(any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
+    when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
   }
 
   "publish" should {
-    "return successful publish result on insert" in new Setup {
+    "set correct values when new HIP API is published" in new Setup {
+      givenApiDoesNotAlreadyExist()
+      givenApiNumberGeneratorReturns(Some(generatedApiNumber))
+      givenApiNumberExtractorDoesNotFindANumberInTheTitle()
 
-      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
-      when(mockApiRepo.findAndModify(any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
-      when(mockApiNumberExtractor.extract(any())).thenReturn(apiDetail0)
-      when(mockApiRepo.findByPublisherRef(any(), any())).thenReturn(Future.successful(None))
-      when(mockApiNumberGenerator.generate(any(), any())).thenReturn(Future.successful(None))
-      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(None))
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe true
+
+      thenRepoStoresCorrectApiDetails(Some(generatedApiNumber))
+    }
+
+    "set correct values when existing HIP API with API number is re-published" in new Setup {
+      givenApiAlreadyExistsWithApiNumber()
+      givenApiNumberGeneratorReturns(Some(existingApiNumber))
+      givenApiNumberExtractorDoesNotFindANumberInTheTitle()
+
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe true
+
+      thenRepoStoresCorrectApiDetails(Some(existingApiNumber))
+    }
+
+    "set correct values when existing HIP API without an API number is re-published" in new Setup {
+      givenApiAlreadyExistsWithoutAnApiNumber()
+      givenApiNumberGeneratorReturns(Some(existingApiNumber))
+      givenApiNumberExtractorDoesNotFindANumberInTheTitle()
+
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe true
+
+      thenRepoStoresCorrectApiDetails(Some(existingApiNumber))
+    }
+
+    "set correct values when HIP API with an API number in the title is published" in new Setup {
+      givenApiDoesNotAlreadyExist()
+      givenApiNumberGeneratorReturns(Some(generatedApiNumber))
+      givenApiNumberExtractorFindsANumberInTheTitle(extractedApiNumber, titleAfterApiNumberExtracted)
+
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe true
+
+      thenRepoStoresCorrectApiDetails(Some(generatedApiNumber), None, titleAfterApiNumberExtracted)
+    }
+
+    "set correct values when non-HIP API without an API number in the title is published" in new Setup {
+      givenApiDoesNotAlreadyExist()
+      givenApiNumberGeneratorReturns(None)
+      givenApiNumberExtractorDoesNotFindANumberInTheTitle()
+
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe true
+
+      thenRepoStoresCorrectApiDetails(None)
+    }
+
+    "set correct values when non-HIP API with an API number in the title is published" in new Setup {
+      givenApiDoesNotAlreadyExist()
+      givenApiNumberGeneratorReturns(None)
+      givenApiNumberExtractorFindsANumberInTheTitle(extractedApiNumber, titleAfterApiNumberExtracted)
+
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe true
+
+      thenRepoStoresCorrectApiDetails(Some(extractedApiNumber), None, titleAfterApiNumberExtracted)
+    }
+
+    "set correct values when an existing non-HIP API with an API number in the title is re-published with a new number in the title" in new Setup {
+      givenApiAlreadyExistsWithApiNumber()
+      givenApiNumberGeneratorReturns(None)
+      givenApiNumberExtractorFindsANumberInTheTitle(extractedApiNumber, titleAfterApiNumberExtracted)
+
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe true
+
+      thenRepoStoresCorrectApiDetails(Some(extractedApiNumber), None, titleAfterApiNumberExtracted)
+    }
+
+    "set correct values when an existing API has a teamId" in new Setup {
+      givenApiAlreadyExistsWithoutATeamId()
+      givenATeamExistsForTheApiPublisherReference()
+      givenApiNumberGeneratorReturns(Some(generatedApiNumber))
+      givenApiNumberExtractorDoesNotFindANumberInTheTitle()
+
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe true
+
+      thenRepoStoresCorrectApiDetails(Some(generatedApiNumber), Some(existingTeamId))
+    }
+
+    "set correct values when an existing API has no teamId but the publisher reference matches an existing team" in new Setup {
+      givenApiAlreadyExistsWithATeamId()
+      givenApiNumberGeneratorReturns(Some(generatedApiNumber))
+      givenApiNumberExtractorDoesNotFindANumberInTheTitle()
+
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe true
+
+      thenRepoStoresCorrectApiDetails(Some(generatedApiNumber), Some(existingTeamId))
+    }
+
+    "set correct values when an existing API has no teamId and there is no team linked with the publisher reference" in new Setup {
+      givenApiAlreadyExistsWithoutATeamId()
+      givenNoTeamExistsForTheApiPublisherReference()
+      givenApiNumberGeneratorReturns(Some(generatedApiNumber))
+      givenApiNumberExtractorDoesNotFindANumberInTheTitle()
+
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe true
+
+      thenRepoStoresCorrectApiDetails(Some(generatedApiNumber))
+    }
+
+    "return successful publish result on insert" in new Setup {
+      givenApiNumberExtractorDoesNotFindANumberInTheTitle()
+      givenApiDoesNotAlreadyExist()
+      givenApiNumberGeneratorReturns(None)
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
 
@@ -103,12 +258,10 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
     }
 
     "return successful publish result on update" in new Setup {
-      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
       when(mockApiRepo.findAndModify(any())).thenReturn(Future.successful(apiUpsertSuccessUpdate))
-      when(mockApiNumberExtractor.extract(any())).thenReturn(apiDetail0)
-      when(mockApiRepo.findByPublisherRef(any(), any())).thenReturn(Future.successful(None))
-      when(mockApiNumberGenerator.generate(any(), any())).thenReturn(Future.successful(None))
-      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(None))
+      givenApiNumberExtractorDoesNotFindANumberInTheTitle()
+      givenApiDoesNotAlreadyExist()
+      givenApiNumberGeneratorReturns(None)
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
@@ -143,13 +296,10 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
     }
 
     "return fail when api upsert fails" in new Setup {
-
-      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
       when(mockApiNumberExtractor.extract(any())).thenReturn(apiDetail0)
       when(mockApiRepo.findAndModify(any())).thenReturn(Future.successful(apiUpsertFailure))
-      when(mockApiRepo.findByPublisherRef(any(), any())).thenReturn(Future.successful(None))
-      when(mockApiNumberGenerator.generate(any(), any())).thenReturn(Future.successful(None))
-      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(None))
+      givenApiDoesNotAlreadyExist()
+      givenApiNumberGeneratorReturns(None)
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe false
@@ -169,12 +319,10 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       val request: PublishRequest = publishRequest.copy(autopublish = true)
       val apiTeam: ApiTeam = ApiTeam(request.publisherReference.value, "test-team-id")
 
-      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
       when(mockApiNumberExtractor.extract(any())).thenReturn(apiDetail0)
-      when(mockApiRepo.findAndModify(any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
       when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(Some(apiTeam)))
-      when(mockApiRepo.findByPublisherRef(any(), any())).thenReturn(Future.successful(None))
-      when(mockApiNumberGenerator.generate(any(), any())).thenReturn(Future.successful(None))
+      givenApiDoesNotAlreadyExist()
+      givenApiNumberGeneratorReturns(None)
 
       val result: PublishResult = Await.result(inTest.publishApi(request), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
@@ -188,12 +336,9 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
     "return success when auto-publishing a new API and the team link does not exist" in new Setup {
       val request: PublishRequest = publishRequest.copy(autopublish = true)
 
-      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
       when(mockApiNumberExtractor.extract(any())).thenReturn(apiDetail0)
-      when(mockApiRepo.findAndModify(any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
-      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(None))
-      when(mockApiRepo.findByPublisherRef(any(), any())).thenReturn(Future.successful(None))
-      when(mockApiNumberGenerator.generate(any(), any())).thenReturn(Future.successful(None))
+      givenApiDoesNotAlreadyExist()
+      givenApiNumberGeneratorReturns(None)
 
       val result: PublishResult = Await.result(inTest.publishApi(request), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
@@ -207,13 +352,11 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
     "return success when auto-publishing an existing API and ignore the existence of a team link" in new Setup {
       val request: PublishRequest = publishRequest.copy(autopublish = true)
 
-      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(parseSuccess)
       when(mockApiNumberExtractor.extract(any())).thenReturn(apiDetail0)
       when(mockApiRepo.exists(any(), any())).thenReturn(Future.successful(true))
       when(mockApiRepo.findAndModify(any())).thenReturn(Future.successful(apiUpsertSuccessUpdate))
-      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(None))
-      when(mockApiRepo.findByPublisherRef(any(), any())).thenReturn(Future.successful(None))
-      when(mockApiNumberGenerator.generate(any(), any())).thenReturn(Future.successful(None))
+      givenApiDoesNotAlreadyExist()
+      givenApiNumberGeneratorReturns(None)
 
       val result: PublishResult = Await.result(inTest.publishApi(request), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
@@ -228,10 +371,8 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
 
       when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(valid(apiDetail0))
       when(mockApiRepo.exists(any(), any())).thenReturn(Future.successful(false))
-      when(mockApiRepo.findAndModify(any())).thenReturn(Future.successful(apiUpsertSuccessInsert))
-      when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(None))
-      when(mockApiRepo.findByPublisherRef(any(), any())).thenReturn(Future.successful(None))
-      when(mockApiNumberGenerator.generate(any(), any())).thenReturn(Future.successful(None))
+      givenApiDoesNotAlreadyExist()
+      givenApiNumberGeneratorReturns(None)
 
       Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
 
