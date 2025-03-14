@@ -21,7 +21,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import cats.data.Validated.*
 import cats.data.*
 import play.api.Logging
-import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes.*
 import uk.gov.hmrc.integrationcatalogue.models.*
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId
@@ -64,38 +63,32 @@ class PublishService @Inject() (
     parseResult match {
       case x: Invalid[NonEmptyList[List[String]]] => mapErrorsToPublishResult(x)
       case Valid(apiDetailParsed) =>
-        integrationRepository.findByPublisherRef(apiDetailParsed.platform, apiDetailParsed.publisherReference).flatMap {
-          maybeExistingIntegrationDetail => {
-            val maybeExistingApiNumber = maybeExistingIntegrationDetail match {
-              case Some(apiDetail: ApiDetail) => apiDetail.apiNumber
-              case _ => None
-            }
-            val maybeTeamId: Future[Option[String]] = maybeExistingIntegrationDetail match {
-              case Some(apiDetail: ApiDetail) => Future.successful(apiDetail.teamId)
-              case _ => apiTeamsRepository.findByPublisherReference(apiDetailParsed.publisherReference).map {
-                case Some(apiTeam) => Some(apiTeam.teamId)
-                case _             => None
-              }
-            }
-
-            apiNumberGenerator.generate(request.platformType, maybeExistingApiNumber).map {
-              case Some(apiNumber) => {
-                apiDetailParsed.copy(apiNumber = Some(apiNumber))
-              }
-              case None => {
-                apiNumberExtractor.extract(apiDetailParsed)
-              }
+        for {
+          maybeExistingIntegrationDetail <- integrationRepository.findByPublisherRef(apiDetailParsed.platform, apiDetailParsed.publisherReference)
+          maybeExistingApiNumber = maybeExistingIntegrationDetail match {
+            case Some(apiDetail: ApiDetail) => apiDetail.apiNumber
+            case _ => None
+          }
+          maybeApiNumber <- apiNumberGenerator.generate(request.platformType, maybeExistingApiNumber)
+          apiDetailWithNumber = maybeApiNumber match {
+              case Some(apiNumber) => apiDetailParsed.copy(apiNumber = Some(apiNumber))
+              case None            => apiNumberExtractor.extract(apiDetailParsed)
+          }
+          maybeTeamId <- maybeExistingIntegrationDetail match {
+            case Some(apiDetail: ApiDetail) => Future.successful(apiDetail.teamId)
+            case _ => apiTeamsRepository.findByPublisherReference(apiDetailParsed.publisherReference).map {
+              case Some(apiTeam) => Some(apiTeam.teamId)
+              case _             => None
             }
           }
-        }.flatMap {
-          apiDetailWithNumber =>
-            integrationRepository.findAndModify(apiDetailWithNumber).map {
-              case Right((api, isUpdate)) =>
-                PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, api.id, api.publisherReference, api.platform)))
-              case Left(_) =>
-                PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert api")))
-            }
-        }
+          apiDetailWithNumberAndTeam = apiDetailWithNumber.copy(teamId = maybeTeamId)
+          result <- integrationRepository.findAndModify(apiDetailWithNumberAndTeam).map {
+            case Right((api, isUpdate)) =>
+              PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, api.id, api.publisherReference, api.platform)))
+            case Left(_) =>
+              PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert api")))
+          }
+        } yield result
     }
   }
 

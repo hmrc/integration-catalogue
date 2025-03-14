@@ -115,8 +115,8 @@ class IntegrationRepositoryISpec
         for {
           matchInTitle <- repo.findAndModify(apiDetail1)
           matchInDescription <- repo.findAndModify(apiDetail5)
-          matchInHods <- repo.findAndModify(apiDetail3, Some(ApiTeam("a_publisher_ref", "team_id_1")))
-          matchOnDesPlatform <- repo.findAndModify(apiDetail4, Some(ApiTeam("another_publisher_ref", "team_id_2")))
+          matchInHods <- repo.findAndModify(apiDetail3)
+          matchOnDesPlatform <- repo.findAndModify(apiDetail4)
           matchOnFileTransferPlatformOne <- repo.findAndModify(fileTransfer2)
           matchOnFileTransferPlatformTwo <- repo.findAndModify(fileTransfer7)
         } yield (
@@ -322,7 +322,7 @@ class IntegrationRepositoryISpec
       }
 
       "Save API should serialize all fields in APIDetail except the primary key '_id'" in {
-        await(repo.findAndModify(apiDetail1, Some(ApiTeam("a_publisher_ref", "team1")))) match {
+        await(repo.findAndModify(apiDetail1)) match {
           case Right((persisted: ApiDetail, _)) => {
             val id = UUID.randomUUID()
             val now = Instant.now
@@ -346,7 +346,7 @@ class IntegrationRepositoryISpec
         val result = getAll
         result shouldBe List.empty
 
-        val insertResult: Either[Throwable, (IntegrationDetail, Types.IsUpdate)] = await(repo.findAndModify(apiDetail1, Some(ApiTeam("a_publisher_ref", "a_team_id"))))
+        val insertResult: Either[Throwable, (IntegrationDetail, Types.IsUpdate)] = await(repo.findAndModify(apiDetail1))
         insertResult match {
           case Right((apiDetail: IntegrationDetail, isUpdate)) =>
             isUpdate shouldBe false
@@ -365,9 +365,9 @@ class IntegrationRepositoryISpec
         val result = getAll
         result shouldBe List.empty
 
-        await(repo.findAndModify(apiDetail1, Some(ApiTeam("a_publisher_ref", "a_team_id"))))
+        await(repo.findAndModify(apiDetail1))
 
-        var updateResult: Either[Throwable, (IntegrationDetail, Types.IsUpdate)] = await(repo.findAndModify(apiDetail1, None))
+        var updateResult: Either[Throwable, (IntegrationDetail, Types.IsUpdate)] = await(repo.findAndModify(apiDetail1))
         updateResult match {
           case Right((apiDetail: IntegrationDetail, isUpdate)) =>
             isUpdate shouldBe true
@@ -381,7 +381,7 @@ class IntegrationRepositoryISpec
         var apiDetail = all.head.asInstanceOf[ApiDetail]
         apiDetail.teamId shouldBe (Some("a_team_id"))
 
-        updateResult = await(repo.findAndModify(apiDetail1, Some(ApiTeam("a_publisher_ref", "a_different_team_id"))))
+        updateResult = await(repo.findAndModify(apiDetail1))
         updateResult match {
           case Right((apiDetail: IntegrationDetail, isUpdate)) =>
             isUpdate shouldBe true
