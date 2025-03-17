@@ -115,8 +115,8 @@ class IntegrationRepositoryISpec
         for {
           matchInTitle <- repo.findAndModify(apiDetail1)
           matchInDescription <- repo.findAndModify(apiDetail5)
-          matchInHods <- repo.findAndModify(apiDetail3)
-          matchOnDesPlatform <- repo.findAndModify(apiDetail4)
+          matchInHods <- repo.findAndModify(apiDetail3.copy(teamId = Some("team_id_1")))
+          matchOnDesPlatform <- repo.findAndModify(apiDetail4.copy(teamId = Some("team_id_2")))
           matchOnFileTransferPlatformOne <- repo.findAndModify(fileTransfer2)
           matchOnFileTransferPlatformTwo <- repo.findAndModify(fileTransfer7)
         } yield (

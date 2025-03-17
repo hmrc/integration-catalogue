@@ -92,7 +92,7 @@ class IntegrationRepository @Inject() (mongo: MongoComponent)(implicit ec: Execu
           set("apiType", Codecs.toBson(apiDetail.apiType)),
           set("apiNumber", Codecs.toBson(apiDetail.apiNumber)),
           set("apiGeneration", Codecs.toBson(apiDetail.apiGeneration)),
-          set("apiTeam", Codecs.toBson(apiDetail.teamId)),
+          set("teamId", Codecs.toBson(apiDetail.teamId)),
         )
       case IntegrationType.FILE_TRANSFER =>
         val fileTransferDetail: FileTransferDetail = integrationDetail.asInstanceOf[FileTransferDetail]
