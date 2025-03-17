@@ -21,14 +21,13 @@ import scala.concurrent.{ExecutionContext, Future}
 import cats.data.Validated.*
 import cats.data.*
 import play.api.Logging
-import uk.gov.hmrc.integrationcatalogue.config.AppConfig
 import uk.gov.hmrc.integrationcatalogue.controllers.ErrorCodes.*
 import uk.gov.hmrc.integrationcatalogue.models.*
 import uk.gov.hmrc.integrationcatalogue.models.common.IntegrationId
 import uk.gov.hmrc.integrationcatalogue.models.common.PlatformType.HIP
 import uk.gov.hmrc.integrationcatalogue.parser.oas.OASParserService
 import uk.gov.hmrc.integrationcatalogue.repository.{ApiTeamsRepository, IntegrationRepository}
-import uk.gov.hmrc.integrationcatalogue.utils.ApiNumberExtractor
+import uk.gov.hmrc.integrationcatalogue.utils.{ApiNumberExtractor, ApiNumberGenerator}
 
 @Singleton
 class PublishService @Inject() (
@@ -37,6 +36,7 @@ class PublishService @Inject() (
   uuidService: UuidService,
   apiTeamsRepository: ApiTeamsRepository,
   apiNumberExtractor: ApiNumberExtractor,
+  apiNumberGenerator: ApiNumberGenerator
 )(implicit ec: ExecutionContext) extends Logging {
 
   def publishFileTransfer(request: FileTransferPublishRequest)(implicit ec: ExecutionContext): Future[PublishResult] = {
@@ -44,7 +44,7 @@ class PublishService @Inject() (
 
     val fileTransferDetail = FileTransferDetail.fromFileTransferPublishRequest(request, integrationId)
 
-    integrationRepository.findAndModify(fileTransferDetail, Option.empty).flatMap {
+    integrationRepository.findAndModify(fileTransferDetail).flatMap {
       case Right((fileTransfer, isUpdate)) =>
         Future.successful(PublishResult(
           isSuccess = true,
@@ -63,17 +63,33 @@ class PublishService @Inject() (
     parseResult match {
       case x: Invalid[NonEmptyList[List[String]]] => mapErrorsToPublishResult(x)
       case Valid(apiDetailParsed) =>
-        fetchTeam(request).flatMap {
-          case Right(maybeApiTeam) =>
-            val apiDetailWithNumber = apiNumberExtractor.extract(apiDetailParsed)
-            integrationRepository.findAndModify(apiDetailWithNumber, maybeApiTeam).map {
-              case Right((api, isUpdate)) =>
-                PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, api.id, api.publisherReference, api.platform)))
-              case Left(_) =>
-                PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert api")))
+        for {
+          maybeExistingIntegrationDetail <- integrationRepository.findByPublisherRef(apiDetailParsed.platform, apiDetailParsed.publisherReference)
+          maybeExistingApiNumber = maybeExistingIntegrationDetail match {
+            case Some(apiDetail: ApiDetail) => apiDetail.apiNumber
+            case _ => None
+          }
+          maybeApiNumber <- apiNumberGenerator.generate(request.platformType, maybeExistingApiNumber)
+          apiDetailWithNumber = maybeApiNumber match {
+              // if the generator returns an API number and the extractor finds a number in the title, we use the generator number but also remove the redundant number from the title
+              case Some(apiNumber) => apiNumberExtractor.extract(apiDetailParsed).copy(apiNumber = Some(apiNumber))
+              case None            => apiNumberExtractor.extract(apiDetailParsed)
+          }
+          maybeTeamId <- maybeExistingIntegrationDetail match {
+            case Some(apiDetail: ApiDetail) => Future.successful(apiDetail.teamId)
+            case _ => apiTeamsRepository.findByPublisherReference(apiDetailParsed.publisherReference).map {
+              case Some(apiTeam) => Some(apiTeam.teamId)
+              case _             => None
             }
-          case Left(publishResult) => Future.successful(publishResult)
-        }
+          }
+          apiDetailWithNumberAndTeam = apiDetailWithNumber.copy(teamId = maybeTeamId)
+          result <- integrationRepository.findAndModify(apiDetailWithNumberAndTeam).map {
+            case Right((api, isUpdate)) =>
+              PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, api.id, api.publisherReference, api.platform)))
+            case Left(_) =>
+              PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert api")))
+          }
+        } yield result
     }
   }
 

@@ -115,8 +115,8 @@ class IntegrationRepositoryISpec
         for {
           matchInTitle <- repo.findAndModify(apiDetail1)
           matchInDescription <- repo.findAndModify(apiDetail5)
-          matchInHods <- repo.findAndModify(apiDetail3, Some(ApiTeam("a_publisher_ref", "team_id_1")))
-          matchOnDesPlatform <- repo.findAndModify(apiDetail4, Some(ApiTeam("another_publisher_ref", "team_id_2")))
+          matchInHods <- repo.findAndModify(apiDetail3.copy(teamId = Some("team_id_1")))
+          matchOnDesPlatform <- repo.findAndModify(apiDetail4.copy(teamId = Some("team_id_2")))
           matchOnFileTransferPlatformOne <- repo.findAndModify(fileTransfer2)
           matchOnFileTransferPlatformTwo <- repo.findAndModify(fileTransfer7)
         } yield (
@@ -322,7 +322,7 @@ class IntegrationRepositoryISpec
       }
 
       "Save API should serialize all fields in APIDetail except the primary key '_id'" in {
-        await(repo.findAndModify(apiDetail1, Some(ApiTeam("a_publisher_ref", "team1")))) match {
+        await(repo.findAndModify(apiDetail1)) match {
           case Right((persisted: ApiDetail, _)) => {
             val id = UUID.randomUUID()
             val now = Instant.now
@@ -340,61 +340,6 @@ class IntegrationRepositoryISpec
         }
 
         getAll.size shouldBe 1
-      }
-
-      "apply and save the supplied ApiTeam team id when no duplicate exists in collection" in {
-        val result = getAll
-        result shouldBe List.empty
-
-        val insertResult: Either[Throwable, (IntegrationDetail, Types.IsUpdate)] = await(repo.findAndModify(apiDetail1, Some(ApiTeam("a_publisher_ref", "a_team_id"))))
-        insertResult match {
-          case Right((apiDetail: IntegrationDetail, isUpdate)) =>
-            isUpdate shouldBe false
-            validateApi(apiDetail, apiDetail1)
-          case Right(_) => fail()
-          case Left(_) => fail()
-        }
-
-        val all = getAll
-        all.size shouldBe 1
-        val head = all.head.asInstanceOf[ApiDetail]
-        head.teamId shouldBe (Some("a_team_id"))
-      }
-
-      "maintain the original team id on update" in {
-        val result = getAll
-        result shouldBe List.empty
-
-        await(repo.findAndModify(apiDetail1, Some(ApiTeam("a_publisher_ref", "a_team_id"))))
-
-        var updateResult: Either[Throwable, (IntegrationDetail, Types.IsUpdate)] = await(repo.findAndModify(apiDetail1, None))
-        updateResult match {
-          case Right((apiDetail: IntegrationDetail, isUpdate)) =>
-            isUpdate shouldBe true
-            validateApi(apiDetail, apiDetail1)
-          case Right(_) => fail()
-          case Left(_) => fail()
-        }
-
-        var all = getAll
-        all.size shouldBe 1
-        var apiDetail = all.head.asInstanceOf[ApiDetail]
-        apiDetail.teamId shouldBe (Some("a_team_id"))
-
-        updateResult = await(repo.findAndModify(apiDetail1, Some(ApiTeam("a_publisher_ref", "a_different_team_id"))))
-        updateResult match {
-          case Right((apiDetail: IntegrationDetail, isUpdate)) =>
-            isUpdate shouldBe true
-            validateApi(apiDetail, apiDetail1)
-          case Right(_) => fail()
-          case Left(_) => fail()
-        }
-
-        all = getAll
-        all.size shouldBe 1
-        apiDetail = all.head.asInstanceOf[ApiDetail]
-        apiDetail.teamId shouldBe (Some("a_team_id"))
-
       }
     }
 
