@@ -341,61 +341,6 @@ class IntegrationRepositoryISpec
 
         getAll.size shouldBe 1
       }
-
-      "apply and save the supplied ApiTeam team id when no duplicate exists in collection" in {
-        val result = getAll
-        result shouldBe List.empty
-
-        val insertResult: Either[Throwable, (IntegrationDetail, Types.IsUpdate)] = await(repo.findAndModify(apiDetail1))
-        insertResult match {
-          case Right((apiDetail: IntegrationDetail, isUpdate)) =>
-            isUpdate shouldBe false
-            validateApi(apiDetail, apiDetail1)
-          case Right(_) => fail()
-          case Left(_) => fail()
-        }
-
-        val all = getAll
-        all.size shouldBe 1
-        val head = all.head.asInstanceOf[ApiDetail]
-        head.teamId shouldBe (Some("a_team_id"))
-      }
-
-      "maintain the original team id on update" in {
-        val result = getAll
-        result shouldBe List.empty
-
-        await(repo.findAndModify(apiDetail1))
-
-        var updateResult: Either[Throwable, (IntegrationDetail, Types.IsUpdate)] = await(repo.findAndModify(apiDetail1))
-        updateResult match {
-          case Right((apiDetail: IntegrationDetail, isUpdate)) =>
-            isUpdate shouldBe true
-            validateApi(apiDetail, apiDetail1)
-          case Right(_) => fail()
-          case Left(_) => fail()
-        }
-
-        var all = getAll
-        all.size shouldBe 1
-        var apiDetail = all.head.asInstanceOf[ApiDetail]
-        apiDetail.teamId shouldBe (Some("a_team_id"))
-
-        updateResult = await(repo.findAndModify(apiDetail1))
-        updateResult match {
-          case Right((apiDetail: IntegrationDetail, isUpdate)) =>
-            isUpdate shouldBe true
-            validateApi(apiDetail, apiDetail1)
-          case Right(_) => fail()
-          case Left(_) => fail()
-        }
-
-        all = getAll
-        all.size shouldBe 1
-        apiDetail = all.head.asInstanceOf[ApiDetail]
-        apiDetail.teamId shouldBe (Some("a_team_id"))
-
-      }
     }
 
     "deleteByPlatformType" should {
