@@ -76,7 +76,7 @@ class PublishService @Inject() (
               case None            => apiNumberExtractor.extract(apiDetailParsed)
           }
           maybeTeamId <- maybeExistingIntegrationDetail match {
-            case Some(apiDetail: ApiDetail) if ! apiDetail.teamId.isEmpty => Future.successful(apiDetail.teamId)
+            case Some(apiDetail: ApiDetail) => Future.successful(apiDetail.teamId)
             case _ => apiTeamsRepository.findByPublisherReference(apiDetailParsed.publisherReference).map {
               case Some(apiTeam) => Some(apiTeam.teamId)
               case _             => None

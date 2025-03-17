@@ -203,7 +203,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
     }
 
     "set correct values when an existing API has a teamId" in new Setup {
-      givenApiAlreadyExistsWithoutATeamId()
+      givenApiAlreadyExistsWithATeamId()
       givenATeamExistsForTheApiPublisherReference()
       givenApiNumberGeneratorReturns(Some(generatedApiNumber))
       givenApiNumberExtractorDoesNotFindANumberInTheTitle()
@@ -212,6 +212,18 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       result.isSuccess shouldBe true
 
       thenRepoStoresCorrectApiDetails(Some(generatedApiNumber), Some(existingTeamId))
+    }
+
+    "set correct values when an existing API has no teamId" in new Setup {
+      givenApiAlreadyExistsWithoutATeamId()
+      givenATeamExistsForTheApiPublisherReference()
+      givenApiNumberGeneratorReturns(Some(generatedApiNumber))
+      givenApiNumberExtractorDoesNotFindANumberInTheTitle()
+
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe true
+
+      thenRepoStoresCorrectApiDetails(Some(generatedApiNumber), None)
     }
 
     "set correct values when an existing API has no teamId but the publisher reference matches an existing team" in new Setup {
