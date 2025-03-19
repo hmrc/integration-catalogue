@@ -1,7 +1,7 @@
 package uk.gov.hmrc.integrationcatalogue.mongojobs
 
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{framework, when}
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
@@ -44,7 +44,8 @@ class ApiNumberGenerationJobSpec extends AsyncFreeSpec with Matchers with Mockit
             ApiDetailSummary(noRuleApi),
             ApiDetailSummary(hasApiNumberApi),
             ApiDetailSummary(updatedApi),
-            ApiDetailSummary(updateErrorApi)
+            ApiDetailSummary(updateErrorApi),
+            ApiDetailSummary(updateNotFound)
           )))
 
       // General stubs
@@ -83,9 +84,13 @@ class ApiNumberGenerationJobSpec extends AsyncFreeSpec with Matchers with Mockit
       when(fixture.integrationRepository.findAndModify(eqTo(updateErrorApiWithNumber)))
         .thenReturn(Future.successful(Left(new Exception())))
 
+      // Stub for an API that can't be found while updating
+      when(fixture.integrationRepository.findByPublisherRef(eqTo(HIP), eqTo(updateNotFound.publisherReference)))
+        .thenReturn(Future.successful(None))
+
       fixture.job.processApis().map {
         result =>
-          result mustBe MigrationSummary(4, 1, 1, 1)
+          result mustBe MigrationSummary(5, 1, 1, 2)
       }
     }
   }
@@ -136,6 +141,7 @@ private object ApiNumberGenerationJobSpec {
   val hasApiNumberApi: ApiDetail = buildApi(2, HIP, Some("API#2"))
   val updatedApi: ApiDetail = buildApi(3, HIP)
   val updateErrorApi: ApiDetail = buildApi(4, HIP)
+  val updateNotFound: ApiDetail = buildApi(5, HIP)
 
   case class Fixture(
     summaryRepository: ApiDetailSummaryRepository,
