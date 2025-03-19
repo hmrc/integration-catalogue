@@ -38,6 +38,18 @@ class ApiNumberGenerationJobSpec extends AsyncFreeSpec with Matchers with Mockit
   import ApiNumberGenerationJobSpec.*
 
   "ApiNumberGenerationJob" - {
+    "musr ru ncorretcly when called from the main entry point" in {
+      val fixture = buildFixture()
+
+      when(fixture.summaryRepository.findWithFilters(any, any))
+        .thenReturn(Future.successful(List.empty))
+
+      fixture.job.run().map {
+        result =>
+          result mustBe ()
+      }
+    }
+
     "must process an empty list of APIs and return the correct summary" in {
       val fixture = buildFixture()
 
