@@ -75,12 +75,20 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
     val existingTeamId = "existingTeamId"
     val existingApiDetail = apiDetail0.copy()
 
+    def givenOasParserFindsShortDescription(shortDesc: Option[String]): Unit = {
+      when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(valid(apiDetail0.copy(shortDescription = shortDesc)))
+    }
+
     def givenApiDoesNotAlreadyExist(): Unit = {
       when(mockApiRepo.findByPublisherRef(any(), any())).thenReturn(Future.successful(None))
     }
 
     def givenApiAlreadyExistsWithApiNumber(): Unit = {
       when(mockApiRepo.findByPublisherRef(any(), any())).thenReturn(Future.successful(Some(existingApiDetail.copy(apiNumber = Some(existingApiNumber)))))
+    }
+
+    def givenApiAlreadyExistsWithApiNumberAndShortDescription(): Unit = {
+      when(mockApiRepo.findByPublisherRef(any(), any())).thenReturn(Future.successful(Some(existingApiDetail.copy(apiNumber = Some(existingApiNumber), shortDescription = Some("cheesecake API#someothernumber")))))
     }
 
     def givenApiAlreadyExistsWithATeamId(): Unit = {
@@ -115,8 +123,8 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       when(mockApiNumberExtractor.extract(any())).thenAnswer(i => i.getArgument(0).asInstanceOf[ApiDetail])
     }
 
-    def thenRepoStoresCorrectApiDetails(expectedApiNumber: Option[String], expectedTeamId: Option[String] = None, apiTitle: String = apiDetail0.title): Unit = {
-      verify(mockApiRepo).findAndModify(eqTo(apiDetail0.copy(apiNumber = expectedApiNumber, teamId = expectedTeamId, title = apiTitle)))
+    def thenRepoStoresCorrectApiDetails(expectedApiNumber: Option[String], expectedTeamId: Option[String] = None, apiTitle: String = apiDetail0.title, shortDescription: Option[String] = None): Unit = {
+      verify(mockApiRepo).findAndModify(eqTo(apiDetail0.copy(apiNumber = expectedApiNumber, teamId = expectedTeamId, title = apiTitle, shortDescription = shortDescription)))
     }
 
     when(mockApiTeamsRepo.findByPublisherReference(any())).thenReturn(Future.successful(None))
@@ -140,11 +148,12 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       givenApiAlreadyExistsWithApiNumber()
       givenApiNumberGeneratorReturns(Some(existingApiNumber))
       givenApiNumberExtractorDoesNotFindANumberInTheTitle()
+      givenOasParserFindsShortDescription(Some(s"API#$existingApiNumber"))
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
 
-      thenRepoStoresCorrectApiDetails(Some(existingApiNumber))
+      thenRepoStoresCorrectApiDetails(expectedApiNumber = Some(existingApiNumber), shortDescription = Some(s"API#$existingApiNumber"))
     }
 
     "set correct values when existing HIP API without an API number is re-published" in new Setup {
@@ -162,11 +171,12 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       givenApiDoesNotAlreadyExist()
       givenApiNumberGeneratorReturns(Some(generatedApiNumber))
       givenApiNumberExtractorFindsANumberInTheTitle(extractedApiNumber, titleAfterApiNumberExtracted)
+      givenOasParserFindsShortDescription(Some("a short description."))
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
 
-      thenRepoStoresCorrectApiDetails(Some(generatedApiNumber), None, titleAfterApiNumberExtracted)
+      thenRepoStoresCorrectApiDetails(Some(generatedApiNumber), None, titleAfterApiNumberExtracted, Some(s"a short description. API#$extractedApiNumber"))
     }
 
     "set correct values when non-HIP API without an API number in the title is published" in new Setup {
@@ -188,7 +198,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
 
-      thenRepoStoresCorrectApiDetails(Some(extractedApiNumber), None, titleAfterApiNumberExtracted)
+      thenRepoStoresCorrectApiDetails(Some(extractedApiNumber), None, titleAfterApiNumberExtracted, Some(s"API#$extractedApiNumber"))
     }
 
     "set correct values when an existing non-HIP API with an API number in the title is re-published with a new number in the title" in new Setup {
@@ -199,7 +209,29 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
 
-      thenRepoStoresCorrectApiDetails(Some(extractedApiNumber), None, titleAfterApiNumberExtracted)
+      thenRepoStoresCorrectApiDetails(Some(extractedApiNumber), None, titleAfterApiNumberExtracted, Some(s"API#$extractedApiNumber"))
+    }
+
+    "set correct values when an existing non-HIP API with an API number in the title is re-published with a new number in the title and no prior short description" in new Setup {
+      givenApiAlreadyExistsWithApiNumberAndShortDescription()
+      givenApiNumberGeneratorReturns(None)
+      givenApiNumberExtractorFindsANumberInTheTitle(extractedApiNumber, titleAfterApiNumberExtracted)
+      givenOasParserFindsShortDescription(None)
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe true
+
+      thenRepoStoresCorrectApiDetails(Some(extractedApiNumber), None, titleAfterApiNumberExtracted, Some(s"API#$extractedApiNumber"))
+    }
+
+    "set correct values when an existing non-HIP API with an API number in the title is re-published with a new number in the title and a prior API number in the short description" in new Setup {
+      givenApiAlreadyExistsWithApiNumberAndShortDescription()
+      givenApiNumberGeneratorReturns(None)
+      givenApiNumberExtractorFindsANumberInTheTitle(extractedApiNumber, titleAfterApiNumberExtracted)
+      givenOasParserFindsShortDescription(Some("cheesecake API#9876"))
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
+      result.isSuccess shouldBe true
+
+      thenRepoStoresCorrectApiDetails(Some(extractedApiNumber), None, titleAfterApiNumberExtracted, Some(s"cheesecake API#9876 API#$extractedApiNumber"))
     }
 
     "set correct values when an existing API has a teamId" in new Setup {
@@ -378,7 +410,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
     }
 
     "extract valid API numbers when they appear in the API title" in new Setup {
-      val apiDetailWithExtractedNumber = apiDetail0.copy(apiNumber = Some("API123"), title = "my api title")
+      val apiDetailWithExtractedNumber = apiDetail0.copy(apiNumber = Some("API123"), title = "my api title", shortDescription = Some("API#API123"))
       when(mockApiNumberExtractor.extract(eqTo(apiDetail0))).thenReturn(apiDetailWithExtractedNumber)
 
       when(mockOasParserService.parse(any(), any(), any(), any())).thenReturn(valid(apiDetail0))
