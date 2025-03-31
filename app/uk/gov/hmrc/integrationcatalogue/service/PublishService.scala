@@ -86,22 +86,14 @@ class PublishService @Inject() (
           }
 
           apiDetailWithNumberAndShortDescription = (maybeExtractedApiNumber, apiDetailWithNumber.shortDescription) match {
-            case (Some(parsedApiNumber), Some(shortDesc)) if !shortDesc.endsWith(s"API#$parsedApiNumber") => {
-              Console.println(s"OIYAF: case 1")
+            case (Some(parsedApiNumber), Some(shortDesc)) if !shortDesc.endsWith(s"API#$parsedApiNumber") =>
               apiDetailWithNumber.copy(shortDescription = Some(shortDesc + s" API#$parsedApiNumber"))
-            }
-            case (Some(parsedApiNumber), Some(shortDesc)) => {
-              Console.println(s"OIYAF: case 2")
+            case (Some(parsedApiNumber), Some(shortDesc)) =>
               apiDetailWithNumber
-            }
-            case (Some(parsedApiNumber), None) => {
-              Console.println(s"OIYAF: case 3")
+            case (Some(parsedApiNumber), None) =>
               apiDetailWithNumber.copy(shortDescription = Some(s"API#$parsedApiNumber"))
-            }
-            case (None, _) => {
-              Console.println(s"OIYAF: case 4")
+            case (None, _) =>
               apiDetailWithNumber
-            }
           }
 
           apiDetailWithNumberAndShortDescriptionAndTeam = apiDetailWithNumberAndShortDescription.copy(teamId = maybeTeamId)
