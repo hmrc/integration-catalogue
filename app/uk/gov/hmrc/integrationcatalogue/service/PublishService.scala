@@ -98,7 +98,6 @@ class PublishService @Inject() (
 
           apiDetailWithNumberAndShortDescriptionAndTeam = apiDetailWithNumberAndShortDescription.copy(teamId = maybeTeamId)
           result <- {
-            Console.println(s"OIYAF: SAVING short desc ${apiDetailWithNumberAndShortDescriptionAndTeam.shortDescription}")
             integrationRepository.findAndModify(apiDetailWithNumberAndShortDescriptionAndTeam).map {
             case Right((api, isUpdate)) =>
               PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, api.id, api.publisherReference, api.platform)))
