@@ -138,7 +138,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       givenApiNumberGeneratorReturns(Some(generatedApiNumber))
       givenApiNumberExtractorDoesNotFindANumberInTheTitle()
 
-      val result: PublishResult = Await.result(--inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
+      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
 
       thenRepoStoresCorrectApiDetails(Some(generatedApiNumber))
@@ -217,7 +217,6 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       givenApiAlreadyExistsWithApiNumberAndShortDescription(None)
       givenApiNumberGeneratorReturns(None)
       givenApiNumberExtractorFindsANumberInTheTitle(extractedApiNumber, titleAfterApiNumberExtracted)
-      givenOasParserFindsShortDescription(None)
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
 
