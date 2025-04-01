@@ -88,8 +88,6 @@ class PublishService @Inject() (
           apiDetailWithNumberAndShortDescription = (maybeExtractedApiNumber, apiDetailWithNumber.shortDescription) match {
             case (Some(parsedApiNumber), Some(shortDesc)) if !shortDesc.endsWith(s"API#$parsedApiNumber") =>
               apiDetailWithNumber.copy(shortDescription = Some(shortDesc + s" API#$parsedApiNumber"))
-            case (Some(parsedApiNumber), Some(shortDesc)) =>
-              apiDetailWithNumber
             case (Some(parsedApiNumber), None) =>
               apiDetailWithNumber.copy(shortDescription = Some(s"API#$parsedApiNumber"))
             case _ =>
