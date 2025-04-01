@@ -69,12 +69,14 @@ class PublishService @Inject() (
             case Some(apiDetail: ApiDetail) => apiDetail.apiNumber
             case _ => None
           }
+          maybeExtractedApiNumber = apiNumberExtractor.extract(apiDetailParsed).apiNumber
           maybeApiNumber <- apiNumberGenerator.generate(request.platformType, maybeExistingApiNumber)
           apiDetailWithNumber = maybeApiNumber match {
               // if the generator returns an API number and the extractor finds a number in the title, we use the generator number but also remove the redundant number from the title
               case Some(apiNumber) => apiNumberExtractor.extract(apiDetailParsed).copy(apiNumber = Some(apiNumber))
               case None            => apiNumberExtractor.extract(apiDetailParsed)
           }
+
           maybeTeamId <- maybeExistingIntegrationDetail match {
             case Some(apiDetail: ApiDetail) => Future.successful(apiDetail.teamId)
             case _ => apiTeamsRepository.findByPublisherReference(apiDetailParsed.publisherReference).map {
@@ -82,14 +84,25 @@ class PublishService @Inject() (
               case _             => None
             }
           }
-          apiDetailWithNumberAndTeam = apiDetailWithNumber.copy(teamId = maybeTeamId)
-          result <- integrationRepository.findAndModify(apiDetailWithNumberAndTeam).map {
+
+          apiDetailWithNumberAndShortDescription = (maybeExtractedApiNumber, apiDetailWithNumber.shortDescription) match {
+            case (Some(parsedApiNumber), Some(shortDesc)) if !shortDesc.endsWith(s"API#$parsedApiNumber") =>
+              apiDetailWithNumber.copy(shortDescription = Some(shortDesc + s" API#$parsedApiNumber"))
+            case (Some(parsedApiNumber), None) =>
+              apiDetailWithNumber.copy(shortDescription = Some(s"API#$parsedApiNumber"))
+            case _ =>
+              apiDetailWithNumber
+          }
+
+          apiDetailWithNumberAndShortDescriptionAndTeam = apiDetailWithNumberAndShortDescription.copy(teamId = maybeTeamId)
+          result <- {
+            integrationRepository.findAndModify(apiDetailWithNumberAndShortDescriptionAndTeam).map {
             case Right((api, isUpdate)) =>
               PublishResult(isSuccess = true, Some(PublishDetails(isUpdate, api.id, api.publisherReference, api.platform)))
             case Left(_) =>
               PublishResult(isSuccess = false, errors = List(PublishError(API_UPSERT_ERROR, "Unable to upsert api")))
           }
-        } yield result
+        }} yield result
     }
   }
 
