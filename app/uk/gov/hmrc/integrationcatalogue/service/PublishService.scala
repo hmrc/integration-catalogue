@@ -92,7 +92,7 @@ class PublishService @Inject() (
               apiDetailWithNumber
             case (Some(parsedApiNumber), None) =>
               apiDetailWithNumber.copy(shortDescription = Some(s"API#$parsedApiNumber"))
-            case (None, _) =>
+            case _ =>
               apiDetailWithNumber
           }
 
