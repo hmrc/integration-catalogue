@@ -138,7 +138,7 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       givenApiNumberGeneratorReturns(Some(generatedApiNumber))
       givenApiNumberExtractorDoesNotFindANumberInTheTitle()
 
-      val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
+      val result: PublishResult = Await.result(--inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
 
       thenRepoStoresCorrectApiDetails(Some(generatedApiNumber))
@@ -149,12 +149,12 @@ class PublishServiceSpec extends AnyWordSpec with Matchers with MockitoSugar wit
       givenApiAlreadyExistsWithApiNumberAndShortDescription(shortDescription)
       givenApiNumberGeneratorReturns(Some(existingApiNumber))
       givenApiNumberExtractorDoesNotFindANumberInTheTitle()
-      givenOasParserFindsShortDescription(Some(s"API#$existingApiNumber"))
+      givenOasParserFindsShortDescription(shortDescription)
 
       val result: PublishResult = Await.result(inTest.publishApi(publishRequest), Duration.apply(500, MILLISECONDS))
       result.isSuccess shouldBe true
 
-      thenRepoStoresCorrectApiDetails(expectedApiNumber = Some(existingApiNumber), shortDescription = Some(s"API#$existingApiNumber"))
+      thenRepoStoresCorrectApiDetails(expectedApiNumber = Some(existingApiNumber), shortDescription = shortDescription)
     }
 
     "set correct values when existing HIP API without an API number is re-published" in new Setup {
